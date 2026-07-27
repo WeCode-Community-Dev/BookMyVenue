@@ -1,4 +1,5 @@
-import RevenueDistributionChart, { COLORS } from './DistributionChart';
+import RevenueDistributionChart from './DistributionChart';
+import { COLORS } from './chartColors';
 import type { RevenueDistributionProps } from '@/features/dashboard/types/ownerDashbord.types';
 import { PieChart } from 'lucide-react';
 

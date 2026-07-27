@@ -80,7 +80,7 @@ export default function VenueListPage() {
 
   useEffect(() => {
     publicVenuesApi
-      .getCategoreis({ status: 'active', limit: 100 })
+      .getCategories({ status: 'active', limit: 100 })
       .then((res) => setCategories(res.data.categories))
       .catch(() => {});
   }, []);
@@ -108,6 +108,7 @@ export default function VenueListPage() {
       minCapacity: debouncedMinCapacity ? Number(debouncedMinCapacity) : undefined,
       maxCapacity: debouncedMaxCapacity ? Number(debouncedMaxCapacity) : undefined,
     };
+
     fetchVenues(() => publicVenuesApi.getAll(query));
   };
 
@@ -149,7 +150,7 @@ export default function VenueListPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-8 space-y-8">
       <VenueHeader />
 
       <div className="flex flex-wrap gap-y-4 items-center justify-between">
@@ -177,8 +178,8 @@ export default function VenueListPage() {
       </div>
 
       {!loading && (
-        <p className="text-xs text-muted font-medium">
-          {pagination.total} venue{pagination.total !== 1 ? 's' : ''} found
+        <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
+          {pagination.total} venue{pagination.total !== 1 ? 's' : ''} available
         </p>
       )}
 

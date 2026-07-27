@@ -106,12 +106,12 @@ export const walletRepository = {
   async creditRefundToWallet(
     userId: string,
     amount: number,
-    session: mongoose.ClientSession
+    session?: mongoose.ClientSession
   ): Promise<IWallet | null> {
     return Wallet.findOneAndUpdate(
       { userId },
       { $inc: { balance: amount } },
-      { session, new: true }
+      { session, new: true, upsert: true }
     );
   },
 
@@ -127,7 +127,7 @@ export const walletRepository = {
       balanceAfter: number;
       bookingId: mongoose.Types.ObjectId;
     },
-    session: mongoose.ClientSession
+    session?: mongoose.ClientSession
   ): Promise<IWalletTransaction> {
     const [doc] = await WalletTransaction.create(
       [
@@ -142,6 +142,56 @@ export const walletRepository = {
           source: 'REFUND',
           bookingId: data.bookingId,
           description: 'Refund for cancelled booking',
+        },
+      ],
+      { session }
+    );
+    return doc;
+  },
+
+  /**
+   * Atomically credits an owner's wallet for settlement payout.
+   */
+  async creditToWallet(
+    userId: string,
+    amount: number,
+    session?: mongoose.ClientSession
+  ): Promise<IWallet | null> {
+    return Wallet.findOneAndUpdate(
+      { userId },
+      { $inc: { balance: amount } },
+      { session, new: true, upsert: true }
+    );
+  },
+
+  /**
+   * Creates a CREDIT wallet transaction record for owner settlement payout.
+   */
+  async createPayoutTransaction(
+    data: {
+      walletId: mongoose.Types.ObjectId;
+      userId: mongoose.Types.ObjectId;
+      amount: number;
+      balanceBefore: number;
+      balanceAfter: number;
+      bookingId: mongoose.Types.ObjectId;
+      description?: string;
+    },
+    session?: mongoose.ClientSession
+  ): Promise<IWalletTransaction> {
+    const [doc] = await WalletTransaction.create(
+      [
+        {
+          walletId: data.walletId,
+          userId: data.userId,
+          type: 'CREDIT',
+          amount: data.amount,
+          balanceBefore: data.balanceBefore,
+          balanceAfter: data.balanceAfter,
+          status: 'SUCCESS',
+          source: 'SETTLEMENT',
+          bookingId: data.bookingId,
+          description: data.description || 'Settlement payout for venue booking',
         },
       ],
       { session }

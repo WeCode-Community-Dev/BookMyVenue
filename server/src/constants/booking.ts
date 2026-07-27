@@ -1,3 +1,6 @@
+import { AppError } from '@/utils/AppError';
+import { HTTP_STATUS } from '@/constants/http';
+
 export enum BookingStatus {
   PENDING = 'PENDING',
   RESERVED = 'RESERVED',
@@ -33,6 +36,7 @@ export enum CancellationType {
   SYSTEM = 'SYSTEM',
   USER = 'USER',
   OWNER = 'OWNER',
+  ADMIN = 'ADMIN',
 }
 
 export enum RefundStatus {
@@ -53,4 +57,36 @@ export const RESERVATION_POLICY = {
   SCHEDULING_MIN_DAYS: 5, // latest possible due date (5 days before event)
   SCHEDULING_MAX_DAYS: 30, // earliest possible due date (30 days before event)
   GRACE_PERIOD_HOURS: 24, // hours to pay balance after deadline before auto-cancellation
+};
+
+/**
+ * Strict declarative State Machine for Booking Status Transitions
+ */
+export const BOOKING_STATE_MACHINE: Record<string, string[]> = {
+  [BookingStatus.PENDING]: [
+    BookingStatus.RESERVED,
+    BookingStatus.CONFIRMED,
+    BookingStatus.CANCELLED,
+    BookingStatus.EXPIRED,
+  ],
+  [BookingStatus.RESERVED]: [BookingStatus.CONFIRMED, BookingStatus.CANCELLED],
+  [BookingStatus.CONFIRMED]: [BookingStatus.COMPLETED, BookingStatus.CANCELLED],
+  [BookingStatus.COMPLETED]: [],
+  [BookingStatus.CANCELLED]: [],
+  [BookingStatus.EXPIRED]: [],
+};
+
+/**
+ * Validates whether a target state transition is allowed by the State Machine.
+ */
+export const validateBookingStateTransition = (currentStatus: string, targetStatus: string) => {
+  if (currentStatus === targetStatus) return; // Idempotent same-state check
+
+  const allowedNextStates = BOOKING_STATE_MACHINE[currentStatus] || [];
+  if (!allowedNextStates.includes(targetStatus)) {
+    throw new AppError(
+      `Invalid booking state transition from '${currentStatus}' to '${targetStatus}'`,
+      HTTP_STATUS.BAD_REQUEST
+    );
+  }
 };

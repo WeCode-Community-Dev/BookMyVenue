@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { X, Plus, Trash2, MapPin, Upload, Loader2, Pencil } from 'lucide-react';
 import ImageEditorModal from './ImageEditorModal';
 import { ownerVenuesApi } from '../../services/owner-venues.api';
@@ -47,7 +47,7 @@ const VenueFormModal = ({ venue, onClose, onSuccess }: Props) => {
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(venueSchema),
@@ -72,14 +72,14 @@ const VenueFormModal = ({ venue, onClose, onSuccess }: Props) => {
     },
   });
 
-  const longitude = watch('longitude');
-  const latitude = watch('latitude');
+  const longitude = useWatch({ control, name: 'longitude' });
+  const latitude = useWatch({ control, name: 'latitude' });
 
   // Load categories for dropdown
   useEffect(() => {
     setIsLoadingCategories(true)
     publicVenuesApi
-      .getCategoreis()
+      .getCategories()
       .then((res) => {
         setCategories(res?.data?.categories);
       })

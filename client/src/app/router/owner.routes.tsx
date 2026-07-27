@@ -1,28 +1,27 @@
+/* eslint-disable react-refresh/only-export-components */
+import { lazy } from 'react';
 import { Navigate } from 'react-router-dom';
 import OwnerLayout from '../layouts/OwnerLayout';
 import ErrorPage from '@/shared/pages/ErrorPage';
-
 import ProtectedRoute from '@/shared/components/ProtectedRoute';
 
-import OwnerDashboard from '@/features/dashboard/pages/OwnerDashboard';
-import OwnerVenuesList from '@/features/venues/pages/OwnerVenuesList';
-import OwnerVenueDetails from '@/features/venues/pages/OwnerVenueDetails';
-import VenueAvailabilityPage from '@/features/venues/pages/VenueAvailabilityPage';
-import UserProfile from '@/features/profile/pages/UserProfile';
-import OwnerBookingsList from '@/features/bookings/pages/OwnerBookingsList';
-import OwnerBookingDetails from '@/features/bookings/pages/OwnerBookingDetails';
-import OwnerRevenue from '@/features/bookings/pages/OwnerRevenue';
+const OwnerDashboard = lazy(() => import('@/features/dashboard/pages/OwnerDashboard'));
+const OwnerVenuesList = lazy(() => import('@/features/venues/pages/OwnerVenuesList'));
+const OwnerVenueDetails = lazy(() => import('@/features/venues/pages/OwnerVenueDetails'));
+const VenueAvailabilityPage = lazy(() => import('@/features/venues/pages/VenueAvailabilityPage'));
+const UserProfile = lazy(() => import('@/features/profile/pages/UserProfile'));
+const OwnerBookingsList = lazy(() => import('@/features/bookings/pages/OwnerBookingsList'));
+const OwnerBookingDetails = lazy(() => import('@/features/bookings/pages/OwnerBookingDetails'));
+const OwnerRevenue = lazy(() => import('@/features/bookings/pages/OwnerRevenue'));
 
 export const ownerRoutes = {
   path: '/owner',
-
   element: (
     <ProtectedRoute allowedRoles={['owner']} redirectPath="/signin">
       <OwnerLayout />
     </ProtectedRoute>
   ),
   errorElement: <ErrorPage />,
-
   children: [
     {
       index: true,

@@ -68,7 +68,9 @@ export const getUser = async (req: Request, res: Response, next: NextFunction) =
 export const blockUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
-    const user = await userService.blockUser(id);
+    const adminId = req.user?.id;
+    // V-005: Pass adminId to service — enables self-block and admin-target protection
+    const user = await userService.blockUser(id, adminId);
     return success(res, HTTP_STATUS.OK, user, 'User blocked successfully');
   } catch (error) {
     next(error);
@@ -81,7 +83,9 @@ export const blockUser = async (req: Request, res: Response, next: NextFunction)
 export const unblockUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
-    const user = await userService.unblockUser(id);
+    const adminId = req.user?.id;
+    // V-005: Pass adminId for symmetrical safety check
+    const user = await userService.unblockUser(id, adminId);
     return success(res, HTTP_STATUS.OK, user, 'User unblocked successfully');
   } catch (error) {
     next(error);
@@ -105,7 +109,8 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
 
     let owner = null;
     if (user.role === 'owner') {
-      owner = await Owner.findOne({ userId });
+      // Exclude sensitive bank details and raw idProof documents from client profile payload (CVE-BMV-010)
+      owner = await Owner.findOne({ userId }).select('-bankDetails.accountNumber -idProof');
     }
 
     return success(res, HTTP_STATUS.OK, { user, owner }, 'Profile fetched successfully');
@@ -142,7 +147,13 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
     const { fullName, phoneNumber } = req.body;
     const userUpdate: any = {};
     if (fullName) userUpdate.fullName = fullName;
-    if (phoneNumber) userUpdate.phoneNumber = phoneNumber;
+    if (phoneNumber) {
+      const phoneRegex = /^(\+?\d{1,4}[\s-]?)?\(?\d{1,4}\)?[\s-]?\d{1,4}[\s-]?\d{1,9}$/;
+      if (!phoneRegex.test(phoneNumber.trim())) {
+        throw new AppError('Invalid phone number format. Please provide a valid phone number.', HTTP_STATUS.BAD_REQUEST);
+      }
+      userUpdate.phoneNumber = phoneNumber.trim();
+    }
 
     // Handle avatar upload if provided
     if (files?.avatar?.[0]) {
@@ -158,6 +169,13 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
 
     let updatedOwner = null;
     if (user.role === 'owner') {
+      if (req.body.ifscCode) {
+        const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+        if (!ifscRegex.test(req.body.ifscCode.toUpperCase().trim())) {
+          throw new AppError('Invalid Indian IFSC Code format (e.g. SBIN0001234)', HTTP_STATUS.BAD_REQUEST);
+        }
+      }
+
       const ownerUpdate: any = {
         address: {
           street: req.body.street || '',
@@ -168,7 +186,7 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
         bankDetails: {
           accountHolderName: req.body.accountHolderName || '',
           accountNumber: req.body.accountNumber || '',
-          ifscCode: req.body.ifscCode || '',
+          ifscCode: req.body.ifscCode ? req.body.ifscCode.toUpperCase().trim() : '',
         },
       };
 
@@ -268,7 +286,9 @@ export const getUserBookings = async (req: Request, res: Response, next: NextFun
     }
 
     const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 100;
+    const rawLimit = Number(req.query.limit);
+    // Cap at 50 to prevent DoS via unbounded DB queries (CVE-BMV-012)
+    const limit = Math.min(isNaN(rawLimit) || rawLimit <= 0 ? 10 : rawLimit, 50);
     const status = req.query.status as string | undefined;
 
     const result = await getUserBookingsService(userId, page, limit, status);

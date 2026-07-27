@@ -28,4 +28,17 @@ export const ownerRepository = {
       { new: true }
     ).populate('userId');
   },
+
+  async resubmit(userId: string, data: any) {
+    return await Owner.findOneAndUpdate(
+      { userId },
+      {
+        ...data,
+        verificationStatus: 'pending',
+        rejectionReason: null,
+        verifiedAt: null,
+      },
+      { new: true }
+    ).populate('userId');
+  },
 };

@@ -4,7 +4,6 @@ import {
   AlertTriangle,
   ArrowLeft,
   Calendar,
-  Clock,
   Mail,
   Phone,
   User,
@@ -12,7 +11,6 @@ import {
   FileText,
   DollarSign,
   AlertCircle,
-  XCircle,
   ChevronRight,
   ShieldAlert,
 } from 'lucide-react';
@@ -139,7 +137,6 @@ export default function OwnerBookingDetails() {
 
   const now = new Date();
   const isCheckoutPassed = now.getTime() >= end.getTime();
-  const isEventStarted = now.getTime() >= start.getTime();
 
   return (
     <div className="w-full max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8 space-y-8">

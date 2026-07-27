@@ -15,10 +15,6 @@ export default function HomePage() {
     execute(getHomeData);
   }, [execute]);
 
-  useEffect(() => {
-    console.log(data);
-  }, [data]);
-
   if (error) {
     console.error('Error fetching home page data:', error);
   }

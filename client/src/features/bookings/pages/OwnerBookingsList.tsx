@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Loader2, Calendar, Eye, CheckCircle2, Clock } from 'lucide-react';
+import { Calendar, Eye, CheckCircle2, Clock } from 'lucide-react';
 import { bookingsApi } from '../services/bookings.api';
 import BookingFilters from '@/features/users/components/ui/BookingFilters';
 import { Table, type Column } from '@/shared/components/ui';

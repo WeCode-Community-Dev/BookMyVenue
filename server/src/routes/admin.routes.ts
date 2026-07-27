@@ -11,6 +11,7 @@ import { authorizeRoles } from '@/middlewares/role.middleware';
 import { validateInputs, validateObjectId, validateQuery } from '@/middlewares/validate.middleware';
 import { getAdminVenuesQuerySchema } from '@/dto/admin/get-venues.dto';
 import { rejectVenueSchema } from '@/dto/admin/reject-venue.dto';
+import { adminForceCancelBookingSchema } from '@/dto/booking.dto';
 import * as ownerController from '@/controllers/owner.controller';
 
 const router = Router();
@@ -41,8 +42,13 @@ router.route('/users/:id').get(userController.getUser);
 router.route('/users/:id/block').patch(userController.blockUser);
 router.route('/users/:id/unblock').patch(userController.unblockUser);
 
+import * as transactionController from '@/controllers/transaction.controller';
+import * as adminAuditController from '@/controllers/adminAudit.controller';
+
+// Owners
 router.route('/owners/:id/approve').patch(ownerController.approveOwner);
 router.route('/owners/:id/reject').patch(ownerController.rejectOwner);
+router.route('/owners/:id/freeze-payout').patch(ownerController.freezeOwnerPayout);
 
 // Venues
 router
@@ -61,7 +67,8 @@ router
   .all(validateObjectId('id'))
   .patch(validateInputs(rejectVenueSchema), adminVenueController.rejectVenue);
 
-import * as transactionController from '@/controllers/transaction.controller';
+router.route('/venues/:id/feature').patch(adminVenueController.toggleFeatured);
+router.route('/venues/:id/elite').patch(adminVenueController.toggleElite);
 
 // Transactions
 router.get('/transactions', transactionController.getAdminTransactions);
@@ -69,6 +76,12 @@ router.get('/transactions/stats', transactionController.getAdminTransactionStats
 
 // Bookings
 router.get('/bookings', bookingController.getAdminBookings);
+router.post(
+  '/bookings/:bookingId/force-cancel',
+  validateObjectId('bookingId'),
+  validateInputs(adminForceCancelBookingSchema),
+  bookingController.adminForceCancelBooking
+);
 
 // Settlements
 router.get('/settlements', settlementController.getPendingSettlements);
@@ -77,5 +90,8 @@ router.post(
   validateObjectId('bookingId'),
   settlementController.releaseSettlement
 );
+
+// Admin Audit Logs
+router.get('/audit-logs', adminAuditController.getAdminAuditLogs);
 
 export default router;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import { ProtectedNavbar, OwnerSidebar } from '@/shared/components/layout';
 import { ThemeProvider } from '@/shared/providers/ThemeProvider';
@@ -6,6 +6,7 @@ import { Toaster } from 'sonner';
 import { profileApi } from '@/features/profile/services/profile.api';
 import { useAppStore } from '@/store/app.store';
 import { Loader2, AlertTriangle, Clock, XCircle, ArrowRight } from 'lucide-react';
+import SuspenseLoader from '@/shared/components/ui/SuspenseLoader';
 
 export default function OwnerLayout() {
   const [checking, setChecking] = useState(true);
@@ -124,7 +125,9 @@ export default function OwnerLayout() {
           {banner}
 
           <main className="flex-1 p-6">
-            <Outlet />
+            <Suspense fallback={<SuspenseLoader />}>
+              <Outlet />
+            </Suspense>
           </main>
         </div>
       </div>

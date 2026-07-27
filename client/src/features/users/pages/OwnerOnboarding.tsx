@@ -236,17 +236,19 @@ export default function OwnerOnboarding() {
             <div className="grid grid-cols-3 gap-2 py-1">
               <span className="font-semibold text-foreground/50">Address:</span>
               <span className="col-span-2 truncate">
-                {ownerData.address.street}, {ownerData.address.city}
+                {ownerData?.address?.street || 'N/A'}, {ownerData?.address?.city || ''}
               </span>
             </div>
             <div className="grid grid-cols-3 gap-2 py-1">
               <span className="font-semibold text-foreground/50">Account Name:</span>
-              <span className="col-span-2 truncate">{ownerData.bankDetails.accountHolderName}</span>
+              <span className="col-span-2 truncate">{ownerData?.bankDetails?.accountHolderName || 'N/A'}</span>
             </div>
             <div className="grid grid-cols-3 gap-2 py-1">
               <span className="font-semibold text-foreground/50">Account No:</span>
               <span className="col-span-2 truncate">
-                ••••{ownerData.bankDetails.accountNumber.slice(-4)}
+                {ownerData?.bankDetails?.accountNumber
+                  ? `••••${ownerData.bankDetails.accountNumber.slice(-4)}`
+                  : '••••••••'}
               </span>
             </div>
           </div>

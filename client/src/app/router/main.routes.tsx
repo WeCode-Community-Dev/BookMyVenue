@@ -1,15 +1,18 @@
+/* eslint-disable react-refresh/only-export-components */
+import { lazy } from 'react';
 import ErrorPage from '@/shared/pages/ErrorPage';
 import MainLayout from '../layouts/MainLayout';
-import HomePage from '@/features/public/pages/HomePage';
-import VenueListPage from '@/features/public/pages/VenueListPage';
-import VenueDetailsPage from '@/features/public/pages/VenueDetailsPage';
-import UserProfile from '@/features/profile/pages/UserProfile';
-import Wishlist from '@/features/profile/pages/Wishlist';
-import BookingPage from '@/features/bookings/pages/BookingPage';
-import BookingDetailPage from '@/features/bookings/pages/BookingDetailPage';
-import UserBookingsPage from '@/features/users/pages/UserBookingsPage';
-import UserWallet from '@/features/wallet/pages/UserWallet';
-import PaymentHistory from '@/features/wallet/pages/PaymentHistory';
+
+const HomePage = lazy(() => import('@/features/public/pages/HomePage'));
+const VenueListPage = lazy(() => import('@/features/public/pages/VenueListPage'));
+const VenueDetailsPage = lazy(() => import('@/features/public/pages/VenueDetailsPage'));
+const UserProfile = lazy(() => import('@/features/profile/pages/UserProfile'));
+const Wishlist = lazy(() => import('@/features/profile/pages/Wishlist'));
+const BookingPage = lazy(() => import('@/features/bookings/pages/BookingPage'));
+const BookingDetailPage = lazy(() => import('@/features/bookings/pages/BookingDetailPage'));
+const UserBookingsPage = lazy(() => import('@/features/users/pages/UserBookingsPage'));
+const UserWallet = lazy(() => import('@/features/wallet/pages/UserWallet'));
+const PaymentHistory = lazy(() => import('@/features/wallet/pages/PaymentHistory'));
 
 export const mainRoutes = {
   path: '/',

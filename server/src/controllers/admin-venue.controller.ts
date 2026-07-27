@@ -55,3 +55,43 @@ export const rejectVenue = async (req: Request, res: Response, next: NextFunctio
     next(error);
   }
 };
+
+import { logAdminAction } from '@/utils/auditLogger';
+
+// PATCH /admin/venues/:id/feature
+export const toggleFeatured = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const { isFeatured } = req.body;
+    const adminId = req.user?.id;
+
+    const venue = await venueService.toggleVenueFeaturedService(id as string, Boolean(isFeatured));
+
+    if (adminId) {
+      await logAdminAction(adminId, isFeatured ? 'FEATURE_VENUE' : 'UNFEATURE_VENUE', 'VENUE', id as string);
+    }
+
+    return success(res, HTTP_STATUS.OK, venue, `Venue featured status updated to ${Boolean(isFeatured)}`);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// PATCH /admin/venues/:id/elite
+export const toggleElite = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const { isElite } = req.body;
+    const adminId = req.user?.id;
+
+    const venue = await venueService.toggleVenueEliteService(id as string, Boolean(isElite));
+
+    if (adminId) {
+      await logAdminAction(adminId, isElite ? 'MARK_VENUE_ELITE' : 'UNMARK_VENUE_ELITE', 'VENUE', id as string);
+    }
+
+    return success(res, HTTP_STATUS.OK, venue, `Venue elite status updated to ${Boolean(isElite)}`);
+  } catch (error) {
+    next(error);
+  }
+};

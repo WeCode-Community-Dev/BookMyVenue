@@ -1,7 +1,9 @@
+import { Suspense } from 'react';
 import { ProtectedNavbar, AdminSidebar } from '@/shared/components/layout';
 import { ThemeProvider } from '@/shared/providers/ThemeProvider';
 import { Outlet } from 'react-router-dom';
 import { Toaster } from 'sonner';
+import SuspenseLoader from '@/shared/components/ui/SuspenseLoader';
 
 export default function AdminLayout() {
   return (
@@ -14,7 +16,9 @@ export default function AdminLayout() {
           <ProtectedNavbar />
 
           <main className="flex-1 p-6">
-            <Outlet />
+            <Suspense fallback={<SuspenseLoader />}>
+              <Outlet />
+            </Suspense>
           </main>
         </div>
       </div>

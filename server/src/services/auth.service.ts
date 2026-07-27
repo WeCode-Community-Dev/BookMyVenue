@@ -266,8 +266,8 @@ const googleAuth = async (
       });
     }
   } else {
-    const finalRole =
-      requestedRole === 'owner' || requestedRole === 'admin' ? requestedRole : 'user';
+    // Always create new Google users as 'user' — role changes require admin approval
+    // Prevent self-escalation to 'owner' or 'admin' via the role parameter
     user = await userRepository.create({
       fullName: name || 'Google User',
       email,
@@ -275,7 +275,7 @@ const googleAuth = async (
       avatar: picture,
       authProvider: 'google',
       isVerified: true,
-      role: finalRole,
+      role: 'user',
     });
   }
 
@@ -322,7 +322,13 @@ export const refreshTokenService = async (refreshToken: string) => {
   if (!user) throw new AppError('User not found', HTTP_STATUS.NOT_FOUND);
 
   const newAccessToken = generateAccessToken(user);
-  return { accessToken: newAccessToken };
+
+  // Rotate refresh token on every use — old token is revoked immediately (CVE-BMV-021)
+  const newRefreshToken = generateRefreshToken(user);
+  const REFRESH_TOKEN_TTL = 7 * 24 * 60 * 60;
+  await redisService.set(key, newRefreshToken, REFRESH_TOKEN_TTL);
+
+  return { accessToken: newAccessToken, refreshToken: newRefreshToken };
 };
 
 export const logout = async (userId: string): Promise<void> => {
@@ -332,24 +338,40 @@ export const logout = async (userId: string): Promise<void> => {
 
 const forgotPassword = async (data: ForgotPasswordDto): Promise<{ verificationToken?: string }> => {
   const normalizedEmail = data.email.toLowerCase().trim();
+
+  // Fixed minimum response time to prevent email enumeration via timing oracle (CVE-BMV-018)
+  const minResponseMs = 400;
+  const startTime = Date.now();
+
   const user = await userRepository.findByEmail(normalizedEmail);
 
-  if (!user) {
-    return {};
+  let result: { verificationToken?: string } = {};
+
+  if (user) {
+    await otpService.generateAndSendOtp(normalizedEmail, 'password-reset');
+
+    const verificationToken = jwt.sign(
+      {
+        email: normalizedEmail,
+        purpose: 'password-reset',
+      },
+      env.JWT_REGISTRATION_SECRET as string,
+      { expiresIn: '10m' }
+    );
+
+    // Store token nonce in Redis to allow one-time use only (CVE-BMV-014)
+    await redisService.set(`reset_token_nonce:${normalizedEmail}`, verificationToken, 10 * 60);
+
+    result = { verificationToken };
   }
 
-  await otpService.generateAndSendOtp(normalizedEmail, 'password-reset');
+  // Pad response to fixed minimum time regardless of user existence
+  const elapsed = Date.now() - startTime;
+  if (elapsed < minResponseMs) {
+    await new Promise((resolve) => setTimeout(resolve, minResponseMs - elapsed));
+  }
 
-  const verificationToken = jwt.sign(
-    {
-      email: normalizedEmail,
-      purpose: 'password-reset',
-    },
-    env.JWT_REGISTRATION_SECRET as string,
-    { expiresIn: '10m' }
-  );
-
-  return { verificationToken };
+  return result;
 };
 
 const resetPassword = async (data: ResetPasswordDto): Promise<void> => {
@@ -357,6 +379,12 @@ const resetPassword = async (data: ResetPasswordDto): Promise<void> => {
 
   if (payload.purpose !== 'password-reset') {
     throw new AppError(MESSAGES.INVALID_TOKEN, HTTP_STATUS.UNAUTHORIZED);
+  }
+
+  // One-time use check: token must exist in Redis and match exactly (CVE-BMV-014)
+  const storedToken = await redisService.get(`reset_token_nonce:${payload.email}`);
+  if (!storedToken || storedToken !== data.resetToken) {
+    throw new AppError('Reset token has already been used or is invalid', HTTP_STATUS.UNAUTHORIZED);
   }
 
   const user = await userRepository.findByEmail(payload.email);
@@ -368,6 +396,9 @@ const resetPassword = async (data: ResetPasswordDto): Promise<void> => {
   await userRepository.update(user._id.toString(), {
     password: hashedPassword,
   });
+
+  // Invalidate the nonce immediately after successful reset
+  await redisService.del(`reset_token_nonce:${payload.email}`);
 };
 
 export const authService = {

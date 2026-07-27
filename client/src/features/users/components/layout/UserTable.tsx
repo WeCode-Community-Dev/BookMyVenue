@@ -70,7 +70,7 @@ const UserTable: React.FC<Props> = ({
   const columns: Column<User>[] = [
     {
       header: 'Avatar',
-      accessor: (u) => <UserAvatar imageUrl={u.imageUrl} name={u.name} />,
+      accessor: (u) => <UserAvatar imageUrl={u.imageUrl || undefined} name={u.name} />,
       className: 'w-20',
     },
     {

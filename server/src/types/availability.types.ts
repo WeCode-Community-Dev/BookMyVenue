@@ -1,5 +1,11 @@
 import { Document, Types } from 'mongoose';
 
+export interface BlackoutDate {
+  startDate: Date;
+  endDate: Date;
+  reason?: string;
+}
+
 export interface IAvailability extends Document {
   venueId: Types.ObjectId;
   openingTime: string;
@@ -9,6 +15,7 @@ export interface IAvailability extends Document {
   maxBookingDuration: number | null;
   pricePerHour: number;
   bufferTime: number;
+  blackoutDates?: BlackoutDate[];
   createdAt: Date;
   updatedAt: Date;
 }

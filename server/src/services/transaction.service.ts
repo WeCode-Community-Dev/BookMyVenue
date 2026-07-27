@@ -14,14 +14,14 @@ export const getAdminTransactions = async (options: {
   const page = options.page || 1;
   const limit = options.limit || 10;
 
-  let walletFilter: any = {};
+  const walletFilter: any = {};
   if (options.type && options.type !== 'ALL') {
     if (options.type === 'Booking Payment') walletFilter.source = 'BOOKING_PAYMENT';
     else if (options.type === 'Refund') walletFilter.source = 'REFUND';
     else walletFilter.source = 'INVALID';
   }
 
-  let settlementFilter: any = {};
+  const settlementFilter: any = {};
   if (options.type && options.type !== 'ALL') {
     if (options.type !== 'Owner Payout') settlementFilter._id = new mongoose.Types.ObjectId('000000000000000000000000'); // skip
   }

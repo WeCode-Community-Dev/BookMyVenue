@@ -19,7 +19,8 @@ export interface IWalletTransaction extends Document {
     | 'REFUND'
     | 'CASHBACK'
     | 'ADJUSTMENT'
-    | 'WITHDRAWAL';
+    | 'WITHDRAWAL'
+    | 'SETTLEMENT';
 
   bookingId?: mongoose.Types.ObjectId;
   paymentId?: mongoose.Types.ObjectId;
@@ -85,6 +86,7 @@ const walletTransactionSchema = new Schema<IWalletTransaction>(
         'CASHBACK',
         'ADJUSTMENT',
         'WITHDRAWAL',
+        'SETTLEMENT',
       ],
       required: true,
     },

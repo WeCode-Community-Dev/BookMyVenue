@@ -2,9 +2,11 @@ import { HTTP_STATUS } from '@/constants/http';
 import { MESSAGES } from '@/constants/messages';
 import { AppError } from '@/utils/AppError';
 import success from '@/utils/response';
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
+import { asyncHandler } from '@/utils/asyncHandler';
 import {
   createBookingService,
+  createBookingWithOrderService,
   getBookingByVenueId,
   verifyAndConfirmDepositService,
   cancelBookingService,
@@ -17,9 +19,62 @@ import {
   getOwnerBookingByIdService,
   updateOwnerBookingStatusService,
   getAdminBookingsService,
+  payBookingWithWalletService,
+  getCancellationQuoteService,
+  adminForceCancelBookingService,
 } from '@/services/booking.service';
 import { createOrder as createRazorpayOrder } from '@/services/razorpay.service';
 import { CreateBookingPayload } from '@/types/booking.types';
+
+// POST /admin/bookings/:bookingId/force-cancel
+export const adminForceCancelBooking = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const adminId = req.user?.id;
+    if (!adminId) throw new AppError(MESSAGES.UNAUTHORIZED, HTTP_STATUS.UNAUTHORIZED);
+    const bookingId = req.params.bookingId as string;
+    const { reason, refundPercentage } = req.body;
+
+    const booking = await adminForceCancelBookingService(
+      adminId,
+      bookingId,
+      reason,
+      refundPercentage !== undefined ? Number(refundPercentage) : 100
+    );
+
+    success(res, HTTP_STATUS.OK, booking, 'Booking force-cancelled and refund processed successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
+// POST /bookings/pay-wallet & POST /bookings/:bookingId/payments/wallet
+export const payWithWallet = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) throw new AppError(MESSAGES.UNAUTHORIZED, HTTP_STATUS.UNAUTHORIZED);
+    const bookingId = req.params.bookingId || req.body.bookingId;
+    if (!bookingId) throw new AppError('bookingId is required', HTTP_STATUS.BAD_REQUEST);
+
+    const booking = await payBookingWithWalletService(userId, bookingId);
+    success(res, HTTP_STATUS.OK, booking, 'Payment processed successfully using Wallet balance');
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET /bookings/:bookingId/cancellation-quote
+export const getCancellationQuote = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) throw new AppError(MESSAGES.UNAUTHORIZED, HTTP_STATUS.UNAUTHORIZED);
+    const bookingId = req.params.bookingId || req.body.bookingId;
+
+    const quote = await getCancellationQuoteService(userId, bookingId);
+    success(res, HTTP_STATUS.OK, quote, 'Cancellation refund quote calculated successfully');
+  } catch (error) {
+    next(error);
+  }
+};
 
 // POST /bookings/quote
 export const getBookingQuote = async (req: Request, res: Response, next: NextFunction) => {
@@ -40,24 +95,15 @@ export const getBookingQuote = async (req: Request, res: Response, next: NextFun
 };
 
 // POST /bookings
-export const createBooking = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) throw new AppError(MESSAGES.UNAUTHORIZED, HTTP_STATUS.UNAUTHORIZED);
+export const createBooking = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  if (!userId) throw new AppError(MESSAGES.UNAUTHORIZED, HTTP_STATUS.UNAUTHORIZED);
 
-    const payload: CreateBookingPayload = req.body;
+  const payload: CreateBookingPayload = req.body;
+  const result = await createBookingWithOrderService(userId, payload);
 
-    // Service returns booking + the amount to charge via Razorpay
-    const { booking, razorpayChargeAmount } = await createBookingService(userId, payload);
-
-    // Create Razorpay order for the charge amount (deposit or full)
-    const orderDetails = await createRazorpayOrder(razorpayChargeAmount, booking._id.toString());
-
-    success(res, HTTP_STATUS.CREATED, { payment: orderDetails, booking }, 'Booking created');
-  } catch (error) {
-    next(error);
-  }
-};
+  success(res, HTTP_STATUS.CREATED, result, 'Booking created');
+});
 
 // POST /bookings/verify-payment
 export const verifyPayment = async (req: Request, res: Response, next: NextFunction) => {
@@ -65,7 +111,8 @@ export const verifyPayment = async (req: Request, res: Response, next: NextFunct
     const userId = req.user?.id;
     if (!userId) throw new AppError(MESSAGES.UNAUTHORIZED, HTTP_STATUS.UNAUTHORIZED);
 
-    const { razorpay_payment_id, razorpay_order_id, razorpay_signature, bookingId } = req.body;
+    const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+    const bookingId = req.params.bookingId || req.body.bookingId;
 
     if (!razorpay_payment_id || !razorpay_order_id || !razorpay_signature || !bookingId) {
       throw new AppError('Missing payment verification details', HTTP_STATUS.BAD_REQUEST);
@@ -85,13 +132,13 @@ export const verifyPayment = async (req: Request, res: Response, next: NextFunct
   }
 };
 
-// POST /bookings/pay-balance
+// POST /bookings/pay-balance & POST /bookings/:bookingId/payments/balance
 export const payBalance = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user?.id;
     if (!userId) throw new AppError(MESSAGES.UNAUTHORIZED, HTTP_STATUS.UNAUTHORIZED);
 
-    const { bookingId } = req.body;
+    const bookingId = req.params.bookingId || req.body.bookingId;
     if (!bookingId) {
       throw new AppError('Booking ID is required', HTTP_STATUS.BAD_REQUEST);
     }
@@ -121,7 +168,8 @@ export const verifyBalancePayment = async (req: Request, res: Response, next: Ne
     const userId = req.user?.id;
     if (!userId) throw new AppError(MESSAGES.UNAUTHORIZED, HTTP_STATUS.UNAUTHORIZED);
 
-    const { razorpay_payment_id, razorpay_order_id, razorpay_signature, bookingId } = req.body;
+    const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+    const bookingId = req.params.bookingId || req.body.bookingId;
 
     if (!razorpay_payment_id || !razorpay_order_id || !razorpay_signature || !bookingId) {
       throw new AppError('Missing payment verification details', HTTP_STATUS.BAD_REQUEST);

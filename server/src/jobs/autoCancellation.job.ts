@@ -1,7 +1,7 @@
 import cron from 'node-cron';
 import mongoose from 'mongoose';
 import Booking from '../models/booking.model';
-import { BookingStatus, CancellationType, RefundStatus } from '../constants/booking';
+import { BookingStatus, PaymentStatus, CancellationType, RefundStatus } from '../constants/booking';
 import logger from '../libs/logger';
 
 export const startAutoCancellationJob = () => {
@@ -11,9 +11,10 @@ export const startAutoCancellationJob = () => {
     try {
       const now = new Date();
 
-      // Find bookings that are RESERVED and payment deadline has passed
+      // Find bookings that are RESERVED or CONFIRMED where payment deadline has passed and payment is not fully paid
       const expiredBookings = await Booking.find({
-        bookingStatus: BookingStatus.RESERVED,
+        bookingStatus: { $in: [BookingStatus.RESERVED, BookingStatus.CONFIRMED] },
+        paymentStatus: { $ne: PaymentStatus.PAID },
         remainingPaymentDueDate: { $lt: now, $ne: null },
       });
 
@@ -31,7 +32,8 @@ export const startAutoCancellationJob = () => {
           // Revalidate booking
           const activeBooking = await Booking.findOne({
             _id: booking._id,
-            bookingStatus: BookingStatus.RESERVED,
+            bookingStatus: { $in: [BookingStatus.RESERVED, BookingStatus.CONFIRMED] },
+            paymentStatus: { $ne: PaymentStatus.PAID },
             remainingPaymentDueDate: { $lt: new Date(), $ne: null },
           }).session(session);
 

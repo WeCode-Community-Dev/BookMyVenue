@@ -1,6 +1,8 @@
+import { Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import { ThemeProvider } from '@/shared/providers/ThemeProvider';
 import { Toaster } from 'sonner';
+import SuspenseLoader from '@/shared/components/ui/SuspenseLoader';
 
 export default function AuthLayout() {
   return (
@@ -26,7 +28,9 @@ export default function AuthLayout() {
 
             {/* Form Container */}
             <div className="w-full bg-bg-surface/80 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-5 shadow-2xl">
-              <Outlet />
+              <Suspense fallback={<SuspenseLoader />}>
+                <Outlet />
+              </Suspense>
             </div>
           </div>
         </div>

@@ -44,12 +44,22 @@ export const updateCategory = async (data: UpdateCategoryDto): Return => {
   return await repo.updateCategory(data);
 };
 
+import Venue from '@/models/venue.model';
+
 export const deleteCategory = async (id: string): Return => {
   if (typeof id !== 'string') throw new AppError('Invalid Category ID', HTTP_STATUS.BAD_REQUEST);
   const category = await repo.getCategory(id);
 
   if (!category) {
     throw new AppError('Category not found', HTTP_STATUS.NOT_FOUND);
+  }
+
+  const activeVenuesCount = await Venue.countDocuments({ categoryId: id, isDeleted: { $ne: true } });
+  if (activeVenuesCount > 0) {
+    throw new AppError(
+      `Cannot delete category with ${activeVenuesCount} active venue(s) assigned. Please reassign the venues to another category first.`,
+      HTTP_STATUS.BAD_REQUEST
+    );
   }
 
   return await repo.deleteCategory(id);
@@ -87,16 +97,13 @@ export const getCategories = async (
 };
 
 export const uploadCategoryImage = async (file: string, id?: string) => {
-  let imageUrl: string | undefined;
-  let image_public_id: string | undefined;
-
   if (id) {
     const result = await repo.getCategoryImageId(id);
     await deleteFromCloudinary(result?.image_public_id);
   }
   const uploadResult = await uploadToCloudinary(file);
-  imageUrl = uploadResult.url;
-  image_public_id = uploadResult.public_id;
+  const imageUrl = uploadResult.url;
+  const image_public_id = uploadResult.public_id;
 
   return {
     imageUrl,

@@ -31,6 +31,7 @@ export default function VenueDetailsPage() {
 
   if (loading) return <VenueDetailsLoading />;
   if (!venue) return <VenueNotFound />;
+
   const categoryName =
     typeof venue.categoryId === 'string'
       ? venue.categoryId
@@ -46,23 +47,20 @@ export default function VenueDetailsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      <VenueBreadcrumb venueName={venue.name} />
+      {/* Top Header & Breadcrumb */}
+      <div className="space-y-4">
+        <VenueBreadcrumb venueName={venue.name} />
+        <VenueTitleBlock
+          venueName={venue.name}
+          city={venue.address.city}
+          state={venue.address.state}
+        />
+      </div>
 
-      <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
-        {/* Left Column */}
-        <div className="space-y-6">
+      <div className="grid gap-10 lg:grid-cols-[1fr_400px]">
+        {/* Left Column — Open Whitespace Layout */}
+        <div className="space-y-8">
           <VenueImageGallery images={venue.images} venueName={venue.name} />
-
-          {/* Title & Location — mobile only */}
-          <div className="lg:hidden">
-            <VenueTitleBlock
-              categoryName={categoryName}
-              venueName={venue.name}
-              city={venue.address.city}
-              state={venue.address.state}
-            />
-          </div>
-
           <VenueDescription description={venue.description} />
           <VenueAmenities amenities={venue.amenities} />
           <VenueAvailability
@@ -76,18 +74,8 @@ export default function VenueDetailsPage() {
           />
         </div>
 
-        {/* Right Column — Sticky Sidebar */}
-        <div className="space-y-5 lg:sticky lg:top-24 lg:self-start">
-          {/* Title & Location — desktop only */}
-          <div className="hidden lg:block rounded-2xl border border-border bg-card p-6 shadow-sm">
-            <VenueTitleBlock
-              categoryName={categoryName}
-              venueName={venue.name}
-              city={venue.address.city}
-              state={venue.address.state}
-            />
-          </div>
-
+        {/* Right Column — Single Cohesive Sticky Sidebar */}
+        <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
           <VenuePricingCard
             venueId={venue._id}
             pricePerHour={venue.availability?.pricePerHour || 0}
@@ -98,7 +86,7 @@ export default function VenueDetailsPage() {
 
           <Link
             to="/venues"
-            className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground hover:bg-surface transition-all"
+            className="w-full inline-flex items-center justify-center gap-2 rounded-2xl border border-border/40 bg-surface/50 px-4 py-3 text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-surface transition-all"
           >
             <ChevronLeft size={16} /> Back to All Venues
           </Link>

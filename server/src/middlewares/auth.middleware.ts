@@ -10,7 +10,6 @@ import jwt from 'jsonwebtoken';
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { accessToken } = req.cookies;
-    logger.info(`Access_token: ${accessToken}`);
 
     if (!accessToken) {
       throw new AppError('Unauthorized access', HTTP_STATUS.UNAUTHORIZED);
@@ -19,6 +18,8 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     const decoded = jwt.verify(accessToken, env.JWT_ACCESS_SECRET) as JwtPayload;
     const userId = decoded.id;
 
+    // Always fetch user from DB to get live role/block status (CVE-BMV-013)
+    // Prevents stale JWT payload from bypassing role changes or unblock events
     const user = await userRepository.findById(userId);
 
     if (!user) throw new AppError('User not found', HTTP_STATUS.NOT_FOUND);
@@ -32,7 +33,13 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
       );
     }
 
-    req.user = decoded;
+    // Set req.user from live DB data — not the JWT payload — to always reflect
+    // the current role and account status rather than a stale snapshot
+    req.user = {
+      id: user._id.toString(),
+      email: user.email,
+      role: user.role,
+    };
     next();
   } catch (error) {
     next(error);
