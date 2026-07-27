@@ -4,6 +4,7 @@ const BookableUnits = require("../../models/bookableUnit");
 const { PUBLIC_VENUE_FILTER } = require("./shared");
 const { MATERIALIZATION_WINDOW_DAYS } = require("../../services/materializeVenueAvailability");
 const toDateKey = require("../../utils/dateKey");
+const getEffectiveStatus = require("../../utils/getEffectiveStatus");
 
 const DEFAULT_RANGE_DAYS = 35;
 
@@ -78,7 +79,7 @@ async function getVenueAvailability(req, res) {
             unitDate: unit.unitDate,
             startAt: unit.startAt,
             endAt: unit.endAt,
-            status: unit.status,
+            status: getEffectiveStatus(unit),
          }));
 
       return res.status(200).json({ data });
