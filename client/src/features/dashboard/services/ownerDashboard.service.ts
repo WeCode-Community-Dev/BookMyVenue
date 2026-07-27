@@ -1,6 +1,6 @@
 import { apiClient } from '@/services/apiClient';
 import type {
-  RevenueChartProps,
+  RevenueOverviewProps,
   RevenueDistributionProps,
   StatCardProps,
   TopPerformingVenuesProps,
@@ -9,7 +9,7 @@ import type {
 } from '../types/ownerDashbord.types';
 
 export interface OwnerDashboardData {
-  revenueChartData: RevenueChartProps;
+  revenueChartData: RevenueOverviewProps;
   pieChartData: RevenueDistributionProps;
   statCardData: StatCardProps;
   upcomingData: UpcomingBookingProps;
@@ -22,7 +22,7 @@ export async function getDashboardData(): Promise<OwnerDashboardData> {
   const serverData = res.data.data;
   return {
     statCardData: { data: serverData.statCardData || [] },
-    revenueChartData: { data: serverData.revenueChartData || [] },
+    revenueChartData: { data: serverData.revenueChartData || { weekly: [], monthly: [], yearly: [] } },
     pieChartData: { data: serverData.revenueDistributionData || [] },
     upcomingData: { data: serverData.upcomingBookings || [] },
     venueHealthData: {

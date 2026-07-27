@@ -44,7 +44,89 @@ export async function getOwnerCompletedBookingsCount(venueIds: mongoose.Types.Ob
   });
 }
 
-export async function getOwnerMonthlyChartData(
+export async function getWeeklyChartData(
+  ownerId: string,
+  venueIds: mongoose.Types.ObjectId[],
+  startOfWeek: Date,
+  endOfWeek: Date
+) {
+  const settlementsAgg = await Settlement.aggregate([
+    {
+      $match: {
+        ownerId: new mongoose.Types.ObjectId(ownerId),
+        status: SettlementStatus.SETTLED,
+        createdAt: { $gte: startOfWeek, $lte: endOfWeek }
+      }
+    },
+    {
+      $group: {
+        _id: { $isoDayOfWeek: '$createdAt' },
+        revenue: { $sum: '$ownerEarnings' }
+      }
+    }
+  ]);
+
+  const bookingsAgg = await Booking.aggregate([
+    {
+      $match: {
+        venue: { $in: venueIds },
+        bookingStatus: BookingStatus.COMPLETED,
+        createdAt: { $gte: startOfWeek, $lte: endOfWeek }
+      }
+    },
+    {
+      $group: {
+        _id: { $isoDayOfWeek: '$createdAt' },
+        bookings: { $sum: 1 }
+      }
+    }
+  ]);
+
+  return { settlementsAgg, bookingsAgg };
+}
+
+export async function getMonthlyChartData(
+  ownerId: string,
+  venueIds: mongoose.Types.ObjectId[],
+  startOfMonth: Date,
+  endOfMonth: Date
+) {
+  const settlementsAgg = await Settlement.aggregate([
+    {
+      $match: {
+        ownerId: new mongoose.Types.ObjectId(ownerId),
+        status: SettlementStatus.SETTLED,
+        createdAt: { $gte: startOfMonth, $lte: endOfMonth }
+      }
+    },
+    {
+      $group: {
+        _id: { $dayOfMonth: '$createdAt' },
+        revenue: { $sum: '$ownerEarnings' }
+      }
+    }
+  ]);
+
+  const bookingsAgg = await Booking.aggregate([
+    {
+      $match: {
+        venue: { $in: venueIds },
+        bookingStatus: BookingStatus.COMPLETED,
+        createdAt: { $gte: startOfMonth, $lte: endOfMonth }
+      }
+    },
+    {
+      $group: {
+        _id: { $dayOfMonth: '$createdAt' },
+        bookings: { $sum: 1 }
+      }
+    }
+  ]);
+
+  return { settlementsAgg, bookingsAgg };
+}
+
+export async function getYearlyChartData(
   ownerId: string,
   venueIds: mongoose.Types.ObjectId[],
   startOfYear: Date,
@@ -83,6 +165,40 @@ export async function getOwnerMonthlyChartData(
   ]);
 
   return { settlementsAgg, bookingsAgg };
+}
+
+export async function getOwnerChartData(
+  ownerId: string,
+  venueIds: mongoose.Types.ObjectId[]
+) {
+  const now = new Date();
+
+  // Weekly range (current week: Mon - Sun)
+  const day = now.getDay();
+  const diffToMonday = now.getDate() - day + (day === 0 ? -6 : 1);
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(diffToMonday);
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  endOfWeek.setHours(23, 59, 59, 999);
+
+  // Monthly range (current month)
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+  // Yearly range (current year)
+  const startOfYear = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0);
+  const endOfYear = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+
+  const [weekly, monthly, yearly] = await Promise.all([
+    getWeeklyChartData(ownerId, venueIds, startOfWeek, endOfWeek),
+    getMonthlyChartData(ownerId, venueIds, startOfMonth, endOfMonth),
+    getYearlyChartData(ownerId, venueIds, startOfYear, endOfYear),
+  ]);
+
+  return { weekly, monthly, yearly };
 }
 
 export async function getOwnerCategoryPerformance(venueIds: mongoose.Types.ObjectId[]) {

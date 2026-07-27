@@ -1,7 +1,9 @@
 import type { TopPerformingVenuesProps } from '@/features/dashboard/types/ownerDashbord.types';
 import { Trophy, ArrowUpRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function TopPerformingVenues({ data }: TopPerformingVenuesProps) {
+  const navigate = useNavigate();
   return (
     <div className="rounded-3xl border border-zinc-200/80 dark:border-zinc-800/85 bg-white dark:bg-[#1a1a1a] p-6 shadow-xl transition-all duration-300 flex flex-col h-full justify-between">
       <div>
@@ -38,7 +40,7 @@ export default function TopPerformingVenues({ data }: TopPerformingVenuesProps) 
             </p>
           </div>
         ) : (
-          <div className="mt-6 space-y-3">
+          <div className="mt-6 space-y-3 cursor-pointer" onClick={()=>navigate('/owner/revenue')}>
             {data.map((venue, index) => (
               <div
                 key={venue.id}
@@ -56,7 +58,7 @@ export default function TopPerformingVenues({ data }: TopPerformingVenuesProps) 
                   </div>
                 </div>
 
-                <div className="text-right">
+                <div className="text-right ">
                   <p className="font-bold text-black dark:text-white">
                     ₹{venue.revenue.toLocaleString()}
                   </p>

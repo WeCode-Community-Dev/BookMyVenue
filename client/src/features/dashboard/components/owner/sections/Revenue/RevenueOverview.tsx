@@ -4,7 +4,7 @@ import RevenueChart from './RevenueChart';
 import type {
   FilterType,
   RevenueTitleProps,
-  RevenueChartProps,
+  RevenueOverviewProps,
 } from '../../../../types/ownerDashbord.types.ts';
 
 type RevenuePoint = {
@@ -13,15 +13,17 @@ type RevenuePoint = {
   bookings: number;
 };
 
-export default function RevenueOverView({ data }: RevenueChartProps) {
-  const [filter, setFilter] = useState<FilterType>('monthly');
+export default function RevenueOverView({ data }: RevenueOverviewProps) {
+  const [filter, setFilter] = useState<FilterType>('yearly');
+
+  const chartData = (data && !Array.isArray(data)) ? (data as any)[filter] : [];
 
   return (
     <div className="rounded-3xl border border-zinc-200/80 dark:border-zinc-800/85 bg-white dark:bg-[#1a1a1a] p-6 text-foreground shadow-xl transition-all duration-300">
-      <RevenueTitle filter={filter} setFilter={setFilter} chartData={data} />
+      <RevenueTitle filter={filter} setFilter={setFilter} chartData={chartData} />
 
       <div className="mt-6">
-        <RevenueChart data={data} />
+        <RevenueChart data={chartData} />
       </div>
     </div>
   );

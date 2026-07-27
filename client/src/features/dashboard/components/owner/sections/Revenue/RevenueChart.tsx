@@ -59,6 +59,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 };
 
 export default function RevenueChart({ data }: RevenueChartProps) {
+  console.log('data recieved in chart',data)
   return (
     <div className="w-full h-[40vh] lg:h-[280px] mt-6 relative z-10">
       {data.length === 0 ? (
