@@ -99,7 +99,18 @@ export default function BookingPackages({
 
     const slotTemplates = venue?.slotTemplates ? sortSlots(venue.slotTemplates) : [];
 
+    const isSlotAlreadyBooked = (dateStr: string, slot: any) => {
+        return slot.bookedSlots?.some((b: any) => {
+            const bDateStr = typeof b.eventDate === "string"
+                ? b.eventDate.split("T")[0]
+                : format(new Date(b.eventDate), "yyyy-MM-dd");
+            return bDateStr === dateStr;
+        }) || false;
+    };
+
     const isSlotDisabled = (dateStr: string, slot: any, allSlots: any[]) => {
+        if (isSlotAlreadyBooked(dateStr, slot)) return true;
+
         const selectedIds = selectedSlots[dateStr] || [];
         if (selectedIds.length === 0) return false;
         if (selectedIds.includes(slot.id)) return false;
@@ -142,7 +153,8 @@ export default function BookingPackages({
 
                     return slotTemplates.map((slot) => {
                         const isSelected = selectedIds.includes(slot.id);
-                        const disabled = isSlotDisabled(dateStr, slot, slotTemplates);
+                        const isBooked = isSlotAlreadyBooked(dateStr, slot);
+                        const disabled = isBooked || isSlotDisabled(dateStr, slot, slotTemplates);
 
                         const isEvening = slot.label?.toLowerCase().includes("evening") || 
                                           slot.label?.toLowerCase().includes("night") ||
@@ -160,10 +172,11 @@ export default function BookingPackages({
                                 time={`${slot.startTime} - ${slot.endTime}`}
                                 guests={getText("GUESTS_RANGE", "LABEL", { min: slot.pricingTiers?.[0]?.minGuests || 50, max: slot.pricingTiers?.[0]?.maxGuests || 150 })}
                                 price={price}
-                                available={getText("AVAILABLE", "LABEL")}
+                                available={isBooked ? getText("BOOKED", "LABEL") : getText("AVAILABLE", "LABEL")}
                                 selected={isSelected}
                                 evening={isEvening}
                                 disabled={disabled}
+                                booked={isBooked}
                                 onClick={() => onSelectSlot(dateStr, slot.id)}
                             />
                         );

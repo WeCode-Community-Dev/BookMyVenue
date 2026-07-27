@@ -47,7 +47,8 @@
         "SELECT_PACKAGE_FIRST": "Select a Package First",
         "SELECTED": "Selected",
         "SELECT_PACKAGE": "Select Package",
-        "UNAVAILABLE": "Unavailable"
+        "UNAVAILABLE": "Unavailable",
+        "BOOKED": "Booked"
     },
     "LABEL": {
         "WELCOME_BACK": "Welcome Back",
@@ -97,6 +98,7 @@
         "VERIFIED_VENUE": "Verified Venue",
         "AVAILABLE": "Available",
         "UNAVAILABLE": "Unavailable",
+        "BOOKED": "Booked",
         "GUEST_COUNT": "{count} Guests",
         "MORE": "+{count} More",
         "PRICE_UNIT": "/ day onwards",

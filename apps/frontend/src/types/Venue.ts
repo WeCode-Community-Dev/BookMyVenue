@@ -47,6 +47,24 @@ export interface Venue {
       maxGuests: number;
       price: string | number;
     }>;
+    bookedSlots?: Array<{
+      id: string;
+      bookingId: string;
+      slotTemplateId: string;
+      slotPricingTierId: string;
+      eventDate: string;
+      occupiedFrom: string;
+      occupiedTo: string;
+      slotPrice: string;
+      createdAt: string;
+    }>;
+  }>;
+  blockedDates?: Array<{
+    id: string;
+    venueId: string;
+    fromDate: string;
+    toDate: string;
+    note: string | null;
   }>;
   owner?: {
     id: string;

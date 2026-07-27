@@ -321,7 +321,7 @@ export default function BookingLayout() {
 
                         <UserProfileForm onConfirmProfile={handleConfirmProfile} />
 
-                        <BookingCalendar selectedDates={selectedDates} setSelectedDates={setSelectedDates} />
+                        <BookingCalendar selectedDates={selectedDates} setSelectedDates={setSelectedDates} venue={venue} />
 
                         <BookingPackages
                             venue={venue}
