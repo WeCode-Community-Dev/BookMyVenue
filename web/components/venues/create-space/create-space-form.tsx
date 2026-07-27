@@ -25,8 +25,8 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { VenueImageGallery } from "@/components/venues/create/venue-image-gallery";
-import { VenueImageUploadZone } from "@/components/venues/create/venue-image-upload-zone";
+import { ImageGallery } from "@/components/common/image-gallery";
+import { ImageUploadZone } from "@/components/common/image-upload-zone";
 import type { VenueImage } from "@/lib/data/list-venue";
 import {
   CapacityType,
@@ -34,8 +34,7 @@ import {
 } from "@/lib/data/venues";
 import {
   createImageFromFile,
-  orderImageIdsWithCoverFirst,
-} from "@/lib/utils/venue-image";
+} from "@/lib/utils/image";
 import { uploadFile } from "@/services/r2Services";
 import {
   saveImages,
@@ -154,23 +153,14 @@ export function CreateSpaceForm({ venueId }: CreateSpaceFormProps) {
         await uploadFile(file);
       }
 
-      const createdImages = await saveImages(
+      const images = await saveImages(
         blobImages.map((image) => ({
           url: image.id,
           altText: image.alt,
         }))
       );
 
-      const uploadedIds = blobImages.map((image, index) => ({
-        localId: image.id,
-        serverId: createdImages[index]?.id ?? "",
-      }));
-
-      const spaceImageIds = orderImageIdsWithCoverFirst(
-        form.images,
-        form.coverImageId,
-        uploadedIds
-      );
+      const coverImageFromServer = images.find((image) => image.url === form.coverImageId)?.id;
 
       await createSpace(venueId, {
         name: form.name.trim(),
@@ -181,7 +171,8 @@ export function CreateSpaceForm({ venueId }: CreateSpaceFormProps) {
         isActive: form.isActive,
         categoryId: form.categoryId,
         spaceAmenityIds: form.amenityIds,
-        spaceImageIds,
+        spaceImageIds: images.map((image) => image.id),
+        coverImageId: coverImageFromServer,
       });
 
       toast.success("Space created successfully.");
@@ -230,7 +221,7 @@ export function CreateSpaceForm({ venueId }: CreateSpaceFormProps) {
                   placeholder="Describe the ambiance, typical uses, and unique features of this space..."
                   value={form.description}
                   onChange={(event) => updateField("description", event.target.value)}
-                  className="min-h-[120px] resize-none"
+                  className="min-h-30 resize-none"
                 />
               </div>
             </div>
@@ -292,20 +283,20 @@ export function CreateSpaceForm({ venueId }: CreateSpaceFormProps) {
                 placeholder="No external catering, 24-hour cancellation required, maximum noise level 80dB..."
                 value={form.rules}
                 onChange={(event) => updateField("rules", event.target.value)}
-                className="min-h-[120px] resize-none"
+                className="min-h-30 resize-none"
               />
             </div>
           </FormSectionCard>
 
           <FormSectionCard title="Photos" icon={Camera}>
             <div className="flex flex-col gap-6">
-              <VenueImageUploadZone
+              <ImageUploadZone
                 onFilesSelected={handleFilesSelected}
                 title="Drop images here"
                 description="Support JPG, PNG and WEBP. Max size 5MB each."
                 buttonLabel="Select Files from Device"
               />
-              <VenueImageGallery
+              <ImageGallery
                 images={form.images}
                 coverImageId={form.coverImageId}
                 onImagesChange={(images) => updateField("images", images)}

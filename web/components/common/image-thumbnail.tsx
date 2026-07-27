@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import type { VenueImage } from "@/lib/data/list-venue";
 import { cn } from "@/lib/utils";
 
-type VenueImageThumbnailProps = {
+type ImageThumbnailProps = {
   image: VenueImage;
   isCover: boolean;
   isDragging: boolean;
@@ -19,7 +19,7 @@ type VenueImageThumbnailProps = {
   onDragEnd: () => void;
 };
 
-export function VenueImageThumbnail({
+export function ImageThumbnail({
   image,
   isCover,
   isDragging,
@@ -28,7 +28,7 @@ export function VenueImageThumbnail({
   onDragStart,
   onDrop,
   onDragEnd,
-}: VenueImageThumbnailProps) {
+}: ImageThumbnailProps) {
   return (
     <div
       draggable={true}

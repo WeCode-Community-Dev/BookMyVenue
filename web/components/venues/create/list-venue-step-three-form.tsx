@@ -1,10 +1,10 @@
 "use client";
 
 import type { VenueImage } from "@/lib/data/list-venue";
-import { createImageFromFile } from "@/lib/utils/venue-image";
+import { createImageFromFile } from "@/lib/utils/image";
 
-import { VenueImageGallery } from "./venue-image-gallery";
-import { VenueImageUploadZone } from "./venue-image-upload-zone";
+import { ImageGallery } from "../../common/image-gallery";
+import { ImageUploadZone } from "../../common/image-upload-zone";
 
 type ListVenueStepThreeFormProps = {
   images: VenueImage[];
@@ -40,8 +40,8 @@ export function ListVenueStepThreeForm({
 
   return (
     <div className="flex flex-col gap-8">
-      <VenueImageUploadZone onFilesSelected={handleFilesSelected} />
-      <VenueImageGallery
+      <ImageUploadZone onFilesSelected={handleFilesSelected} />
+      <ImageGallery
         images={images}
         coverImageId={coverImageId}
         onImagesChange={onImagesChange}

@@ -114,4 +114,10 @@ export class CreateSpaceDto {
   @ArrayUnique()
   @IsUUID('4', { each: true })
   spaceImageIds: string[] = [];
+
+  @Transform(trimString)
+  @IsString()
+  @IsOptional()
+  @IsUUID('4')
+  coverImageId?: string;
 }

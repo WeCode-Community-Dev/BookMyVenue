@@ -3,23 +3,22 @@
 import { useState } from "react";
 
 import type { VenueImage } from "@/lib/data/list-venue";
-import { cn } from "@/lib/utils";
 
-import { VenueImageThumbnail } from "./venue-image-thumbnail";
+import { ImageThumbnail } from "./image-thumbnail";
 
-type VenueImageGalleryProps = {
+type ImageGalleryProps = {
   images: VenueImage[];
   coverImageId: string | null;
   onImagesChange: (images: VenueImage[]) => void;
   onCoverChange: (id: string) => void;
 };
 
-export function VenueImageGallery({
+export function ImageGallery({
   images,
   coverImageId,
   onImagesChange,
   onCoverChange,
-}: VenueImageGalleryProps) {
+}: ImageGalleryProps) {
   const [draggedId, setDraggedId] = useState<string | null>(null);
 
   function handleDelete(id: string) {
@@ -72,7 +71,7 @@ export function VenueImageGallery({
       </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {images.map((image) => (
-          <VenueImageThumbnail
+          <ImageThumbnail
             key={image.id}
             image={image}
             isCover={image.id === coverImageId}

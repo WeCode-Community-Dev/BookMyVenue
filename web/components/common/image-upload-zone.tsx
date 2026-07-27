@@ -6,19 +6,19 @@ import { CloudUpload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-type VenueImageUploadZoneProps = {
+type ImageUploadZoneProps = {
   onFilesSelected: (files: FileList) => void;
   title?: string;
   description?: string;
   buttonLabel?: string;
 };
 
-export function VenueImageUploadZone({
+export function ImageUploadZone({
   onFilesSelected,
   title = "Drag and drop images here",
   description = "Upload at least 5 high-resolution photos of your venue. Support for JPG, PNG, and HEIC up to 20MB.",
   buttonLabel = "Select Files from Device",
-}: VenueImageUploadZoneProps) {
+}: ImageUploadZoneProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = React.useState(false);
 

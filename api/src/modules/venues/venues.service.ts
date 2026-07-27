@@ -589,7 +589,7 @@ export class VenuesService {
               spaceId: space.id,
               imageId,
               sortOrder: index,
-              isCover: index === 0,
+              isCover: dto.coverImageId ? imageId === dto.coverImageId : index === 0,
             })),
           });
         }

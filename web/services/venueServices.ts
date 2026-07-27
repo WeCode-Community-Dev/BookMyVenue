@@ -59,6 +59,7 @@ export type CreateSpacePayload = {
     categoryId: string;
     spaceAmenityIds?: string[];
     spaceImageIds?: string[];
+    coverImageId?: string;
 };
 
 export type SpaceOperatingHourInput = {
