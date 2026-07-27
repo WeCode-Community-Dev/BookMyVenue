@@ -11,6 +11,8 @@ type Districts = {
 };
 export interface HomeDataResponse {
   venues: Venue[];
+  popularVenues: Venue[];
+  eliteVenues: Venue[];
   categories: Category[];
   districts: Districts[];
 }
