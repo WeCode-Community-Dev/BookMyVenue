@@ -78,15 +78,22 @@ export function VenuesBrowseFilters() {
   }
 
   useEffect(() => {
-    const timer = setTimeout(()=>{
+    const currentSearch = searchParams.get("search") ?? "";
+    if (search === currentSearch) return;
+
+    const timer = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString());
-      params.set("search", search);
+      if (search) {
+        params.set("search", search);
+      } else {
+        params.delete("search");
+      }
       params.set("page", "1");
       router.push(`/venues?${params.toString()}`);
-    }, 500)
+    }, 500);
 
-    return () => clearTimeout(timer)
-  })
+    return () => clearTimeout(timer);
+  }, [search, searchParams]);
 
   function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>) {
     setSearch(e.target.value)
