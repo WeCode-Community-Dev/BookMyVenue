@@ -31,50 +31,55 @@ export default function VenuePricingCard({
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-      <div className="flex items-baseline gap-1 mb-4">
-        <span className="text-3xl font-extrabold text-foreground">
-          ₹{pricePerHour.toLocaleString()}
+    <div className="rounded-3xl border border-border/60 bg-card p-6 sm:p-8 shadow-xl shadow-black/5 space-y-6">
+      <div className="space-y-1">
+        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          Rate
         </span>
-        <span className="text-sm text-muted font-medium">/ hour</span>
-      </div>
-
-      <div className="space-y-3">
-        <div className="flex items-center justify-between py-2.5 border-b border-border">
-          <div className="flex items-center gap-2 text-xs text-muted font-medium">
-            <Users size={14} /> Capacity
-          </div>
-          <span className="text-sm font-bold text-foreground">{capacity} guests max</span>
-        </div>
-
-        <div className="flex items-center justify-between py-2.5 border-b border-border">
-          <div className="flex items-center gap-2 text-xs text-muted font-medium">
-            <Building2 size={14} /> Category
-          </div>
-          <span className="text-sm font-bold text-foreground">{categoryName}</span>
-        </div>
-
-        <div className="flex items-center justify-between py-2.5">
-          <div className="flex items-center gap-2 text-xs text-muted font-medium">
-            <Calendar size={14} /> Listed
-          </div>
-          <span className="text-sm font-bold text-foreground">{formattedDate}</span>
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-4xl font-black tracking-tight text-foreground">
+            ₹{pricePerHour.toLocaleString()}
+          </span>
+          <span className="text-base text-muted-foreground font-medium">/ hour</span>
         </div>
       </div>
 
-      <div className="mt-6 space-y-2.5">
+      <div className="space-y-3.5 pt-2">
+        <div className="flex items-center justify-between py-2 border-b border-border/40 text-sm">
+          <div className="flex items-center gap-2 text-muted-foreground font-medium">
+            <Users size={16} /> Guest Capacity
+          </div>
+          <span className="font-bold text-foreground">{capacity} max</span>
+        </div>
+
+        <div className="flex items-center justify-between py-2 border-b border-border/40 text-sm">
+          <div className="flex items-center gap-2 text-muted-foreground font-medium">
+            <Building2 size={16} /> Category
+          </div>
+          <span className="font-bold text-foreground">{categoryName}</span>
+        </div>
+
+        <div className="flex items-center justify-between py-2 text-sm">
+          <div className="flex items-center gap-2 text-muted-foreground font-medium">
+            <Calendar size={16} /> Listed Date
+          </div>
+          <span className="font-bold text-foreground">{formattedDate}</span>
+        </div>
+      </div>
+
+      <div className="space-y-3 pt-2">
         <Link
           to={`/bookings/${venueId}`}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-primary/90 transition-all shadow-md shadow-primary/10"
+          className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 text-base font-extrabold text-white hover:bg-primary/95 transition-all shadow-lg shadow-primary/20 active:scale-[0.99]"
         >
           Book Venue
         </Link>
 
         <button
           onClick={handleShare}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-semibold text-foreground hover:bg-surface transition-all active:scale-[0.98] cursor-pointer"
+          className="w-full inline-flex items-center justify-center gap-2 rounded-2xl border border-border/50 bg-background px-4 py-3 text-sm font-bold text-foreground hover:bg-surface transition-all active:scale-[0.98] cursor-pointer"
         >
-          <Share2 size={14} /> Share Space
+          <Share2 size={16} /> Share Space
         </button>
       </div>
     </div>

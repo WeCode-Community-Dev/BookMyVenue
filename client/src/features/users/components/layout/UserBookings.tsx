@@ -13,7 +13,7 @@ export default function UserBookings() {
 
   const selectedFilter = searchParams.get('status') || 'ALL';
   const page = Number(searchParams.get('page')) || 1;
-  const limit = Number(searchParams.get('limit')) || 6; // Default to 6 per page for customer grid view
+  const limit = Number(searchParams.get('limit')) || 8; // 8 per page for marketplace grid view
 
   const {
     data: response,
@@ -44,7 +44,6 @@ export default function UserBookings() {
   };
 
   const fetchBookings = useCallback(() => {
-    // Map status filter to API parameters
     let apiStatus: string | undefined;
     if (selectedFilter === 'PENDING_PAYMENT') {
       apiStatus = 'reserved';
@@ -74,13 +73,13 @@ export default function UserBookings() {
 
   if (error) {
     return (
-      <div className="w-full max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-surface border border-border rounded-3xl shadow-sm">
+      <div className="w-full max-w-[1600px] mx-auto py-10 px-4 sm:px-6 lg:px-10">
+        <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-surface border border-border/60 rounded-3xl shadow-sm">
           <p className="text-error font-semibold text-lg mb-2">Failed to load bookings</p>
           <p className="text-foreground/60 text-sm max-w-md mb-6">{error}</p>
           <button
             onClick={fetchBookings}
-            className="px-6 py-2.5 bg-primary hover:bg-accent text-white font-bold rounded-xl text-sm transition-colors cursor-pointer"
+            className="px-6 py-2.5 bg-primary hover:bg-primary/95 text-white font-bold rounded-xl text-sm transition-colors cursor-pointer"
           >
             Try Again
           </button>
@@ -91,7 +90,6 @@ export default function UserBookings() {
 
   const bookings = response?.data?.bookings || [];
 
-  // Filter bookings locally
   const filteredBookings = bookings.filter((b) => {
     if (selectedFilter === 'ALL') return true;
     if (selectedFilter === 'PENDING_PAYMENT') {
@@ -116,29 +114,29 @@ export default function UserBookings() {
   });
 
   return (
-    <div className="w-full max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+    <div className="w-full max-w-[1600px] mx-auto py-8 px-4 sm:px-6 lg:px-10 space-y-8">
       {/* Header */}
-      <div className="mb-10">
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
+      <div className="space-y-1">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
           My Bookings
         </h1>
-        <p className="mt-2 text-sm sm:text-base text-foreground/60">
-          View and manage your venue bookings, payments, and reservation history.
+        <p className="text-sm sm:text-base text-muted-foreground font-medium">
+          View your venue reservations and access full booking details & receipts.
         </p>
       </div>
 
       {/* Filters */}
-      <div className="mb-8">
+      <div>
         <BookingFilters
           selected={selectedFilter}
           onChange={(newVal) => updateParams({ status: newVal, page: 1 })}
         />
       </div>
 
-      {/* Bookings Grid */}
+      {/* Bookings Grid — Minimal Open Cards */}
       {filteredBookings.length > 0 ? (
         <div className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {filteredBookings.map((booking) => (
               <BookingCard key={booking.id} booking={booking} onCancelSuccess={fetchBookings} />
             ))}
@@ -152,18 +150,20 @@ export default function UserBookings() {
           )}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-surface border border-border rounded-3xl shadow-sm">
-          <Calendar className="w-12 h-12 text-foreground/30 stroke-[1.2] mb-4" />
-          <h3 className="text-lg font-bold text-foreground">No Bookings Found</h3>
-          <p className="text-sm text-foreground/60 mt-1 max-w-xs leading-relaxed">
-            {selectedFilter === 'ALL'
-              ? "You haven't booked any venues yet. Explore premium venues and make your first booking!"
-              : `You don't have any matching result`}
-          </p>
+        <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-surface/50 border border-border/40 rounded-3xl shadow-sm space-y-4">
+          <Calendar className="w-14 h-14 text-muted-foreground/30 stroke-[1.2]" />
+          <div className="space-y-1">
+            <h3 className="text-xl font-extrabold text-foreground">No Bookings Found</h3>
+            <p className="text-sm text-muted-foreground max-w-xs leading-relaxed font-medium">
+              {selectedFilter === 'ALL'
+                ? "You haven't booked any venues yet. Explore available venues and reserve your first space!"
+                : `No matching bookings found for the selected status filter.`}
+            </p>
+          </div>
           {selectedFilter === 'ALL' && (
             <Link
               to="/venues"
-              className="mt-6 px-6 py-3 bg-primary hover:bg-accent text-white font-bold rounded-xl text-sm transition-all shadow-md hover:shadow-lg"
+              className="mt-2 px-6 py-3 bg-primary hover:bg-primary/95 text-white font-extrabold rounded-2xl text-sm transition-all shadow-md"
             >
               Explore Venues
             </Link>

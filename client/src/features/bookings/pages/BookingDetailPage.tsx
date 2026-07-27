@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { bookingsApi } from '../services/bookings.api';
@@ -19,7 +19,6 @@ const loadRazorpay = (): Promise<boolean> =>
 
 export default function BookingDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [booking, setBooking] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -114,14 +113,20 @@ export default function BookingDetailPage() {
     }
   };
 
-  const handleCancel = async () => {
-    if (!booking || !window.confirm('Cancel this booking and release the slot?')) return;
+  const handleCancel = async (reason?: string) => {
+    if (!booking) return;
     setActionLoading(true);
     try {
-      const res = await bookingsApi.deleteBooking(booking._id);
+      let res;
+      if (booking.bookingStatus === 'pending' && booking.paymentStatus === 'pending') {
+        res = await bookingsApi.deleteBooking(booking._id);
+      } else {
+        res = await bookingsApi.cancelBooking(booking._id, reason || 'Cancelled by user');
+      }
+
       if (res.success) {
-        toast.success('Booking cancelled.');
-        navigate('/account/bookings');
+        toast.success('Booking cancelled successfully.');
+        fetchBooking();
       } else {
         toast.error(res.message || 'Could not cancel booking.');
       }

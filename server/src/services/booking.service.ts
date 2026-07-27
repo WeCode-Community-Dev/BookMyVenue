@@ -471,8 +471,9 @@ export const cancelBookingService = async (userId: string, bookingId: string, ca
     throw new AppError('Unauthorized access to booking', HTTP_STATUS.FORBIDDEN);
   }
 
-  if (booking.bookingStatus === BookingStatus.CANCELLED) {
-    throw new AppError('Booking is already cancelled', HTTP_STATUS.BAD_REQUEST);
+  if (booking.bookingStatus === BookingStatus.PENDING) {
+    await deleteBookingService(userId, bookingId);
+    return;
   }
 
   if (![BookingStatus.RESERVED, BookingStatus.CONFIRMED].includes(booking.bookingStatus as BookingStatus)) {
@@ -495,10 +496,7 @@ export const cancelBookingService = async (userId: string, bookingId: string, ca
   // Event-Date Relative Cancellation Window Validation
   const daysUntilEvent = (eventStartTime.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
 
-  const refundFactor = daysUntilEvent >= 14 ? 1.0 : 0.5;
-  if (daysUntilEvent < 7) {
-    throw new AppError('Cancellations are not permitted less than 7 days prior to event', HTTP_STATUS.BAD_REQUEST);
-  }
+  const refundFactor = daysUntilEvent >= 14 ? 1.0 : daysUntilEvent >= 7 ? 0.5 : 0;
 
   const session = await mongoose.startSession();
   try {

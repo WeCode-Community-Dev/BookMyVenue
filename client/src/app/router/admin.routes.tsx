@@ -1,22 +1,24 @@
+/* eslint-disable react-refresh/only-export-components */
+import { lazy } from 'react';
 import { Navigate } from 'react-router-dom';
 import AdminLayout from '../layouts/AdminLayout';
 import ErrorPage from '@/shared/pages/ErrorPage';
-import CategoriesList from '@/features/categories/pages/CategoriesList';
-import CategoryDetails from '@/features/categories/pages/CategoryDetails';
-import UsersList from '@/features/users/pages/UsersList';
-import UserDetails from '@/features/users/pages/UserDetails';
-import AdminVenuesList from '@/features/admin/pages/AdminVenuesList';
-import AdminVenueDetails from '@/features/admin/pages/AdminVenueDetails';
-import AdminSettlements from '@/features/admin/pages/AdminSettlements';
 import ProtectedRoute from '@/shared/components/ProtectedRoute';
-import AdminDashboard from '@/features/dashboard/pages/AdminDashboard';
-import UserProfile from '@/features/profile/pages/UserProfile';
-import AdminTransactions from '@/features/admin/pages/AdminTransactions';
-import AdminBookingsList from '@/features/admin/pages/AdminBookingsList';
+
+const CategoriesList = lazy(() => import('@/features/categories/pages/CategoriesList'));
+const CategoryDetails = lazy(() => import('@/features/categories/pages/CategoryDetails'));
+const UsersList = lazy(() => import('@/features/users/pages/UsersList'));
+const UserDetails = lazy(() => import('@/features/users/pages/UserDetails'));
+const AdminVenuesList = lazy(() => import('@/features/admin/pages/AdminVenuesList'));
+const AdminVenueDetails = lazy(() => import('@/features/admin/pages/AdminVenueDetails'));
+const AdminSettlements = lazy(() => import('@/features/admin/pages/AdminSettlements'));
+const AdminDashboard = lazy(() => import('@/features/dashboard/pages/AdminDashboard'));
+const UserProfile = lazy(() => import('@/features/profile/pages/UserProfile'));
+const AdminTransactions = lazy(() => import('@/features/admin/pages/AdminTransactions'));
+const AdminBookingsList = lazy(() => import('@/features/admin/pages/AdminBookingsList'));
 
 export const adminRoutes = {
   path: '/admin',
-
   element: (
     <ProtectedRoute allowedRoles={['admin']} redirectPath="/signin">
       <AdminLayout />

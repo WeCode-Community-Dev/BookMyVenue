@@ -84,7 +84,15 @@ export interface Booking {
     id: string;
     name: string;
     imageUrl: string | null;
+    images?: string[];
     location: string;
+    address?: {
+      street?: string;
+      city?: string;
+      state?: string;
+      district?: string;
+      pincode?: string;
+    };
   };
 
   startDateTime: string;
@@ -106,6 +114,7 @@ export interface Booking {
 
   totalAmount: number;
   amountPaid: number;
+  remainingBalance?: number;
   remainingPaymentDueDate: string | null;
   autoCancellationDate: string | null;
   isImmediatePaymentRequired: boolean;

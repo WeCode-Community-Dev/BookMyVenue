@@ -187,7 +187,7 @@ const GuestSection: React.FC<Props> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0 ">
             <button
               type="button"
               disabled={!!csvFileName}
@@ -230,11 +230,10 @@ const GuestSection: React.FC<Props> = ({
                 type="button"
                 disabled={!!csvFileName}
                 onClick={() => handleGuestChange(preset)}
-                className={`px-2 sm:px-2.5 py-1 text-[10px] font-bold border rounded-lg transition-all hover:bg-primary hover:text-white hover:border-primary cursor-pointer active:scale-95 ${
-                  guests === preset
+                className={`px-2 sm:px-2.5 py-1 text-[10px] font-bold border rounded-lg transition-all hover:bg-primary hover:text-white hover:border-primary cursor-pointer active:scale-95 ${guests === preset
                     ? 'bg-primary text-white border-primary'
                     : 'bg-background text-muted border-border'
-                }`}
+                  }`}
               >
                 {preset === maxCapacity ? 'Max' : preset} (
                 {preset === maxCapacity ? '100%' : `${Math.round((preset / maxCapacity) * 100)}%`})
@@ -255,7 +254,10 @@ const GuestSection: React.FC<Props> = ({
       </div>
 
       {/* CSV Bulk Uploader */}
-      <div className="border border-border/80 rounded-xl p-3.5 sm:p-4 space-y-3 bg-background/50">
+      <div className={`border border-border/80 rounded-xl p-3.5 sm:p-4 space-y-3 bg-background/50 border-2 border-dashed ${isDragging
+                ? 'border-primary bg-primary/5'
+                : 'border-border hover:border-primary/50 bg-background/30'
+              }`}>
         <div className="flex justify-between items-start gap-3 sm:gap-4">
           <div className="min-w-0">
             <span className="text-xs font-bold text-foreground block">Bulk Guest List Import</span>
@@ -278,11 +280,7 @@ const GuestSection: React.FC<Props> = ({
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`border-2 border-dashed rounded-xl p-5 sm:p-6 text-center transition-all ${
-              isDragging
-                ? 'border-primary bg-primary/5'
-                : 'border-border hover:border-primary/50 bg-background/30'
-            }`}
+            className={` rounded-xl p-5 sm:p-6 text-center transition-all`}
           >
             <input
               type="file"

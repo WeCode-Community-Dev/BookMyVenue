@@ -79,7 +79,7 @@ const VenueFormModal = ({ venue, onClose, onSuccess }: Props) => {
   useEffect(() => {
     setIsLoadingCategories(true)
     publicVenuesApi
-      .getCategoreis()
+      .getCategories()
       .then((res) => {
         setCategories(res?.data?.categories);
       })

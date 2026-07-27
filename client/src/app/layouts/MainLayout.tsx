@@ -1,8 +1,10 @@
+import { Suspense } from 'react';
 import { Footer, ProtectedNavbar, PublicNavbar } from '@/shared/components/layout';
 import { Outlet, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@/shared/providers/ThemeProvider';
 import { useAppStore } from '@/store/app.store';
 import { Toaster } from 'sonner';
+import SuspenseLoader from '@/shared/components/ui/SuspenseLoader';
 
 export default function MainLayout() {
   const { isAuthenticated, user } = useAppStore();
@@ -12,17 +14,17 @@ export default function MainLayout() {
   }
 
   return (
-    <>
-      <ThemeProvider>
-        <Toaster richColors position="top-right" />
-        {isAuthenticated ? <ProtectedNavbar /> : <PublicNavbar />}
+    <ThemeProvider>
+      <Toaster richColors position="top-right" />
+      {isAuthenticated ? <ProtectedNavbar /> : <PublicNavbar />}
 
-        <main>
+      <main>
+        <Suspense fallback={<SuspenseLoader />}>
           <Outlet />
-        </main>
+        </Suspense>
+      </main>
 
-        <Footer />
-      </ThemeProvider>
-    </>
+      <Footer />
+    </ThemeProvider>
   );
 }

@@ -29,24 +29,23 @@ export default function VenueLocation({ address, coordinates, venueName }: Venue
       attribution: '&copy; OpenStreetMap contributors',
     }).addTo(map);
 
-    // Custom marker icon matching red primary pin style
+    // Custom marker icon matching primary pin style
     const customIcon = L.divIcon({
       className: 'custom-map-pin',
-      html: `<div class="w-8 h-8 rounded-full bg-red-500 border-4 border-white flex items-center justify-center shadow-lg"><span class="w-2.5 h-2.5 rounded-full bg-white animate-pulse"></span></div>`,
-      iconSize: [32, 32],
-      iconAnchor: [16, 32],
+      html: `<div class="w-9 h-9 rounded-full bg-primary border-4 border-background flex items-center justify-center shadow-xl"><span class="w-3 h-3 rounded-full bg-white animate-pulse"></span></div>`,
+      iconSize: [36, 36],
+      iconAnchor: [18, 36],
     });
 
     L.marker(latLng, { icon: customIcon })
       .addTo(map)
       .bindPopup(
-        `<b style="font-family: inherit; font-size: 13px;">${venueName}</b><br/><span style="font-size:11px; color:#71717a">${address.city}</span>`
+        `<b style="font-family: inherit; font-size: 14px;">${venueName}</b><br/><span style="font-size:12px; color:#71717a">${address.city}</span>`
       )
       .openPopup();
 
     mapInstance.current = map;
 
-    // Fix drawing sizing
     setTimeout(() => {
       map.invalidateSize();
     }, 200);
@@ -60,31 +59,29 @@ export default function VenueLocation({ address, coordinates, venueName }: Venue
   }, [coordinates, venueName, address]);
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-sm space-y-4">
-      <div className="flex items-center justify-between border-b border-border pb-3">
-        <div className="flex items-center gap-2">
-          <Compass size={18} className="text-primary" />
-          <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">Location</h2>
+    <div className="py-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <Compass size={22} className="text-primary" />
+          <h2 className="text-xl font-extrabold text-foreground tracking-tight">Location</h2>
         </div>
         {coordinates && (
-          <span className="text-[10px] font-mono text-muted bg-background border border-border px-2.5 py-1 rounded-lg">
-            Lat: {coordinates[1].toFixed(5)}, Lng: {coordinates[0].toFixed(5)}
+          <span className="text-xs font-mono text-muted-foreground bg-surface border border-border/40 px-3 py-1 rounded-xl">
+            {coordinates[1].toFixed(4)}° N, {coordinates[0].toFixed(4)}° E
           </span>
         )}
       </div>
 
-      <div className="flex items-start gap-3">
-        <MapPin size={18} className="text-primary mt-0.5 shrink-0" />
-        <p className="text-sm text-foreground leading-relaxed">
-          {address.street}, {address.city}
-          <br />
-          {address.district}, {address.state} - {address.pincode}
+      <div className="flex items-start gap-3 text-base text-foreground/85">
+        <MapPin size={20} className="text-primary mt-0.5 shrink-0" />
+        <p className="leading-relaxed font-normal">
+          {address.street}, {address.city}, {address.district}, {address.state} - {address.pincode}
         </p>
       </div>
 
       <div
         ref={mapRef}
-        className="h-[300px] w-full rounded-xl overflow-hidden border border-border shadow-inner mt-4 z-0"
+        className="h-[340px] w-full rounded-2xl overflow-hidden border border-border/50 shadow-md mt-4 z-0"
       />
     </div>
   );
