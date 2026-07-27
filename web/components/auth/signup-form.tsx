@@ -11,7 +11,11 @@ import { signup } from "@/services/authServices";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export function SignupForm() {
+type SignupFormProps = {
+  onRoleChange?: (role: UserRole) => void;
+};
+
+export function SignupForm({ onRoleChange }: SignupFormProps = {}) {
   const initialData = {
     role: "CUSTOMER" as UserRole,
     firstName: "",
@@ -40,7 +44,11 @@ export function SignupForm() {
     } else {
       setPasswordError("");
     }
-  },[formData.password, formData.confirmPassword])
+  }, [formData.password, formData.confirmPassword]);
+
+  useEffect(() => {
+    onRoleChange?.(formData.role as UserRole);
+  }, [formData.role, onRoleChange]);
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">

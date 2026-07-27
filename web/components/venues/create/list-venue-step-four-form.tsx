@@ -5,6 +5,7 @@ import { ReviewBasicInfoSection } from "./review-basic-info-section";
 import { ReviewPhotosSection } from "./review-photos-section";
 import { ReviewPublishPanel } from "./review-publish-panel";
 import { ReviewVerificationPanel } from "./review-verification-panel";
+import { AmenityResponse } from "@/services/venueServices";
 
 type ListVenueStepFourFormProps = {
   basics: ListVenueBasicsForm;
@@ -13,6 +14,7 @@ type ListVenueStepFourFormProps = {
   coverImageId: string | null;
   onEditStep: (step: number) => void;
   onPublish: () => void;
+  amenities: AmenityResponse;
 };
 
 export function ListVenueStepFourForm({
@@ -22,6 +24,7 @@ export function ListVenueStepFourForm({
   coverImageId,
   onEditStep,
   onPublish,
+  amenities,
 }: ListVenueStepFourFormProps) {
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
@@ -30,6 +33,7 @@ export function ListVenueStepFourForm({
         <ReviewAmenitiesSection
           selectedAmenityIds={selectedAmenityIds}
           onEditStep={onEditStep}
+          amenities={amenities}
         />
         <ReviewPhotosSection
           images={images}

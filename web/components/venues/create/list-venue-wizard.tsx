@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   listVenueDefaultForm,
@@ -19,7 +19,7 @@ import { ListVenueStepThreeForm } from "./list-venue-step-three-form";
 import { ListVenueStepTwoForm } from "./list-venue-step-two-form";
 import { ListVenueWizardHeader } from "./list-venue-wizard-header";
 import { uploadFile } from "@/services/r2Services";
-import { createImages, createVenue } from "@/services/venueServices";
+import { AmenityResponse, saveImages, createVenue, fetchAmenities } from "@/services/venueServices";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -43,6 +43,14 @@ export function ListVenueWizard() {
     setCurrentStep((step) => Math.min(TOTAL_LIST_VENUE_STEPS, step + 1));
   }
 
+  const [amenities, setAmenities] = useState<AmenityResponse>([]);
+
+  useEffect(() => {
+    fetchAmenities().then((response: AmenityResponse) => {
+      setAmenities(response);
+    });
+  }, []);
+
   async function handlePublish() {
 
     try{
@@ -60,17 +68,21 @@ export function ListVenueWizard() {
         await uploadFile(file);
       }
   
-      const images:{id: string}[] = await createImages(venueImages.filter((image) => image.url.startsWith('blob:')).map((image) => ({
+      const images = await saveImages(venueImages.filter((image) => image.url.startsWith('blob:')).map((image) => ({
         url: image.id,
         altText: image.alt,
       })));
+
+      const coverImageFromServer = images.find((image) => image.url === coverImageId)?.id;
+
   
       await createVenue({
         ...basicsForm,
         latitude: Number(basicsForm.latitude),
         longitude: Number(basicsForm.longitude),
         venueImageIds: images.map((image) => image.id),
-        venueAmenityIds: selectedAmenityIds
+        venueAmenityIds: selectedAmenityIds,
+        coverImageId: coverImageFromServer,
       });
       toast.success('Venue published successfully');
 
@@ -125,6 +137,7 @@ export function ListVenueWizard() {
               <ListVenueStepTwoForm
                 selectedIds={selectedAmenityIds}
                 onChange={setSelectedAmenityIds}
+                amenities={amenities}
               />
             </div>
           ) : null}
@@ -144,6 +157,7 @@ export function ListVenueWizard() {
               coverImageId={coverImageId}
               onEditStep={setCurrentStep}
               onPublish={handlePublish}
+              amenities={amenities}
             />
           ) : null}
           <ListVenueFormActions

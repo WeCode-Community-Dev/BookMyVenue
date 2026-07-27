@@ -103,15 +103,12 @@ export const venueAmenityIcons: Record<string, VenueAmenityIcon> = {
 };
 
 
-export const listVenuePreviewImage =
-  "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80";
-
 export const timezoneOptions = [
+  { value: "Asia/Kolkata", label: "(GMT+05:30) India" },
   { value: "Europe/London", label: "(GMT+00:00) London" },
   { value: "America/New_York", label: "(GMT-05:00) New York" },
   { value: "America/Chicago", label: "(GMT-06:00) Chicago" },
   { value: "America/Los_Angeles", label: "(GMT-08:00) Los Angeles" },
-  { value: "Asia/Kolkata", label: "(GMT+05:30) India" },
   { value: "Asia/Tokyo", label: "(GMT+09:00) Tokyo" },
 ];
 
@@ -121,11 +118,11 @@ export const listVenueDefaultForm = {
   address: "",
   latitude: "",
   longitude: "",
-  country: "United Kingdom",
-  state: "Greater London",
-  city: "London",
+  country: "India",
+  state: "Kerala",
+  city: "Kozhikode",
   postalCode: "",
-  timezone: "Europe/London",
+  timezone: "Asia/Kolkata",
 };
 
 export type ListVenueBasicsForm = typeof listVenueDefaultForm;

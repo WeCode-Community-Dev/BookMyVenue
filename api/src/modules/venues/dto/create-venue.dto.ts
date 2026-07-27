@@ -99,6 +99,12 @@ export class CreateVenueDto {
   @MaxLength(120)
   timezone: string;
 
+  @Transform(trimString)
+  @IsString()
+  @IsNotEmpty()
+  @IsUUID('4')
+  coverImageId?: string;
+
 
   @Transform(toUuidArray)
   @IsArray()

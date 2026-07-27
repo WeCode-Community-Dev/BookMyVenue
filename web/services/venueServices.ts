@@ -14,6 +14,7 @@ export type CreateVenuePayload = {
     timezone: string;
     venueAmenityIds?: string[];
     venueImageIds?: string[];
+    coverImageId?: string;
 };
 
 export type AmenityResponse = {
@@ -203,7 +204,7 @@ export async function fetchAmenities(): Promise<AmenityResponse> {
     }
 }
 
-export async function createImages(images: { url: string, altText: string }[]): Promise<{ id: string }[]> {
+export async function saveImages(images: { url: string, altText: string }[]): Promise<{ id: string, url: string }[]> {
     try {
         if (images.length === 0) {
             return [];

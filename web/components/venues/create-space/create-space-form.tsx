@@ -38,7 +38,7 @@ import {
 } from "@/lib/utils/venue-image";
 import { uploadFile } from "@/services/r2Services";
 import {
-  createImages,
+  saveImages,
   createSpace,
   getCapacityTypes,
   getSpaceCategories,
@@ -154,7 +154,7 @@ export function CreateSpaceForm({ venueId }: CreateSpaceFormProps) {
         await uploadFile(file);
       }
 
-      const createdImages = await createImages(
+      const createdImages = await saveImages(
         blobImages.map((image) => ({
           url: image.id,
           altText: image.alt,

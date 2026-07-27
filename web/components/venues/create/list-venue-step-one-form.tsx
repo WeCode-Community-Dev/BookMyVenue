@@ -52,7 +52,7 @@ export function ListVenueStepOneForm({
           placeholder="Tell us about the space, its history, and what makes it unique..."
           value={value.description}
           onChange={(e) => updateField("description", e.target.value)}
-          className="min-h-[120px] resize-none"
+          className="min-h-30 resize-none"
         />
       </div>
       <IconInput

@@ -1,4 +1,9 @@
+"use client";
+
+import { useState } from "react";
+
 import { SignupForm } from "@/components/auth/signup-form";
+import type { UserRole } from "@/components/auth/role-selector";
 import {
   Card,
   CardContent,
@@ -8,7 +13,14 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
+const ROLE_DESCRIPTIONS: Record<UserRole, string> = {
+  CUSTOMER: "Discover venues and book your next event with ease.",
+  VENUE_OWNER: "List your space and connect with event planners near you.",
+};
+
 export function SignupCard({ className }: { className?: string }) {
+  const [role, setRole] = useState<UserRole>("CUSTOMER");
+
   return (
     <Card
       className={cn(
@@ -21,11 +33,11 @@ export function SignupCard({ className }: { className?: string }) {
           Create Your Account
         </CardTitle>
         <CardDescription className="text-body-sm text-on-surface-variant">
-          Join our community of venue owners and event planners.
+          {ROLE_DESCRIPTIONS[role]}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-6 px-6 pt-6 pb-6">
-        <SignupForm />
+        <SignupForm onRoleChange={setRole} />
         {/* <AuthDivider label="Or sign up with" /> */}
         {/* <SocialLoginButtons /> */}
       </CardContent>

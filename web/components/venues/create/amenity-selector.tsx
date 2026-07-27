@@ -9,9 +9,10 @@ import { useEffect, useState } from "react";
 type AmenitySelectorProps = {
   selectedIds: string[];
   onChange: (ids: string[]) => void;
+  amenities: AmenityResponse;
 };
 
-export function AmenitySelector({ selectedIds, onChange }: AmenitySelectorProps) {
+export function AmenitySelector({ selectedIds, onChange, amenities }: AmenitySelectorProps) {
   function handleToggle(id: string) {
     onChange(
       selectedIds.includes(id)
@@ -20,13 +21,6 @@ export function AmenitySelector({ selectedIds, onChange }: AmenitySelectorProps)
     );
   }
 
-  const [amenities, setAmenities] = useState<AmenityResponse>([]);
-
-  useEffect(() => {
-    fetchAmenities().then((response: AmenityResponse) => {
-      setAmenities(response);
-    });
-  }, []);
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">

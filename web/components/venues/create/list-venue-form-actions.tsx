@@ -1,6 +1,7 @@
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 type ListVenueFormActionsProps = {
   currentStep: number;
@@ -39,7 +40,9 @@ export function ListVenueFormActions({
           type="button"
           variant="ghost"
           className="h-10 text-on-surface-variant"
-          onClick={() => {}}
+          onClick={() => {
+            toast.info("Save draft is coming soon.");
+          }}
         >
           Save as Draft
         </Button>

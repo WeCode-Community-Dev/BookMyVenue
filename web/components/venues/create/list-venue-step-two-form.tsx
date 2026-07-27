@@ -1,15 +1,18 @@
 "use client";
 
+import { AmenityResponse } from "@/services/venueServices";
 import { AmenitySelector } from "./amenity-selector";
 
 type ListVenueStepTwoFormProps = {
   selectedIds: string[];
   onChange: (ids: string[]) => void;
+  amenities: AmenityResponse;
 };
 
 export function ListVenueStepTwoForm({
   selectedIds,
   onChange,
+  amenities,
 }: ListVenueStepTwoFormProps) {
   return (
     <div className="flex flex-col gap-5">
@@ -22,7 +25,7 @@ export function ListVenueStepTwoForm({
           help set the right expectations.
         </p>
       </div>
-      <AmenitySelector selectedIds={selectedIds} onChange={onChange} />
+      <AmenitySelector selectedIds={selectedIds} onChange={onChange} amenities={amenities} />
     </div>
   );
 }

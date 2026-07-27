@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useState } from "react";
 
 import type { VenueImage } from "@/lib/data/list-venue";
 import { cn } from "@/lib/utils";
@@ -20,8 +20,7 @@ export function VenueImageGallery({
   onImagesChange,
   onCoverChange,
 }: VenueImageGalleryProps) {
-  const [isReorderMode, setIsReorderMode] = React.useState(false);
-  const [draggedId, setDraggedId] = React.useState<string | null>(null);
+  const [draggedId, setDraggedId] = useState<string | null>(null);
 
   function handleDelete(id: string) {
     const remaining = images.filter((image) => image.id !== id);
@@ -67,18 +66,9 @@ export function VenueImageGallery({
         <h2 className="text-base font-semibold text-on-surface">
           Uploaded Photos ({images.length})
         </h2>
-        <button
-          type="button"
-          onClick={() => setIsReorderMode((value) => !value)}
-          className={cn(
-            "text-sm font-medium transition-colors",
-            isReorderMode
-              ? "text-on-surface"
-              : "text-surface-tint hover:text-primary"
-          )}
-        >
-          {isReorderMode ? "Done Reordering" : "Reorder Images"}
-        </button>
+        <p className="text-right text-sm text-on-surface-variant/70">
+          Click any image to set as cover. Drag to rearrange.
+        </p>
       </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {images.map((image) => (
@@ -86,16 +76,10 @@ export function VenueImageGallery({
             key={image.id}
             image={image}
             isCover={image.id === coverImageId}
-            isReorderMode={isReorderMode}
             isDragging={draggedId === image.id}
             onSelectCover={onCoverChange}
             onDelete={handleDelete}
             onDragStart={setDraggedId}
-            onDragOver={(event) => {
-              if (isReorderMode) {
-                event.preventDefault();
-              }
-            }}
             onDrop={handleDrop}
             onDragEnd={() => setDraggedId(null)}
           />

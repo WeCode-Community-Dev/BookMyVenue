@@ -11,12 +11,10 @@ import { cn } from "@/lib/utils";
 type VenueImageThumbnailProps = {
   image: VenueImage;
   isCover: boolean;
-  isReorderMode: boolean;
   isDragging: boolean;
   onSelectCover: (id: string) => void;
   onDelete: (id: string) => void;
   onDragStart: (id: string) => void;
-  onDragOver: (event: React.DragEvent<HTMLDivElement>) => void;
   onDrop: (id: string) => void;
   onDragEnd: () => void;
 };
@@ -24,28 +22,28 @@ type VenueImageThumbnailProps = {
 export function VenueImageThumbnail({
   image,
   isCover,
-  isReorderMode,
   isDragging,
   onSelectCover,
   onDelete,
   onDragStart,
-  onDragOver,
   onDrop,
   onDragEnd,
 }: VenueImageThumbnailProps) {
   return (
     <div
-      draggable={isReorderMode}
+      draggable={true}
       onDragStart={() => onDragStart(image.id)}
-      onDragOver={onDragOver}
+      onDragOver={(event) => {
+        event.preventDefault();
+      }}
       onDrop={(event) => {
         event.preventDefault();
         onDrop(image.id);
       }}
       onDragEnd={onDragEnd}
       className={cn(
-        "group relative aspect-[4/3] overflow-hidden rounded-lg",
-        isReorderMode && "cursor-grab active:cursor-grabbing",
+        "group relative aspect-4/3 overflow-hidden rounded-lg",
+        "cursor-grab active:cursor-grabbing",
         isDragging && "opacity-50"
       )}
     >

@@ -253,7 +253,7 @@ export class VenuesService {
               venueId: venue.id,
               imageId,
               sortOrder: index,
-              isCover: index === 0,
+              isCover: dto.coverImageId ? imageId === dto.coverImageId : index === 0,
             })),
           });
         }
@@ -294,7 +294,7 @@ export class VenuesService {
               name: true,
               address: true,
               images: {
-                take: 1,
+                where: { isCover: true },
                 select: {
                   image: {
                     select: {
@@ -816,6 +816,7 @@ export class VenuesService {
             },
             select: {
               id: true,
+              url: true,
             },
           }),
         ),
