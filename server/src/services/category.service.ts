@@ -97,16 +97,13 @@ export const getCategories = async (
 };
 
 export const uploadCategoryImage = async (file: string, id?: string) => {
-  let imageUrl: string | undefined;
-  let image_public_id: string | undefined;
-
   if (id) {
     const result = await repo.getCategoryImageId(id);
     await deleteFromCloudinary(result?.image_public_id);
   }
   const uploadResult = await uploadToCloudinary(file);
-  imageUrl = uploadResult.url;
-  image_public_id = uploadResult.public_id;
+  const imageUrl = uploadResult.url;
+  const image_public_id = uploadResult.public_id;
 
   return {
     imageUrl,

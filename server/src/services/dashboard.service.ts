@@ -58,7 +58,7 @@ export async function ownerDashboardService(ownerId: string): Promise<OwnerDashb
   }
 
   // 1. Venue Health Data
-  let totalVenues = venueDocs.length;
+  const totalVenues = venueDocs.length;
   let activeVenues = 0;
   let pendingVenues = 0;
   let rejectedVenues = 0;

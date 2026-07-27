@@ -59,7 +59,10 @@ import { updateAvailabilitySchema } from '@/dto/availability/update-availability
 router
   .route('/venues/:id/availability')
   .all(validateObjectId('id'))
-  .get(availabilityController.getAvailability)
+  .get(
+    requireOwnerVerification, // V-002: unverified owners must not read availability
+    availabilityController.getAvailability
+  )
   .post(
     requireOwnerVerification,
     validateInputs(updateAvailabilitySchema),

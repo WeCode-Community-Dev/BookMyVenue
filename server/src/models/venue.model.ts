@@ -136,6 +136,18 @@ const venueSchema = new mongoose.Schema(
 // Nearby venue search
 venueSchema.index({ location: '2dsphere' });
 
+// Active Non-Deleted Owner Venues Partial Index
+venueSchema.index(
+  { ownerId: 1, verificationStatus: 1, isActive: 1 },
+  { partialFilterExpression: { isDeleted: false } }
+);
+
+// Public Search Filter Partial Index
+venueSchema.index(
+  { categoryId: 1, verificationStatus: 1, isActive: 1 },
+  { partialFilterExpression: { isDeleted: false } }
+);
+
 // Virtual for Availability config
 venueSchema.virtual('availability', {
   ref: 'Availability',

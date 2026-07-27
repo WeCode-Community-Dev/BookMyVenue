@@ -6,9 +6,10 @@ import mongoose from 'mongoose';
 
 export async function ownerDashboardController(req: Request, res: Response, next: NextFunction) {
   try {
-    let ownerId = req.user?.id ?? 'userId';
-    if (!mongoose.Types.ObjectId.isValid(ownerId)) {
-      ownerId = new mongoose.Types.ObjectId().toString();
+    const ownerId = req.user?.id;
+    // V-003: Never fallback to a random ObjectId — throw a clean 401 instead
+    if (!ownerId || !mongoose.Types.ObjectId.isValid(ownerId)) {
+      return next(new Error('Unauthorized access'));
     }
 
     const ownerDashboardData = await ownerDashboardService(ownerId);

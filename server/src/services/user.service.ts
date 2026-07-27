@@ -29,10 +29,20 @@ import Venue from '@/models/venue.model';
 /**
  * Block (disable) a user
  */
-export const blockUser = async (id: string): Promise<IUser | null> => {
+export const blockUser = async (id: string, adminId?: string): Promise<IUser | null> => {
+  // V-005: Prevent admin from blocking themselves
+  if (adminId && adminId === id) {
+    throw new AppError('You cannot block your own account', HTTP_STATUS.FORBIDDEN);
+  }
+
   const user = await userRepository.findById(id);
   if (!user) {
     throw new AppError('User not found', HTTP_STATUS.NOT_FOUND);
+  }
+
+  // V-005: Prevent admin from blocking another admin account
+  if (user.role === 'admin') {
+    throw new AppError('Admin accounts cannot be blocked or unblocked via this endpoint', HTTP_STATUS.FORBIDDEN);
   }
 
   const updatedUser = await userRepository.update(id, { isBlocked: true });
@@ -51,10 +61,21 @@ export const blockUser = async (id: string): Promise<IUser | null> => {
 /**
  * Unblock (restore) a user
  */
-export const unblockUser = async (id: string): Promise<IUser | null> => {
+export const unblockUser = async (id: string, adminId?: string): Promise<IUser | null> => {
+  // V-005: Prevent admin from unblocking themselves (no-op, but consistent guard)
+  if (adminId && adminId === id) {
+    throw new AppError('You cannot modify your own account block status', HTTP_STATUS.FORBIDDEN);
+  }
+
   const user = await userRepository.findById(id);
   if (!user) {
     throw new AppError('User not found', HTTP_STATUS.NOT_FOUND);
   }
+
+  // V-005: Admin accounts are never blocked
+  if (user.role === 'admin') {
+    throw new AppError('Admin accounts cannot be blocked or unblocked via this endpoint', HTTP_STATUS.FORBIDDEN);
+  }
+
   return await userRepository.update(id, { isBlocked: false });
 };

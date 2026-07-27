@@ -11,6 +11,7 @@ import { authorizeRoles } from '@/middlewares/role.middleware';
 import { validateInputs, validateObjectId, validateQuery } from '@/middlewares/validate.middleware';
 import { getAdminVenuesQuerySchema } from '@/dto/admin/get-venues.dto';
 import { rejectVenueSchema } from '@/dto/admin/reject-venue.dto';
+import { adminForceCancelBookingSchema } from '@/dto/booking.dto';
 import * as ownerController from '@/controllers/owner.controller';
 
 const router = Router();
@@ -75,7 +76,12 @@ router.get('/transactions/stats', transactionController.getAdminTransactionStats
 
 // Bookings
 router.get('/bookings', bookingController.getAdminBookings);
-router.post('/bookings/:bookingId/force-cancel', bookingController.adminForceCancelBooking);
+router.post(
+  '/bookings/:bookingId/force-cancel',
+  validateObjectId('bookingId'),
+  validateInputs(adminForceCancelBookingSchema),
+  bookingController.adminForceCancelBooking
+);
 
 // Settlements
 router.get('/settlements', settlementController.getPendingSettlements);

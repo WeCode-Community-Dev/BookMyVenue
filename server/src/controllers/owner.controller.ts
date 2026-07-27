@@ -69,7 +69,11 @@ export const freezeOwnerPayout = async (req: Request<OwnerParams>, res: Response
 
 export const resubmitOwner = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as any).user.id;
+    // V-004: Use safe optional chaining — never cast req to `any`
+    const userId = req.user?.id;
+    if (!userId) {
+      return next(new Error('Unauthorized access'));
+    }
     const owner = await ownerService.resubmitOwner(userId, req.body);
 
     res.status(200).json({

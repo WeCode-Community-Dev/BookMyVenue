@@ -12,21 +12,21 @@ import {
 import { SettlementStatus } from '@/constants/settlement';
 import { CreateBookingPayload } from '@/types/booking.types';
 import { AppError } from '@/utils/AppError';
-import { getAvailabilityByVenueId } from '@/repositories/availability.repository';
-import { IAvailability } from '@/types/availability.types';
 import * as bookingRepo from '@/repositories/booking.repository';
-import * as availabilityRepo from '@/repositories/availability.repository';
 import { walletRepository } from '@/repositories/wallet.repository';
 import { WalletTransaction } from '@/models/walletTransaction.model';
 import { verifyPaymentSignature } from './razorpay.service';
 import { processRefund } from './refund.service';
 import logger from '@/libs/logger';
 import mongoose from 'mongoose';
-import Venue from '@/models/venue.model';
 import Booking from '@/models/booking.model';
-import User from '@/models/user.model';
+import Venue from '@/models/venue.model';
 import { logAdminAction } from '@/utils/auditLogger';
 import { validateVenueAvailability } from '@/utils/availabilityValidator';
+
+import { findVenueById } from '@/repositories/venue.repository';
+import { userRepository } from '@/repositories/user.repository';
+import { createOrder as createRazorpayOrder } from './razorpay.service';
 
 // ── Helpers ───────────────────────────────────────────────────
 
@@ -35,11 +35,13 @@ import { validateVenueAvailability } from '@/utils/availabilityValidator';
  * before committing any payment.
  */
 const verifyVenueAndHostActive = async (venueId: any) => {
-  const venue = await Venue.findById(venueId);
+  const targetId = typeof venueId === 'object' && venueId._id ? venueId._id.toString() : venueId.toString();
+  const venue = await findVenueById(targetId);
   if (!venue || venue.isDeleted || !venue.isActive || venue.verificationStatus !== 'approved') {
     throw new AppError('Venue is no longer active or available for payment processing', HTTP_STATUS.BAD_REQUEST);
   }
-  const hostUser = await User.findById(venue.ownerId);
+  const ownerId = typeof venue.ownerId === 'object' && (venue.ownerId as any)._id ? (venue.ownerId as any)._id.toString() : venue.ownerId.toString();
+  const hostUser = await userRepository.findById(ownerId);
   if (hostUser && hostUser.isBlocked) {
     throw new AppError('Venue host account is currently suspended', HTTP_STATUS.BAD_REQUEST);
   }
@@ -228,6 +230,16 @@ export const createBookingService = async (userId: string, payload: CreateBookin
   } finally {
     session.endSession();
   }
+};
+
+/**
+ * Unified service workflow that creates a booking and generates the corresponding Razorpay order.
+ * Keeps controllers thin and HTTP-focused.
+ */
+export const createBookingWithOrderService = async (userId: string, payload: CreateBookingPayload) => {
+  const { booking, razorpayChargeAmount } = await createBookingService(userId, payload);
+  const orderDetails = await createRazorpayOrder(razorpayChargeAmount, booking._id.toString());
+  return { payment: orderDetails, booking };
 };
 
 /**
@@ -483,12 +495,8 @@ export const cancelBookingService = async (userId: string, bookingId: string, ca
   // Event-Date Relative Cancellation Window Validation
   const daysUntilEvent = (eventStartTime.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
 
-  let refundFactor = 0;
-  if (daysUntilEvent >= 14) {
-    refundFactor = 1.0;
-  } else if (daysUntilEvent >= 7) {
-    refundFactor = 0.5;
-  } else {
+  const refundFactor = daysUntilEvent >= 14 ? 1.0 : 0.5;
+  if (daysUntilEvent < 7) {
     throw new AppError('Cancellations are not permitted less than 7 days prior to event', HTTP_STATUS.BAD_REQUEST);
   }
 
@@ -643,6 +651,20 @@ export const updateOwnerBookingStatusService = async (
     const validBookingStatuses = Object.values(BookingStatus);
     if (!validBookingStatuses.includes(bookingStatus.toUpperCase() as any)) {
       throw new AppError('Invalid booking status value', HTTP_STATUS.BAD_REQUEST);
+    }
+
+    // Strict Owner State Machine Whitelist (CVE-BMV-009)
+    const OWNER_ALLOWED_TRANSITIONS: Record<string, string[]> = {
+      [BookingStatus.RESERVED]: [BookingStatus.CONFIRMED, BookingStatus.CANCELLED],
+      [BookingStatus.CONFIRMED]: [BookingStatus.COMPLETED, BookingStatus.CANCELLED],
+    };
+    const targetStatus = bookingStatus.toUpperCase();
+    const allowedTargets = OWNER_ALLOWED_TRANSITIONS[currentStatus] ?? [];
+    if (!allowedTargets.includes(targetStatus)) {
+      throw new AppError(
+        `Owner status change from ${currentStatus} to ${targetStatus} is not permitted`,
+        HTTP_STATUS.BAD_REQUEST
+      );
     }
 
     // 1. Transition to confirmed

@@ -22,17 +22,15 @@ const toggleWishlist = async (
   // Check if venue exists before adding
   const venueExists = await Venue.exists({ _id: venueObjectId });
   const wishlistIndex = user.wishlist.findIndex((id) => id.equals(venueObjectId));
-  let isAdded = false;
-  if (wishlistIndex === -1) {
+  const isAdded = wishlistIndex === -1;
+  if (isAdded) {
     // Only validate venue existence when adding, not when removing
     if (!venueExists) {
       throw new AppError('Venue not found', HTTP_STATUS.NOT_FOUND);
     }
     user.wishlist.push(venueObjectId);
-    isAdded = true;
   } else {
     user.wishlist.splice(wishlistIndex, 1);
-    isAdded = false;
   }
   await user.save();
   return { wishlist: user.wishlist, isAdded };
