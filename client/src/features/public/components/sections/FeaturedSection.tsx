@@ -14,8 +14,6 @@ interface FeaturedSectionProps {
 export default function FeaturedSection({ venues, loading }: FeaturedSectionProps) {
   const [activeIdx, setActiveIdx] = useState(0);
 
-  const dbFeatured = venues.filter((v) => v.isFeatured);
-
   const fallbackFeatured = [
     {
       name: 'The Travancore Heritage Palace',
@@ -53,21 +51,23 @@ export default function FeaturedSection({ venues, loading }: FeaturedSectionProp
   ];
 
   const featuredList =
-    dbFeatured.length > 0
-      ? dbFeatured.map((v, idx) => ({
+    venues.length > 0
+      ? venues.map((v, idx) => ({
           name: v.name,
           description: v.description || fallbackFeatured[idx % 3].description,
           image: v.images?.[0] || fallbackFeatured[idx % 3].image,
           location: v.address
-            ? `${v.address.city}, ${v.address.state}`
+            ? `${v.address.city}, ${v.address.state || ''}`
             : fallbackFeatured[idx % 3].location,
           capacity: `${v.capacity} Guests`,
           price:
             v.availability?.pricePerHour !== undefined
               ? `₹${v.availability.pricePerHour.toLocaleString('en-IN')} / Hour`
-              : fallbackFeatured[idx % 3].price,
+              : (v.pricing?.amount !== undefined
+                ? `₹${v.pricing.amount.toLocaleString('en-IN')} / ${v.pricing.unit || 'Day'}`
+                : fallbackFeatured[idx % 3].price),
           rating: '4.9',
-          tag: v.isElite ? 'Elite Choice' : 'Featured Space',
+          tag: v.isElite ? 'Elite Choice' : 'Popular Space',
         }))
       : fallbackFeatured;
 
@@ -103,19 +103,19 @@ export default function FeaturedSection({ venues, loading }: FeaturedSectionProp
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-bold text-[#e21a47] uppercase tracking-[0.25em]">
-                  Spotlight Showcase
+                  Most Booked
                 </span>
                 <span className="w-1.5 h-1.5 rounded-full bg-[#e21a47]" />
               </div>
               <h2 className="text-4xl md:text-5xl font-black tracking-tight mt-2 text-black dark:text-white leading-none">
-                Featured <br />
+                Popular <br />
                 <span className="text-[#e21a47]">Collections</span>
               </h2>
             </div>
 
             <div className="mt-8 pt-6 border-t border-[#e21a47]/5 dark:border-zinc-800">
               <span className="font-mono text-xs font-bold text-black dark:text-zinc-400 tracking-wider">
-                ACTIVE SPACE &nbsp;//&nbsp; {String(activeIdx + 1).padStart(2, '0')}
+                POPULAR SPACE &nbsp;//&nbsp; {String(activeIdx + 1).padStart(2, '0')}
               </span>
 
               <h3 className="text-2xl font-bold text-black dark:text-white mt-2 transition-colors">

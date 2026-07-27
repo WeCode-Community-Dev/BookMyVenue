@@ -12,9 +12,6 @@ interface EliteVenuesSectionProps {
 }
 
 export default function EliteVenuesSection({ venues, loading }: EliteVenuesSectionProps) {
-  // Filter venues in memory
-  const data = venues.filter((v) => v.isElite);
-
   // Fallback / default data
   const defaultLargeVenue = {
     name: 'The Travancore Heritage Palace',
@@ -39,43 +36,47 @@ export default function EliteVenuesSection({ venues, loading }: EliteVenuesSecti
   };
 
   const largeVenue =
-    data && data[0]
+    venues && venues[0]
       ? {
-          name: data[0].name,
-          image: data[0].images?.[0] || travancoreImg,
+          name: venues[0].name,
+          image: venues[0].images?.[0] || travancoreImg,
           rating: '4.9 (120 reviews)', // Default rating since rating is not in DB schema
-          capacity: data[0].capacity,
+          capacity: venues[0].capacity,
           tag: 'Most Booked',
         }
       : defaultLargeVenue;
 
   const topVenue =
-    data && data[1]
+    venues && venues[1]
       ? {
-          name: data[1].name,
-          image: data[1].images?.[0] || emeraldImg,
-          location: data[1].address
-            ? `${data[1].address.city}, ${data[1].address.state}`
+          name: venues[1].name,
+          image: venues[1].images?.[0] || emeraldImg,
+          location: venues[1].address
+            ? `${venues[1].address.city}, ${venues[1].address.state || ''}`
             : 'Kumarakom, Kerala',
           price:
-            data[1].availability?.pricePerHour !== undefined
-              ? `₹${data[1].availability.pricePerHour.toLocaleString('en-IN')} / Hour`
-              : '₹1,20,000 / Day',
+            venues[1].availability?.pricePerHour !== undefined
+              ? `₹${venues[1].availability.pricePerHour.toLocaleString('en-IN')} / Hour`
+              : (venues[1].pricing?.amount !== undefined
+                ? `₹${venues[1].pricing.amount.toLocaleString('en-IN')} / ${venues[1].pricing.unit || 'Day'}`
+                : '₹1,20,000 / Day'),
         }
       : defaultTopVenue;
 
   const bottomVenue =
-    data && data[2]
+    venues && venues[2]
       ? {
-          name: data[2].name,
-          image: data[2].images?.[0] || mistImg,
-          location: data[2].address
-            ? `${data[2].address.city}, ${data[2].address.state}`
+          name: venues[2].name,
+          image: venues[2].images?.[0] || mistImg,
+          location: venues[2].address
+            ? `${venues[2].address.city}, ${venues[2].address.state || ''}`
             : 'Munnar, Kerala',
           price:
-            data[2].availability?.pricePerHour !== undefined
-              ? `₹${data[2].availability.pricePerHour.toLocaleString('en-IN')} / Hour`
-              : '₹85,000 / Day',
+            venues[2].availability?.pricePerHour !== undefined
+              ? `₹${venues[2].availability.pricePerHour.toLocaleString('en-IN')} / Hour`
+              : (venues[2].pricing?.amount !== undefined
+                ? `₹${venues[2].pricing.amount.toLocaleString('en-IN')} / ${venues[2].pricing.unit || 'Day'}`
+                : '₹85,000 / Day'),
         }
       : defaultBottomVenue;
 

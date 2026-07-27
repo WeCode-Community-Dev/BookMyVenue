@@ -19,15 +19,16 @@ export default function HomePage() {
     console.error('Error fetching home page data:', error);
   }
 
-  const venues = data?.venues || [];
+  const popularVenues = data?.popularVenues || [];
+  const eliteVenues = data?.eliteVenues || [];
   const categories = data?.categories || [];
 
   return (
     <div className="w-full min-h-screen bg-background text-foreground flex flex-col gap-12 md:gap-16 pb-20 overflow-x-hidden transition-colors duration-300">
       <HeroSection />
-      <FeaturedSection venues={venues} loading={loading} />
+      <FeaturedSection venues={popularVenues.slice(0, 5)} loading={loading} />
       <CategoriesSection categories={categories} loading={loading} />
-      <EliteVenuesSection venues={venues} loading={loading} />
+      <EliteVenuesSection venues={eliteVenues} loading={loading} />
       <ExploreVenuesSection districts={data?.districts || []} loading={loading} />
       <CTASection />
     </div>
