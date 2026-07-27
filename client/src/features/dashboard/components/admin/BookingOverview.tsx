@@ -62,17 +62,16 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 
 interface BookingOverviewProps {
   data?: {
-    period: string;
-    bookings: number;
-    confirmed: number;
-    cancelled: number;
-  }[];
+    weekly: { period: string; bookings: number; confirmed: number; cancelled: number }[];
+    monthly: { period: string; bookings: number; confirmed: number; cancelled: number }[];
+    yearly: { period: string; bookings: number; confirmed: number; cancelled: number }[];
+  };
 }
 
-export default function BookingOverview({ data = [] }: BookingOverviewProps) {
+export default function BookingOverview({ data }: BookingOverviewProps) {
   const [filter, setFilter] = useState<'weekly' | 'monthly' | 'yearly'>('monthly');
 
-  const chartData = data;
+  const chartData = data?.[filter] || [];
 
   const totalBookings = chartData.reduce((sum, item) => sum + item.bookings, 0);
   const totalConfirmed = chartData.reduce((sum, item) => sum + item.confirmed, 0);

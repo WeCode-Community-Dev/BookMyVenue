@@ -1,4 +1,5 @@
-import { AlertTriangle, Clock, ShieldAlert, ArrowRight } from 'lucide-react';
+import { AlertTriangle, Clock, ShieldAlert, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface AlertItem {
   id: string;
@@ -15,6 +16,8 @@ interface AlertsPanelProps {
 }
 
 export default function AlertsPanel({ data = [] }: AlertsPanelProps) {
+  const navigate = useNavigate();
+
   const getVisuals = (severity?: string) => {
     switch (severity) {
       case 'critical':
@@ -38,6 +41,13 @@ export default function AlertsPanel({ data = [] }: AlertsPanelProps) {
           colorClass: 'text-purple-500 bg-purple-500/10 dark:bg-purple-500/20 border-purple-500/20',
           pulse: false,
         };
+      case 'info':
+        return {
+          icon: CheckCircle2,
+          badgeText: 'Optimal',
+          colorClass: 'text-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/20 border-emerald-500/20',
+          pulse: false,
+        };
       default:
         return {
           icon: AlertTriangle,
@@ -45,6 +55,16 @@ export default function AlertsPanel({ data = [] }: AlertsPanelProps) {
           colorClass: 'text-blue-500 bg-blue-500/10 dark:bg-blue-500/20 border-blue-500/20',
           pulse: false,
         };
+    }
+  };
+
+  const handleResolveClick = (alertId: string) => {
+    if (alertId.startsWith('owner-')) {
+      const id = alertId.replace('owner-', '');
+      navigate(`/admin/users/${id}`);
+    } else if (alertId.startsWith('venue-')) {
+      const id = alertId.replace('venue-', '');
+      navigate(`/admin/venues/${id}`);
     }
   };
 
@@ -109,10 +129,15 @@ export default function AlertsPanel({ data = [] }: AlertsPanelProps) {
                     <span className="text-[10px] text-zinc-400 dark:text-zinc-550 font-medium">
                       {alert.time}
                     </span>
-                    <button className="flex items-center gap-1.5 py-1.5 px-3 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs font-bold uppercase tracking-wider text-black dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-900 hover:border-[#e21a47]/30 transition-all duration-200 group/btn cursor-pointer">
-                      Resolve
-                      <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform duration-200" />
-                    </button>
+                    {alert.id !== 'default' && (
+                      <button
+                        onClick={() => handleResolveClick(alert.id)}
+                        className="flex items-center gap-1.5 py-1.5 px-3 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs font-bold uppercase tracking-wider text-black dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-900 hover:border-[#e21a47]/30 transition-all duration-200 group/btn cursor-pointer"
+                      >
+                        Resolve
+                        <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform duration-200" />
+                      </button>
+                    )}
                   </div>
                 </div>
               );

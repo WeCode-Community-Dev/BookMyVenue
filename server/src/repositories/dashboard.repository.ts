@@ -507,7 +507,112 @@ export async function getAdminPlatformLeaders() {
 }
 
 export async function getAdminAlerts() {
-  const pendingO = await Owner.find({ verificationStatus: 'pending' }).populate('userId').limit(2);
-  const pendingV = await Venue.find({ verificationStatus: 'pending', isDeleted: { $ne: true } }).limit(2);
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  const pendingO = await Owner.find({
+    verificationStatus: 'pending',
+    createdAt: { $lt: sevenDaysAgo }
+  }).populate('userId').limit(2);
+
+  const pendingV = await Venue.find({
+    verificationStatus: 'pending',
+    isDeleted: { $ne: true },
+    createdAt: { $lt: sevenDaysAgo }
+  }).limit(2);
+
   return { pendingO, pendingV };
+}
+
+export async function getAdminChartData() {
+  const now = new Date();
+
+  // Weekly range (current week: Mon - Sun)
+  const day = now.getDay();
+  const diffToMonday = now.getDate() - day + (day === 0 ? -6 : 1);
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(diffToMonday);
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  endOfWeek.setHours(23, 59, 59, 999);
+
+  // Monthly range (current month)
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+  // Yearly range (current year)
+  const startOfYear = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0);
+  const endOfYear = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+
+  const [
+    settlementsWeekly, bookingsWeekly, bookingsTrendWeekly,
+    settlementsMonthly, bookingsMonthly, bookingsTrendMonthly,
+    settlementsYearly, bookingsYearly, bookingsTrendYearly
+  ] = await Promise.all([
+    Settlement.aggregate([
+      { $match: { status: SettlementStatus.SETTLED, createdAt: { $gte: startOfWeek, $lte: endOfWeek } } },
+      { $group: { _id: { $isoDayOfWeek: '$createdAt' }, commission: { $sum: '$platformFee' } } }
+    ]),
+    Booking.aggregate([
+      { $match: { bookingStatus: BookingStatus.COMPLETED, createdAt: { $gte: startOfWeek, $lte: endOfWeek } } },
+      { $group: { _id: { $isoDayOfWeek: '$createdAt' }, revenue: { $sum: '$amountPaid' } } }
+    ]),
+    Booking.aggregate([
+      { $match: { createdAt: { $gte: startOfWeek, $lte: endOfWeek } } },
+      {
+        $group: {
+          _id: { $isoDayOfWeek: '$createdAt' },
+          bookings: { $sum: 1 },
+          confirmed: { $sum: { $cond: [{ $in: ['$bookingStatus', [BookingStatus.CONFIRMED, BookingStatus.COMPLETED]] }, 1, 0] } },
+          cancelled: { $sum: { $cond: [{ $eq: ['$bookingStatus', BookingStatus.CANCELLED] }, 1, 0] } }
+        }
+      }
+    ]),
+    Settlement.aggregate([
+      { $match: { status: SettlementStatus.SETTLED, createdAt: { $gte: startOfMonth, $lte: endOfMonth } } },
+      { $group: { _id: { $dayOfMonth: '$createdAt' }, commission: { $sum: '$platformFee' } } }
+    ]),
+    Booking.aggregate([
+      { $match: { bookingStatus: BookingStatus.COMPLETED, createdAt: { $gte: startOfMonth, $lte: endOfMonth } } },
+      { $group: { _id: { $dayOfMonth: '$createdAt' }, revenue: { $sum: '$amountPaid' } } }
+    ]),
+    Booking.aggregate([
+      { $match: { createdAt: { $gte: startOfMonth, $lte: endOfMonth } } },
+      {
+        $group: {
+          _id: { $dayOfMonth: '$createdAt' },
+          bookings: { $sum: 1 },
+          confirmed: { $sum: { $cond: [{ $in: ['$bookingStatus', [BookingStatus.CONFIRMED, BookingStatus.COMPLETED]] }, 1, 0] } },
+          cancelled: { $sum: { $cond: [{ $eq: ['$bookingStatus', BookingStatus.CANCELLED] }, 1, 0] } }
+        }
+      }
+    ]),
+    Settlement.aggregate([
+      { $match: { status: SettlementStatus.SETTLED, createdAt: { $gte: startOfYear, $lte: endOfYear } } },
+      { $group: { _id: { $month: '$createdAt' }, commission: { $sum: '$platformFee' } } }
+    ]),
+    Booking.aggregate([
+      { $match: { bookingStatus: BookingStatus.COMPLETED, createdAt: { $gte: startOfYear, $lte: endOfYear } } },
+      { $group: { _id: { $month: '$createdAt' }, revenue: { $sum: '$amountPaid' } } }
+    ]),
+    Booking.aggregate([
+      { $match: { createdAt: { $gte: startOfYear, $lte: endOfYear } } },
+      {
+        $group: {
+          _id: { $month: '$createdAt' },
+          bookings: { $sum: 1 },
+          confirmed: { $sum: { $cond: [{ $in: ['$bookingStatus', [BookingStatus.CONFIRMED, BookingStatus.COMPLETED]] }, 1, 0] } },
+          cancelled: { $sum: { $cond: [{ $eq: ['$bookingStatus', BookingStatus.CANCELLED] }, 1, 0] } }
+        }
+      }
+    ])
+  ]);
+
+  return {
+    weekly: { settlementsAgg: settlementsWeekly, bookingsAgg: bookingsWeekly, bookingsTrendAgg: bookingsTrendWeekly },
+    monthly: { settlementsAgg: settlementsMonthly, bookingsAgg: bookingsMonthly, bookingsTrendAgg: bookingsTrendMonthly },
+    yearly: { settlementsAgg: settlementsYearly, bookingsAgg: bookingsYearly, bookingsTrendAgg: bookingsTrendYearly }
+  };
 }
