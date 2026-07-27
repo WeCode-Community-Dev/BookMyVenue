@@ -3,7 +3,7 @@ import {
   getOwnerVenues,
   getOwnerSettledRevenue,
   getOwnerCompletedBookingsCount,
-  getOwnerMonthlyChartData,
+  getOwnerChartData,
   getOwnerCategoryPerformance,
   getOwnerUpcomingBookings,
   getOwnerTopVenues,
@@ -44,7 +44,11 @@ export async function ownerDashboardService(ownerId: string): Promise<OwnerDashb
         { title: 'Active Venues', value: approvedVenues },
         { title: 'Avg Rating', value: '0.0' },
       ],
-      revenueChartData: [],
+      revenueChartData: {
+        weekly: [],
+        monthly: [],
+        yearly: [],
+      },
       revenueDistributionData: [],
       upcomingBookings: [],
       venueHealthData: {
@@ -93,23 +97,52 @@ export async function ownerDashboardService(ownerId: string): Promise<OwnerDashb
     { title: 'Avg Rating', value: '0.0' },
   ];
 
-  // 3. Monthly Revenue & Bookings Chart Data for Current Year
-  const currentYear = new Date().getFullYear();
-  const startOfYear = new Date(currentYear, 0, 1);
-  const endOfYear = new Date(currentYear, 11, 31, 23, 59, 59);
+  // 3. Weekly, Monthly, & Yearly Revenue & Bookings Chart Data
+  const chartDataRaw = await getOwnerChartData(ownerId, venueIds);
 
-  const { settlementsAgg, bookingsAgg } = await getOwnerMonthlyChartData(ownerId, venueIds, startOfYear, endOfYear);
-
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const revenueChartData = months.map((month, index) => {
-    const revItem = settlementsAgg.find(item => item._id === index + 1);
-    const bookItem = bookingsAgg.find(item => item._id === index + 1);
+  // Weekly mapping (Mon - Sun)
+  const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const weeklyChartData = weekDays.map((dayName, index) => {
+    const revItem = chartDataRaw.weekly.settlementsAgg.find((item: any) => item._id === index + 1);
+    const bookItem = chartDataRaw.weekly.bookingsAgg.find((item: any) => item._id === index + 1);
     return {
-      period: month,
+      period: dayName,
       revenue: revItem?.revenue || 0,
-      bookings: bookItem?.bookings || 0
+      bookings: bookItem?.bookings || 0,
     };
   });
+
+  // Monthly mapping (1 - daysInMonth)
+  const now = new Date();
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const monthlyChartData = Array.from({ length: daysInMonth }, (_, index) => {
+    const dayNum = index + 1;
+    const revItem = chartDataRaw.monthly.settlementsAgg.find((item: any) => item._id === dayNum);
+    const bookItem = chartDataRaw.monthly.bookingsAgg.find((item: any) => item._id === dayNum);
+    return {
+      period: dayNum.toString(),
+      revenue: revItem?.revenue || 0,
+      bookings: bookItem?.bookings || 0,
+    };
+  });
+
+  // Yearly mapping (Jan - Dec)
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const yearlyChartData = months.map((monthName, index) => {
+    const revItem = chartDataRaw.yearly.settlementsAgg.find((item: any) => item._id === index + 1);
+    const bookItem = chartDataRaw.yearly.bookingsAgg.find((item: any) => item._id === index + 1);
+    return {
+      period: monthName,
+      revenue: revItem?.revenue || 0,
+      bookings: bookItem?.bookings || 0,
+    };
+  });
+
+  const revenueChartData = {
+    weekly: weeklyChartData,
+    monthly: monthlyChartData,
+    yearly: yearlyChartData,
+  };
 
   // 4. Category Performance (Pie Chart)
   const categoryAgg = await getOwnerCategoryPerformance(venueIds);

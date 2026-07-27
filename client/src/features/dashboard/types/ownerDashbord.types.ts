@@ -56,6 +56,14 @@ export type RevenueChartProps = {
   data: RevenueChartItem[];
 };
 
+export type RevenueOverviewProps = {
+  data: {
+    weekly: RevenueChartItem[];
+    monthly: RevenueChartItem[];
+    yearly: RevenueChartItem[];
+  } | never[] | RevenueChartItem[];
+};
+
 export type RevenueDistributionProps = {
   data: RevenueDistributionItem[];
 };

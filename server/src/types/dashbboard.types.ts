@@ -2,6 +2,12 @@ export interface ApiResponse<T> {
   data: T;
 }
 
+export interface RevenueChartPoint {
+  period: string;
+  revenue: number;
+  bookings: number;
+}
+
 export interface RevenueChartItem {
   period: string;
   revenue: number;
@@ -44,7 +50,11 @@ export interface VenueHealthItem {
 }
 
 export interface OwnerDashboard {
-  revenueChartData: RevenueChartItem[];
+  revenueChartData: {
+    weekly: RevenueChartPoint[];
+    monthly: RevenueChartPoint[];
+    yearly: RevenueChartPoint[];
+  };
   revenueDistributionData: RevenueDistributionItem[];
   statCardData: StatCardItem[];
   upcomingBookings: UpcomingBooking[];
