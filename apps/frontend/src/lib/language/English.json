@@ -43,7 +43,11 @@
         "APPROVE": "Approve",
         "EDIT": "Edit",
         "VIEW_BOOKINGS": "View Bookings",
-        "REFRESH": "Refresh"
+        "REFRESH": "Refresh",
+        "SELECT_PACKAGE_FIRST": "Select a Package First",
+        "SELECTED": "Selected",
+        "SELECT_PACKAGE": "Select Package",
+        "UNAVAILABLE": "Unavailable"
     },
     "LABEL": {
         "WELCOME_BACK": "Welcome Back",

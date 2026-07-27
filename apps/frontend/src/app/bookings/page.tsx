@@ -3,8 +3,9 @@
 
 import { Suspense, useEffect } from "react";
 import { selectAuthLoading, selectIsAuthenticated } from "@/features/auth/AuthSlice";
+
 import { AppText } from "@/lib/language/LanguageHelper";
-import BookingsList from "@/features/bookings/BookingsList";
+import BookingsList from "@/features/booking/components/BookingsList";
 import { SCREENS } from "@/lib/Constants";
 import { bookingPageStyle } from "@/features/booking/styles/BookingPageStyle";
 import { useRouter } from "next/navigation";
