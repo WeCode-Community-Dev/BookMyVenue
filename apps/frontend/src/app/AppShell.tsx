@@ -51,7 +51,7 @@ export default function AppShell({
             <Header />
             <div className="flex">
                 <SidebarWrapper />
-                <main className="flex-1">
+                <main className="flex-1 min-w-0">
                     {isRedirecting ? null : children}
                 </main>
             </div>
