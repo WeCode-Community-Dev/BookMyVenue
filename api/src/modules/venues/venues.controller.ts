@@ -159,7 +159,7 @@ export class VenuesController {
 
   @Get('dashboard/stats')
   getDashboardStats(@Headers('authorization') authorization: string) {
-    return this.venuesService.getDashboardStats(authorization);
+    return this.venuesService.getOwnerStats(authorization);
   }
 
 }

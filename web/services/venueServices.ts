@@ -571,13 +571,13 @@ export async function removeSpaceBlockedPeriod(
     }
 }
 
-export type DashboardStatsResponse = {
+export type OwnerStatsResponse = {
     totalVenues: number;
     totalSpaces: number;
     totalBookings: number;
 }
 
-export async function getDashboardStats(): Promise<DashboardStatsResponse> {
+export async function getOwnerStats(): Promise<OwnerStatsResponse> {
     try {
         const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {

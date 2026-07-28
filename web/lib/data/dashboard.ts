@@ -1,4 +1,4 @@
-import { DashboardStatsResponse } from "@/services/venueServices";
+import { OwnerStatsResponse } from "@/services/venueServices";
 
 export type StatChangeType = "positive" | "negative" | "neutral";
 
@@ -39,7 +39,7 @@ export const settingsNavItem = {
 };
 
 type DashboardStat = {
-  id: keyof DashboardStatsResponse;
+  id: keyof OwnerStatsResponse;
   title: string;
   change: string;
   changeType: StatChangeType;

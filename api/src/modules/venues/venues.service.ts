@@ -1063,7 +1063,7 @@ export class VenuesService {
     }
   }
 
-  async getDashboardStats( authorization: string): Promise<{
+  async getOwnerStats( authorization: string): Promise<{
     totalVenues: number;
     totalSpaces: number;
     totalBookings: number;
