@@ -1,3 +1,5 @@
+import { DashboardStatsResponse } from "@/services/venueServices";
+
 export type StatChangeType = "positive" | "negative" | "neutral";
 
 export type NavIcon =
@@ -36,42 +38,45 @@ export const settingsNavItem = {
   icon: "settings" as NavIcon,
 };
 
-export const statCards = [
+type DashboardStat = {
+  id: keyof DashboardStatsResponse;
+  title: string;
+  change: string;
+  changeType: StatChangeType;
+  icon: string;
+}
+
+export const statCards: DashboardStat[] = [
   {
+    id: "totalVenues",
     title: "Total Venues",
-    value: "4",
     change: "+0 this month",
     changeType: "neutral" as StatChangeType,
     icon: "building-2" as const,
   },
   {
+    id: "totalSpaces",
     title: "Total Spaces",
-    value: "12",
     change: "+2 this month",
     changeType: "positive" as StatChangeType,
     icon: "door-open" as const,
   },
   {
-    title: "Active Bookings",
-    value: "28",
+    id: "totalBookings",
+    title: "Total Bookings",
     change: "-4% from peak",
     changeType: "negative" as StatChangeType,
     icon: "ticket" as const,
   },
-  {
-    title: "Monthly Revenue",
-    value: "$12,450",
-    change: "+12.5% increase",
-    changeType: "positive" as StatChangeType,
-    icon: "wallet" as const,
-  },
+  // {
+    //   id: "monthlyRevenue",
+  //   title: "Monthly Revenue",
+  //   change: "+12.5% increase",
+  //   changeType: "positive" as StatChangeType,
+  //   icon: "wallet" as const,
+  // },
 ];
 
-export const quickActions = [
-  { label: "Create Venue", href: "#", icon: "plus-circle" as const },
-  { label: "Add Space", href: "#", icon: "layout-grid" as const },
-  { label: "Block Availability", href: "#", icon: "ban" as const },
-];
 
 export const recentActivity = [
   {

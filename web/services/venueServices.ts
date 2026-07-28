@@ -239,7 +239,7 @@ export async function getVenues(
     search?:string
 ): Promise<GetVenuesResult> {
     try {
-        const response = await apiFetch(`/venues?page=${page}&limit=${limit}&amenityIds=${amenityIds}&categoryId=${categoryId}&search=${search}`, {
+        const response = await apiFetch(`/venues?page=${page}&limit=${limit}&amenityIds=${amenityIds}&categoryId=${categoryId}&search=${search ?? ''}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -562,6 +562,32 @@ export async function removeSpaceBlockedPeriod(
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
+            },
+        });
+        return response;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export type DashboardStatsResponse = {
+    totalVenues: number;
+    totalSpaces: number;
+    totalBookings: number;
+}
+
+export async function getDashboardStats(): Promise<DashboardStatsResponse> {
+    try {
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+            throw new Error('No access token found');
+        }
+        const response = await apiFetch('/dashboard/stats', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: accessToken,
             },
         });
         return response;

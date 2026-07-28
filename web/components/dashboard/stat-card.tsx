@@ -22,7 +22,7 @@ const statIcons: Record<string, LucideIcon> = {
 
 type StatCardProps = {
   title: string;
-  value: string;
+  value: number;
   change: string;
   changeType: StatChangeType;
   icon: keyof typeof statIcons;
@@ -57,7 +57,7 @@ export function StatCard({
             {value}
           </p>
           <p className={cn("text-xs font-medium", changeStyles[changeType])}>
-            {change}
+            {/* {change} */}
           </p>
         </div>
       </CardContent>

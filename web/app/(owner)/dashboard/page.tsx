@@ -1,7 +1,6 @@
 import { DashboardPageHeader } from "@/components/dashboard/dashboard-page-header";
 import { DashboardStatCards } from "@/components/dashboard/dashboard-stat-cards";
 import { MapWidget } from "@/components/dashboard/map-widget";
-import { QuickActions } from "@/components/dashboard/quick-actions";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
 import { UpcomingBookingsTable } from "@/components/dashboard/upcoming-bookings-table";
 
@@ -11,13 +10,10 @@ export default function DashboardPage() {
       <DashboardPageHeader />
       <DashboardStatCards />
       <UpcomingBookingsTable />
-      <div className="grid gap-6 lg:grid-cols-2">
-        <QuickActions />
-        <RecentActivity />
-      </div>
-      <div className="grid gap-6 lg:grid-cols-2">
+      {/* <div className="grid gap-6 lg:grid-cols-2">
         <MapWidget />
-      </div>
+        <RecentActivity />
+      </div> */}
     </div>
   );
 }

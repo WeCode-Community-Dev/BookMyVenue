@@ -157,4 +157,9 @@ export class VenuesController {
     return this.venuesService.removeSpaceBlockedPeriod(spaceId, id);
   }
 
+  @Get('dashboard/stats')
+  getDashboardStats(@Headers('authorization') authorization: string) {
+    return this.venuesService.getDashboardStats(authorization);
+  }
+
 }

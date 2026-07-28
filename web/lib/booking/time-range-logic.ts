@@ -41,11 +41,10 @@ export type DaySchedule = {
 
 export const SLOT_STEP_MINUTES = 30;
 
-const MOCK_BLOCKED: TimeInterval = { start: "11:00", end: "13:00" };
 
 /** Convert minutes since midnight to HH:mm. */
 export function formatTime(minutes: number): string {
-  const hours = Math.floor(minutes / 60);
+  const hours = Math.floor(minutes / 60); 
   const mins = minutes % 60;
   return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
 }
@@ -246,16 +245,8 @@ export function resolveDaySchedule(
   const window = { open: openMinutes, close: closeMinutes };
 
   let blockedMinutes: MinuteInterval[];
-
-  if (blockedPeriods.length === 0) {
-    // Demo fallback: lunch break block
-    blockedMinutes = [
-      {
-        start: parseTimeToMinutes(MOCK_BLOCKED.start),
-        end: parseTimeToMinutes(MOCK_BLOCKED.end),
-      },
-    ];
-  } else if (useMockHours) {
+  
+  if (useMockHours) {
     blockedMinutes = getBlockedIntervalsInWindow(
       selectedDate,
       blockedPeriods,

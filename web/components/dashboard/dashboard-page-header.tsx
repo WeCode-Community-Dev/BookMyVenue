@@ -1,7 +1,4 @@
 "use client";
-import { Download, Plus } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
 import { getDashboardUser } from "@/lib/data/dashboard";
 
 export function DashboardPageHeader() {
@@ -16,16 +13,6 @@ export function DashboardPageHeader() {
           Welcome back, {dashboardUser.name.split(" ")[0]}. Here&apos;s what&apos;s
           happening today.
         </p>
-      </div>
-      <div className="flex flex-wrap items-center gap-3">
-        <Button variant="outline" className="h-10 gap-2">
-          <Download className="size-4" />
-          Export Reports
-        </Button>
-        <Button className="h-10 gap-2">
-          <Plus className="size-4" />
-          New Booking
-        </Button>
       </div>
     </div>
   );

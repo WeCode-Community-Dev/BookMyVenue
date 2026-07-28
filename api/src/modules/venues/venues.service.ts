@@ -1063,7 +1063,60 @@ export class VenuesService {
     }
   }
 
+  async getDashboardStats( authorization: string): Promise<{
+    totalVenues: number;
+    totalSpaces: number;
+    totalBookings: number;
+  }> {
+    try {
+      const payload = verifyAccessToken(this.jwtService, authorization);
 
+      if (payload.role !== UserRole.VENUE_OWNER) {
+        throw new UnauthorizedException(
+          'You are not authorized to access this resource',
+        );
+      }
+      
+      const ownerId = payload.sub;
+      
+      const venueIds = (
+        await this.prismaService.venue.findMany({
+          where: { ownerId },
+          select: { id: true },
+        })
+      ).map((v) => v.id);
+      
+      const [totalVenues, totalSpaces, totalBookings] = await Promise.all([
+        this.prismaService.venue.count({
+          where: { ownerId },
+        }),
+        this.prismaService.space.count({
+          where: {
+            venueId: { in: venueIds },
+          },
+        }),
+        this.prismaService.booking.count({
+          where: {
+            venueId: { in: venueIds },
+          },
+        }),
+      ]);
+      
+      return {
+        totalVenues,
+        totalSpaces,
+        totalBookings,
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      console.error(error);
+      throw error;
+    }
+  }
+  
+  
 
 
 
