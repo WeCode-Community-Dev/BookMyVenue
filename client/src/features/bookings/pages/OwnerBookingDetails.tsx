@@ -245,7 +245,9 @@ export default function OwnerBookingDetails() {
                 <h3 className="font-extrabold text-lg text-foreground hover:text-primary transition-colors">
                   {booking.venue?.name}
                 </h3>
-                <p className="text-sm text-foreground/60">{booking.venue?.location}</p>
+                <p className="text-sm text-foreground/60">
+                  {booking.venue?.address?.city}, {booking.venue?.address?.state}
+                </p>
                 <div className="pt-1.5">
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary uppercase tracking-wider bg-primary/10 px-2 py-0.5 rounded-full">
                     Owned Venue
