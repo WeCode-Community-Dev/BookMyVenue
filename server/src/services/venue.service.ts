@@ -1,4 +1,5 @@
 import * as venueRepository from '@/repositories/venue.repository';
+import * as availabilityRepository from '@/repositories/availability.repository';
 import { CreateVenueDTO } from '@/dto/venue/create-venue.dto';
 import { UpdateVenueDTO } from '@/dto/venue/update-venue.dto';
 import { GetOwnerVenuesQueryDTO } from '@/dto/venue/get-owner-venues.dto';
@@ -12,7 +13,15 @@ import { MESSAGES } from '@/constants/messages';
 type Return = Promise<VenueDocument>;
 
 export const createVenue = async (id: string, data: CreateVenueDTO): Return => {
-  return await venueRepository.createVenue(id, data);
+  const { availability, ...venueData } = data as any;
+  const venue = await venueRepository.createVenue(id, venueData as CreateVenueDTO);
+
+  if (availability) {
+    await availabilityRepository.createAvailability(venue._id.toString(), availability);
+    venue.isAvailabilityConfigured = true;
+  }
+
+  return venue;
 };
 
 export const getOwnerVenues = async (ownerId: string, query: GetOwnerVenuesQueryDTO) => {
@@ -56,10 +65,21 @@ export const updateVenue = async (
     (data as any).verifiedAt = null;
   }
 
-  const updatedVenue = await venueRepository.updateVenue(venueId, data);
+  const { availability, ...venueData } = data as any;
+  const updatedVenue = await venueRepository.updateVenue(venueId, venueData);
 
   if (!updatedVenue) {
     throw new AppError(MESSAGES.VENUE_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+  }
+
+  if (availability) {
+    const existing = await availabilityRepository.getAvailabilityByVenueId(venueId);
+    if (existing) {
+      await availabilityRepository.updateAvailability(venueId, availability);
+    } else {
+      await availabilityRepository.createAvailability(venueId, availability);
+      updatedVenue.isAvailabilityConfigured = true;
+    }
   }
 
   return updatedVenue;

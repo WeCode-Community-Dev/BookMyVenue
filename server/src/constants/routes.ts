@@ -9,4 +9,4 @@ export const authRoutes = {
   forgotPassword: '/forgot-password',
   verifyForgotPasswordOtp: '/verify-forgot-password-otp',
   resetPassword: '/reset-password',
-};
+} as const;

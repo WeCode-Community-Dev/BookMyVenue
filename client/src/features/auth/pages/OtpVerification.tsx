@@ -213,7 +213,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({ mode = 'signup' }) =>
       <button
         onClick={handleVerify}
         disabled={loading || !allFilled}
-        className="w-full bg-primary-600 hover:bg-primary-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-sm py-2.5 rounded-xl shadow-lg shadow-primary-600/20 flex items-center justify-center gap-2 transition-all"
+        className="w-full bg-primary hover:bg-primary/80 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-sm py-2.5 rounded-xl shadow-lg shadow-primary-600/20 flex items-center justify-center gap-2 transition-all"
       >
         {loading ? (
           <>

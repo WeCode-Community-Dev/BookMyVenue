@@ -33,13 +33,6 @@ export const createAvailability = async (
     throw new AppError('Unauthorized access to this venue', HTTP_STATUS.FORBIDDEN);
   }
 
-  if (venue.verificationStatus !== 'approved') {
-    throw new AppError(
-      'Venue must be approved before configuring availability',
-      HTTP_STATUS.BAD_REQUEST
-    );
-  }
-
   if (venue.isDeleted) {
     throw new AppError(
       'Cannot configure availability for a deleted venue',
@@ -71,13 +64,6 @@ export const updateAvailability = async (
 
   if (venue.ownerId.toString() !== ownerId) {
     throw new AppError('Unauthorized access to this venue', HTTP_STATUS.FORBIDDEN);
-  }
-
-  if (venue.verificationStatus !== 'approved') {
-    throw new AppError(
-      'Venue must be approved before configuring availability',
-      HTTP_STATUS.BAD_REQUEST
-    );
   }
 
   if (venue.isDeleted) {

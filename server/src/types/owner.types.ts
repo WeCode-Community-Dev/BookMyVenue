@@ -2,7 +2,6 @@ import { HydratedDocument, Types } from 'mongoose';
 
 export interface IOwner {
   userId: Types.ObjectId;
-  profileImage: string | null;
   idProof: string;
   address: {
     street: string;

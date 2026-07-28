@@ -261,7 +261,7 @@ const OwnerVenueDetails = () => {
             <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">
               Description
             </h3>
-            <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+            <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap wrap-break-word">
               {venue.description || 'No description provided.'}
             </p>
           </div>

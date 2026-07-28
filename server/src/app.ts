@@ -13,27 +13,21 @@ import rateLimit from 'express-rate-limit';
 const app: Application = express();
 
 // Security headers
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+  })
+);
 
-// CORS — allowlist validation (CVE-BMV-007: prevent wildcard default)
-const allowedOrigins = env.CORS_ORIGIN
-  .split(',')
-  .map((o) => o.trim())
-  .filter(Boolean);
-
+//Cors middleware
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // Allow server-to-server calls (no Origin header) only in development
-      if (!origin && env.NODE_ENV === 'development') return callback(null, true);
-      if (origin && allowedOrigins.includes(origin)) return callback(null, true);
-      callback(new Error(`Origin '${origin}' not allowed by CORS policy`));
-    },
-    methods: ['POST', 'GET', 'PATCH', 'DELETE', 'PUT', 'OPTIONS'],
+    origin: env.CLIENT_URL,
     credentials: true,
   })
 );
 
+//
 app.use(
   pinoHttp({
     logger,
@@ -57,7 +51,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Cookie parser (required for reading req.cookies in auth routes)
+// Cookie parser
 app.use(cookieParser());
 
 // Health Check
@@ -69,9 +63,7 @@ app.get('/health', (req: Request, res: Response, next: NextFunction) => {
   });
 });
 
-// ── Rate Limiters (CVE-BMV-004) ─────────────────────────────────────────────
-// Applied per-route below; keeping limits conservative to prevent brute-force
-// and OTP oracle attacks
+
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 15,

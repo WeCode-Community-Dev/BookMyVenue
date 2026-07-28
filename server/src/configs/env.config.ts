@@ -49,6 +49,8 @@ const envSchema = z.object({
   // Razorpay
   RAZORPAY_KEY_ID: z.string().min(1),
   RAZORPAY_KEY_SECRET: z.string().min(1),
+
+  CLIENT_URL: z.string()
 });
 
 const env = envSchema.parse(process.env);

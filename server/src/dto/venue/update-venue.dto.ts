@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { availabilitySchemaDTO } from './create-venue.dto';
 
 export const updateVenueSchema = z.object({
   name: z.string().min(2).optional(),
@@ -32,7 +33,10 @@ export const updateVenueSchema = z.object({
   images: z.array(z.string()).optional(),
   existingImages: z.string().optional(),
   amenities: z.array(z.string()).optional(),
+
+  availability: availabilitySchemaDTO.optional(),
 });
 
 // Automatically generate the TypeScript type!
 export type UpdateVenueDTO = z.infer<typeof updateVenueSchema>;
+

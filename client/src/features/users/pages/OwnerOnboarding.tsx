@@ -24,6 +24,7 @@ export default function OwnerOnboarding() {
   const handleLogout = useLogout();
   const user = useAppStore((state) => state.user);
   const setOwner = useAppStore((state) => state.setOwner);
+  const setAuth = useAppStore((state) => state.setAuth);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -42,14 +43,14 @@ export default function OwnerOnboarding() {
   const [ifscCode, setIfscCode] = useState('');
 
   // Files State
-  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
-  const [profileImagePreview, setProfileImagePreview] = useState('');
   const [idProofFile, setIdProofFile] = useState<File | null>(null);
   const [idProofName, setIdProofName] = useState('');
   const [idProofPreview, setIdProofPreview] = useState('');
 
+  // Validation Errors State
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   // Input refs
-  const profileImageInputRef = useRef<HTMLInputElement>(null);
   const idProofInputRef = useRef<HTMLInputElement>(null);
 
   const fetchStatus = async (showToast = false) => {
@@ -75,7 +76,6 @@ export default function OwnerOnboarding() {
           setAccountHolderName(res.data.owner.bankDetails?.accountHolderName || '');
           setAccountNumber(res.data.owner.bankDetails?.accountNumber || '');
           setIfscCode(res.data.owner.bankDetails?.ifscCode || '');
-          setProfileImagePreview(res.data.owner.profileImage || '');
 
           if (res.data.owner.idProof) {
             const parts = res.data.owner.idProof.split('/');
@@ -101,17 +101,47 @@ export default function OwnerOnboarding() {
     fetchStatus();
   }, []);
 
-  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setProfileImageFile(file);
-      setProfileImagePreview(URL.createObjectURL(file));
+  const validateFile = (file: File, allowedTypes: string[], maxSizeMB: number): string | null => {
+    const isTypeValid = allowedTypes.some((type) => {
+      if (type.startsWith('.')) {
+        return file.name.toLowerCase().endsWith(type);
+      }
+      return file.type.toLowerCase().startsWith(type.replace('*', ''));
+    });
+
+    if (!isTypeValid) {
+      const readableFormats = allowedTypes
+        .map((t) => t.replace('image/', '').replace('application/', '').replace('.', '').toUpperCase())
+        .join(', ');
+      return `Invalid file type. Allowed formats: ${readableFormats}.`;
     }
+
+    if (file.size > maxSizeMB * 1024 * 1024) {
+      return `File size exceeds the maximum limit of ${maxSizeMB}MB.`;
+    }
+
+    return null;
   };
 
   const handleIdProofChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const error = validateFile(
+        file,
+        ['image/jpeg', 'image/png', 'image/webp', 'application/pdf', '.jpg', '.jpeg', '.png', '.webp', '.pdf'],
+        5
+      );
+      if (error) {
+        setErrors((prev) => ({ ...prev, idProof: error }));
+        toast.error(error);
+        if (idProofInputRef.current) idProofInputRef.current.value = '';
+        return;
+      }
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next.idProof;
+        return next;
+      });
       setIdProofFile(file);
       setIdProofName(file.name);
       if (file.type.startsWith('image/')) {
@@ -122,29 +152,106 @@ export default function OwnerOnboarding() {
     }
   };
 
-  const validateStep = (currentStep: number) => {
-    if (currentStep === 1) {
-      // Must upload ID proof if not already uploaded
+  const handleFieldChange = (field: string, setter: (val: string) => void, value: string) => {
+    setter(value);
+    if (errors[field]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
+  const validateStep = (targetStep: number): boolean => {
+    const newErrors: Record<string, string> = { ...errors };
+
+    if (targetStep === 1) {
+      delete newErrors.idProof;
+
       if (!idProofFile && !idProofName) {
-        toast.error('Please upload an ID Proof document (PDF, JPG, or PNG).');
-        return false;
+        newErrors.idProof = 'Please upload an ID Proof document (PDF, JPG, PNG, or WEBP).';
+      } else if (idProofFile) {
+        const fileErr = validateFile(
+          idProofFile,
+          ['image/jpeg', 'image/png', 'image/webp', 'application/pdf', '.jpg', '.jpeg', '.png', '.webp', '.pdf'],
+          5
+        );
+        if (fileErr) newErrors.idProof = fileErr;
       }
-      return true;
     }
-    if (currentStep === 2) {
-      if (!street.trim() || !city.trim() || !stateName.trim() || !pincode.trim()) {
-        toast.error('Please fill out all address fields.');
-        return false;
+
+    if (targetStep === 2) {
+      delete newErrors.street;
+      delete newErrors.city;
+      delete newErrors.stateName;
+      delete newErrors.pincode;
+
+      if (!street.trim()) {
+        newErrors.street = 'Street address is required.';
+      } else if (street.trim().length < 3) {
+        newErrors.street = 'Street address must be at least 3 characters long.';
       }
-      return true;
-    }
-    if (currentStep === 3) {
-      if (!accountHolderName.trim() || !accountNumber.trim() || !ifscCode.trim()) {
-        toast.error('Please fill out all bank account details.');
-        return false;
+
+      if (!city.trim()) {
+        newErrors.city = 'City is required.';
+      } else if (!/^[a-zA-Z\s.-]{2,50}$/.test(city.trim())) {
+        newErrors.city = 'City must contain valid letters (min 2 characters).';
       }
-      return true;
+
+      if (!stateName.trim()) {
+        newErrors.stateName = 'State is required.';
+      } else if (!/^[a-zA-Z\s.-]{2,50}$/.test(stateName.trim())) {
+        newErrors.stateName = 'State must contain valid letters (min 2 characters).';
+      }
+
+      if (!pincode.trim()) {
+        newErrors.pincode = 'Pincode is required.';
+      } else if (!/^\d{5,6}$/.test(pincode.trim())) {
+        newErrors.pincode = 'Pincode must be a valid 5 or 6 digit postal code.';
+      }
     }
+
+    if (targetStep === 3) {
+      delete newErrors.accountHolderName;
+      delete newErrors.accountNumber;
+      delete newErrors.ifscCode;
+
+      if (!accountHolderName.trim()) {
+        newErrors.accountHolderName = 'Account holder name is required.';
+      } else if (accountHolderName.trim().length < 3) {
+        newErrors.accountHolderName = 'Account holder name must be at least 3 characters long.';
+      } else if (!/^[a-zA-Z\s'.]{3,50}$/.test(accountHolderName.trim())) {
+        newErrors.accountHolderName = 'Account holder name must contain only letters and spaces.';
+      }
+
+      if (!accountNumber.trim()) {
+        newErrors.accountNumber = 'Account number is required.';
+      } else if (!/^\d{9,18}$/.test(accountNumber.trim())) {
+        newErrors.accountNumber = 'Account number must be between 9 and 18 digits.';
+      }
+
+      if (!ifscCode.trim()) {
+        newErrors.ifscCode = 'IFSC / Routing code is required.';
+      } else if (!/^[A-Za-z]{4}0[A-Za-z0-9]{6}$/.test(ifscCode.trim())) {
+        newErrors.ifscCode = 'IFSC code must be valid (e.g., SBIN0001234 - 4 letters, 0, 6 digits/letters).';
+      }
+    }
+
+    setErrors(newErrors);
+
+    const stepFields: Record<number, string[]> = {
+      1: ['idProof'],
+      2: ['street', 'city', 'stateName', 'pincode'],
+      3: ['accountHolderName', 'accountNumber', 'ifscCode'],
+    };
+
+    const firstStepError = stepFields[targetStep]?.map((f) => newErrors[f]).find(Boolean);
+    if (firstStepError) {
+      toast.error(firstStepError);
+      return false;
+    }
+
     return true;
   };
 
@@ -160,7 +267,25 @@ export default function OwnerOnboarding() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateStep(step)) return;
+
+    if (step < 3) {
+      handleNext();
+      return;
+    }
+
+    if (!validateStep(3)) {
+      return;
+    }
+
+    if (!validateStep(1)) {
+      setStep(1);
+      return;
+    }
+
+    if (!validateStep(2)) {
+      setStep(2);
+      return;
+    }
 
     setSaving(true);
     try {
@@ -173,9 +298,6 @@ export default function OwnerOnboarding() {
       formData.append('accountNumber', accountNumber);
       formData.append('ifscCode', ifscCode);
 
-      if (profileImageFile) {
-        formData.append('profileImage', profileImageFile);
-      }
       if (idProofFile) {
         formData.append('idProof', idProofFile);
       }
@@ -185,9 +307,12 @@ export default function OwnerOnboarding() {
         toast.success('Onboarding details submitted successfully!');
         setOwnerData(res.data.owner || null);
         setOwner(res.data.owner || null);
+        if (res.data.user) {
+          setAuth(res.data.user);
+        }
         // Reset file uploads
-        setProfileImageFile(null);
         setIdProofFile(null);
+        setErrors({});
         // Shift step or reload status which updates view to pending
         await fetchStatus();
       }
@@ -362,60 +487,24 @@ export default function OwnerOnboarding() {
                 <div className="space-y-6 animate-in fade-in duration-200">
                   <div>
                     <h3 className="text-lg font-bold text-foreground">
-                      Upload Verification Documents
+                      Upload Verification Document
                     </h3>
                     <p className="text-xs sm:text-sm text-foreground/50 mt-1">
-                      Please upload an ID proof and optional business logo.
+                      Please upload a valid government-issued ID proof document.
                     </p>
                   </div>
 
-                  <div className="grid gap-8 grid-cols-1 md:grid-cols-2 pt-2">
-                    {/* Profile Image (Business Logo or Photo) */}
-                    <div className="space-y-3 p-6 rounded-2xl border border-border bg-muted/10 flex flex-col justify-between">
-                      <label className="text-sm font-bold text-foreground/80">
-                        Owner Profile Image / Logo
-                      </label>
-                      <div className="flex items-center gap-5 mt-2">
-                        <div className="w-20 h-20 rounded-xl border border-border overflow-hidden bg-muted/20 flex items-center justify-center flex-shrink-0 shadow-sm">
-                          {profileImagePreview ? (
-                            <img
-                              src={profileImagePreview}
-                              alt="Owner Profile"
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <Building className="w-8 h-8 text-foreground/30" />
-                          )}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => profileImageInputRef.current?.click()}
-                          className="px-4 py-2.5 border border-border bg-background hover:bg-muted/30 text-xs sm:text-sm font-semibold rounded-xl text-foreground cursor-pointer flex items-center gap-2 transition"
-                        >
-                          <Camera size={14} />
-                          Choose Photo
-                        </button>
-                        <input
-                          type="file"
-                          ref={profileImageInputRef}
-                          onChange={handleProfileImageChange}
-                          accept="image/*"
-                          className="hidden"
-                        />
-                      </div>
-                      <p className="text-[10.5px] text-foreground/40 mt-3">
-                        Used as your public profile photo or corporate logo.
-                      </p>
-                    </div>
-
+                  <div className="pt-2">
                     {/* ID Proof upload */}
-                    <div className="space-y-3 p-6 rounded-2xl border border-border bg-muted/10 flex flex-col justify-between">
+                    <div className={`space-y-4 p-8 rounded-2xl border bg-muted/10 flex flex-col justify-between transition-all ${
+                      errors.idProof ? 'border-error ring-1 ring-error/30' : 'border-border'
+                    }`}>
                       <label className="text-sm font-bold text-foreground/80">
                         ID Proof Document *
                       </label>
-                      <div className="flex flex-col gap-4 mt-2">
+                      <div className="flex flex-col gap-4">
                         {idProofPreview ? (
-                          <div className="w-full h-32 rounded-xl border border-border overflow-hidden bg-background flex items-center justify-center shadow-xs">
+                          <div className="w-full h-40 rounded-xl border border-border overflow-hidden bg-background flex items-center justify-center shadow-xs">
                             <img
                               src={idProofPreview}
                               alt="ID Proof Preview"
@@ -423,8 +512,8 @@ export default function OwnerOnboarding() {
                             />
                           </div>
                         ) : idProofName ? (
-                          <div className="w-full h-32 rounded-xl border border-border bg-background flex flex-col items-center justify-center gap-2 shadow-xs">
-                            <FileText className="w-10 h-10 text-primary animate-pulse" />
+                          <div className="w-full h-40 rounded-xl border border-border bg-background flex flex-col items-center justify-center gap-2 shadow-xs">
+                            <FileText className="w-12 h-12 text-primary animate-pulse" />
                             <span className="text-xs font-semibold text-foreground/70 truncate px-4 max-w-xs">
                               {idProofName}
                             </span>
@@ -444,9 +533,9 @@ export default function OwnerOnboarding() {
                           <button
                             type="button"
                             onClick={() => idProofInputRef.current?.click()}
-                            className="px-4 py-2.5 bg-primary/10 text-primary hover:bg-primary/20 text-xs sm:text-sm font-semibold rounded-xl cursor-pointer flex items-center gap-2 transition"
+                            className="px-5 py-3 bg-primary/10 text-primary hover:bg-primary/20 text-xs sm:text-sm font-semibold rounded-xl cursor-pointer flex items-center gap-2 transition"
                           >
-                            <Upload size={14} />
+                            <Upload size={16} />
                             Upload Document
                           </button>
                           <input
@@ -457,20 +546,24 @@ export default function OwnerOnboarding() {
                             className="hidden"
                           />
                           {idProofName ? (
-                            <div className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-foreground/75 truncate max-w-[200px]">
+                            <div className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-foreground/75 truncate max-w-[280px]">
                               <FileText size={14} className="text-primary flex-shrink-0" />
                               <span className="truncate">{idProofName}</span>
                             </div>
                           ) : (
                             <span className="text-xs text-foreground/40">
-                              No document uploaded.
+                              No document selected.
                             </span>
                           )}
                         </div>
                       </div>
-                      <p className="text-[10.5px] text-foreground/40 mt-3">
-                        Accepts PDF, JPG, PNG (Aadhaar, Passport, etc.). Max 5MB.
-                      </p>
+                      {errors.idProof ? (
+                        <p className="text-xs text-error mt-2 font-medium">{errors.idProof}</p>
+                      ) : (
+                        <p className="text-[11px] text-foreground/50 mt-2">
+                          Accepts PDF, JPG, PNG, WEBP (Aadhaar, Passport, Driving License, etc.). Max 5MB.
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -492,32 +585,44 @@ export default function OwnerOnboarding() {
                   <div className="grid gap-6 grid-cols-1 md:grid-cols-2 pt-2">
                     <div className="space-y-1.5 md:col-span-2">
                       <label htmlFor="street" className="text-xs font-semibold text-foreground/70">
-                        Street Address
+                        Street Address *
                       </label>
                       <input
                         id="street"
                         type="text"
-                        required
                         value={street}
-                        onChange={(e) => setStreet(e.target.value)}
+                        onChange={(e) => handleFieldChange('street', setStreet, e.target.value)}
                         placeholder="123 Main St, Suite 400"
-                        className="w-full px-4 py-3 rounded-xl border border-border bg-surface text-sm text-foreground focus:outline-none focus:border-primary transition-all duration-200"
+                        className={`w-full px-4 py-3 rounded-xl border bg-surface text-sm text-foreground focus:outline-none transition-all duration-200 ${
+                          errors.street
+                            ? 'border-error focus:border-error ring-1 ring-error/30'
+                            : 'border-border focus:border-primary'
+                        }`}
                       />
+                      {errors.street && (
+                        <p className="text-xs text-error mt-1 font-medium">{errors.street}</p>
+                      )}
                     </div>
 
                     <div className="space-y-1.5">
                       <label htmlFor="city" className="text-xs font-semibold text-foreground/70">
-                        City
+                        City *
                       </label>
                       <input
                         id="city"
                         type="text"
-                        required
                         value={city}
-                        onChange={(e) => setCity(e.target.value)}
+                        onChange={(e) => handleFieldChange('city', setCity, e.target.value)}
                         placeholder="New York"
-                        className="w-full px-4 py-3 rounded-xl border border-border bg-surface text-sm text-foreground focus:outline-none focus:border-primary transition-all duration-200"
+                        className={`w-full px-4 py-3 rounded-xl border bg-surface text-sm text-foreground focus:outline-none transition-all duration-200 ${
+                          errors.city
+                            ? 'border-error focus:border-error ring-1 ring-error/30'
+                            : 'border-border focus:border-primary'
+                        }`}
                       />
+                      {errors.city && (
+                        <p className="text-xs text-error mt-1 font-medium">{errors.city}</p>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -526,17 +631,23 @@ export default function OwnerOnboarding() {
                           htmlFor="stateName"
                           className="text-xs font-semibold text-foreground/70"
                         >
-                          State
+                          State *
                         </label>
                         <input
                           id="stateName"
                           type="text"
-                          required
                           value={stateName}
-                          onChange={(e) => setStateName(e.target.value)}
+                          onChange={(e) => handleFieldChange('stateName', setStateName, e.target.value)}
                           placeholder="NY"
-                          className="w-full px-4 py-3 rounded-xl border border-border bg-surface text-sm text-foreground focus:outline-none focus:border-primary transition-all duration-200"
+                          className={`w-full px-4 py-3 rounded-xl border bg-surface text-sm text-foreground focus:outline-none transition-all duration-200 ${
+                            errors.stateName
+                              ? 'border-error focus:border-error ring-1 ring-error/30'
+                              : 'border-border focus:border-primary'
+                          }`}
                         />
+                        {errors.stateName && (
+                          <p className="text-xs text-error mt-1 font-medium">{errors.stateName}</p>
+                        )}
                       </div>
 
                       <div className="space-y-1.5">
@@ -544,17 +655,23 @@ export default function OwnerOnboarding() {
                           htmlFor="pincode"
                           className="text-xs font-semibold text-foreground/70"
                         >
-                          Pincode
+                          Pincode *
                         </label>
                         <input
                           id="pincode"
                           type="text"
-                          required
                           value={pincode}
-                          onChange={(e) => setPincode(e.target.value)}
+                          onChange={(e) => handleFieldChange('pincode', setPincode, e.target.value)}
                           placeholder="10001"
-                          className="w-full px-4 py-3 rounded-xl border border-border bg-surface text-sm text-foreground focus:outline-none focus:border-primary transition-all duration-200"
+                          className={`w-full px-4 py-3 rounded-xl border bg-surface text-sm text-foreground focus:outline-none transition-all duration-200 ${
+                            errors.pincode
+                              ? 'border-error focus:border-error ring-1 ring-error/30'
+                              : 'border-border focus:border-primary'
+                          }`}
                         />
+                        {errors.pincode && (
+                          <p className="text-xs text-error mt-1 font-medium">{errors.pincode}</p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -580,17 +697,27 @@ export default function OwnerOnboarding() {
                         htmlFor="accountHolderName"
                         className="text-xs font-semibold text-foreground/70"
                       >
-                        Account Holder Name
+                        Account Holder Name *
                       </label>
                       <input
                         id="accountHolderName"
                         type="text"
-                        required
                         value={accountHolderName}
-                        onChange={(e) => setAccountHolderName(e.target.value)}
+                        onChange={(e) =>
+                          handleFieldChange('accountHolderName', setAccountHolderName, e.target.value)
+                        }
                         placeholder="John Doe"
-                        className="w-full px-4 py-3 rounded-xl border border-border bg-surface text-sm text-foreground focus:outline-none focus:border-primary transition-all duration-200"
+                        className={`w-full px-4 py-3 rounded-xl border bg-surface text-sm text-foreground focus:outline-none transition-all duration-200 ${
+                          errors.accountHolderName
+                            ? 'border-error focus:border-error ring-1 ring-error/30'
+                            : 'border-border focus:border-primary'
+                        }`}
                       />
+                      {errors.accountHolderName && (
+                        <p className="text-xs text-error mt-1 font-medium">
+                          {errors.accountHolderName}
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-1.5">
@@ -598,17 +725,25 @@ export default function OwnerOnboarding() {
                         htmlFor="accountNumber"
                         className="text-xs font-semibold text-foreground/70"
                       >
-                        Account Number
+                        Account Number *
                       </label>
                       <input
                         id="accountNumber"
                         type="text"
-                        required
                         value={accountNumber}
-                        onChange={(e) => setAccountNumber(e.target.value)}
+                        onChange={(e) =>
+                          handleFieldChange('accountNumber', setAccountNumber, e.target.value)
+                        }
                         placeholder="000123456789"
-                        className="w-full px-4 py-3 rounded-xl border border-border bg-surface text-sm text-foreground focus:outline-none focus:border-primary transition-all duration-200"
+                        className={`w-full px-4 py-3 rounded-xl border bg-surface text-sm text-foreground focus:outline-none transition-all duration-200 ${
+                          errors.accountNumber
+                            ? 'border-error focus:border-error ring-1 ring-error/30'
+                            : 'border-border focus:border-primary'
+                        }`}
                       />
+                      {errors.accountNumber && (
+                        <p className="text-xs text-error mt-1 font-medium">{errors.accountNumber}</p>
+                      )}
                     </div>
 
                     <div className="space-y-1.5">
@@ -616,17 +751,23 @@ export default function OwnerOnboarding() {
                         htmlFor="ifscCode"
                         className="text-xs font-semibold text-foreground/70"
                       >
-                        IFSC / Routing Code
+                        IFSC / Routing Code *
                       </label>
                       <input
                         id="ifscCode"
                         type="text"
-                        required
                         value={ifscCode}
-                        onChange={(e) => setIfscCode(e.target.value)}
+                        onChange={(e) => handleFieldChange('ifscCode', setIfscCode, e.target.value)}
                         placeholder="ABCD0123456"
-                        className="w-full px-4 py-3 rounded-xl border border-border bg-surface text-sm text-foreground focus:outline-none focus:border-primary transition-all duration-200"
+                        className={`w-full px-4 py-3 rounded-xl border bg-surface text-sm text-foreground focus:outline-none transition-all duration-200 ${
+                          errors.ifscCode
+                            ? 'border-error focus:border-error ring-1 ring-error/30'
+                            : 'border-border focus:border-primary'
+                        }`}
                       />
+                      {errors.ifscCode && (
+                        <p className="text-xs text-error mt-1 font-medium">{errors.ifscCode}</p>
+                      )}
                     </div>
                   </div>
                 </div>
