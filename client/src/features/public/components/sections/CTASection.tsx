@@ -82,7 +82,7 @@ export default function CTASection() {
                       </p>
                     </div>
                     <Link
-                      to="/owner/register"
+                      to="/owner/onboarding"
                       className="flex-shrink-0 w-10 h-10 rounded-full bg-zinc-850 hover:bg-zinc-800 border border-zinc-700/80 text-white flex items-center justify-center transition-all duration-300 group-hover:scale-110"
                     >
                       <Building className="w-4 h-4 text-zinc-300 group-hover:text-white" />
