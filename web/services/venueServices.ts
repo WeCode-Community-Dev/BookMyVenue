@@ -27,9 +27,6 @@ export type VenueResponse = {
     name: string
     id: string
     address: string
-    spaces?: number;
-    bookings?: number;
-    status?: VenueStatus;
     images:
     {
         image:
@@ -39,6 +36,10 @@ export type VenueResponse = {
             altText: string | null;
         };
     }[];
+    _count: {
+        spaces: number;
+        bookings: number;
+    };
 };
 
 export type VenueDetailedResponse = VenueDetails

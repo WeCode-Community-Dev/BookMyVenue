@@ -304,7 +304,13 @@ export class VenuesService {
                     }
                   }
                 }
-              }
+              },
+              _count: {
+                select: {
+                  spaces: true,
+                  bookings: true,
+                },
+              },
             }
           }),
           this.prismaService.venue.count({

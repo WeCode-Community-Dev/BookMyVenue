@@ -58,13 +58,13 @@ export function VenueCard({ venue }: { venue: VenueResponse }) {
             <MapPin className="size-3.5 shrink-0" />
             <span className="truncate">{venue.address}</span>
           </div>
-          {/* <div className="grid grid-cols-2 gap-4 border-t border-outline-variant/40 pt-3">
+          <div className="grid grid-cols-2 gap-4 border-t border-outline-variant/40 pt-3">
           <div className="flex flex-col gap-0.5">
             <span className="text-xs font-semibold tracking-wider text-on-surface-variant uppercase">
               Spaces
             </span>
             <span className="text-sm font-medium text-on-surface">
-              {venue.spaces} Spaces
+              {venue._count.spaces} Spaces
             </span>
           </div>
           <div className="flex flex-col gap-0.5">
@@ -72,10 +72,10 @@ export function VenueCard({ venue }: { venue: VenueResponse }) {
               Bookings
             </span>
             <span className="text-sm font-medium text-on-surface">
-              {venue.bookings} Total
+              {venue._count.bookings} Total
             </span>
           </div>
-        </div> */}
+        </div>
         </CardContent>
       </Card>
     </Link>
