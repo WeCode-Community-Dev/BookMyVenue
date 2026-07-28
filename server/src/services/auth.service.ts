@@ -265,6 +265,7 @@ const googleAuth = async (
         isVerified: true,
       });
     }
+  } else {
     const role = requestedRole === 'owner' ? 'owner' : 'user';
     user = await userRepository.create({
       fullName: name || 'Google User',
