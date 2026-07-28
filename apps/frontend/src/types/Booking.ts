@@ -59,4 +59,5 @@ export interface PackageCardProps {
     evening?: boolean;
     onClick?: () => void;
     disabled?: boolean;
+    booked?: boolean;
 }

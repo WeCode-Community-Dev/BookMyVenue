@@ -238,6 +238,15 @@ export class VenueService {
         slotTemplates: {
           include: {
             pricingTiers: true,
+            bookedSlots: {
+              where: {
+                booking: {
+                  status: {
+                    in: ['CONFIRMED'],
+                  },
+                },
+              },
+            },
           },
         },
       },

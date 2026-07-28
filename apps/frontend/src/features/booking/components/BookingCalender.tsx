@@ -8,6 +8,7 @@ import { CalendarDays, X } from "lucide-react";
 
 import { AppText } from "@/lib/language/LanguageHelper";
 import { DayPicker } from "react-day-picker";
+import { Venue } from "@/types/Venue";
 import { bookingCalendarStyle } from "@/features/booking/styles/BookingCalendarStyle";
 import { format } from "date-fns";
 import { useState } from "react";
@@ -15,9 +16,11 @@ import { useState } from "react";
 export default function BookingCalendar({
     selectedDates: propsSelectedDates,
     setSelectedDates: propsSetSelectedDates,
+    venue,
 }: {
     selectedDates?: Date[];
     setSelectedDates?: React.Dispatch<React.SetStateAction<Date[]>>;
+    venue: Venue | null;
 }) {
     const [localSelectedDates, setLocalSelectedDates] = useState<Date[]>([]);
 
@@ -26,6 +29,43 @@ export default function BookingCalendar({
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+
+    const isDateDisabled = (date: Date) => {
+        const targetDate = new Date(date);
+        targetDate.setHours(0, 0, 0, 0);
+        if (targetDate < today) return true;
+
+        if (!venue) return false;
+
+        const dateStr = format(targetDate, "yyyy-MM-dd");
+
+        // 1. Check if date is blocked by venue owner
+        if (venue.blockedDates && venue.blockedDates.length > 0) {
+            const isBlocked = venue.blockedDates.some((bd: any) => {
+                const fromDate = new Date(bd.fromDate);
+                fromDate.setHours(0, 0, 0, 0);
+                const toDate = new Date(bd.toDate);
+                toDate.setHours(0, 0, 0, 0);
+                return targetDate >= fromDate && targetDate <= toDate;
+            });
+            if (isBlocked) return true;
+        }
+
+        // 2. Check if all slot templates on this date are already booked
+        const slotTemplates = venue.slotTemplates || [];
+        if (slotTemplates.length === 0) return false;
+
+        const allBooked = slotTemplates.every((slot) => {
+            return slot.bookedSlots?.some((b: any) => {
+                const bDateStr = typeof b.eventDate === "string"
+                    ? b.eventDate.split("T")[0]
+                    : format(new Date(b.eventDate), "yyyy-MM-dd");
+                return bDateStr === dateStr;
+            });
+        });
+
+        return allBooked;
+    };
 
     const removeDate = (date: Date) => {
         setSelectedDates((prev) =>
@@ -75,7 +115,7 @@ export default function BookingCalendar({
                             setSelectedDates(dates ?? [])
                         }
                         defaultMonth={new Date()}
-                        disabled={{ before: today }}
+                        disabled={isDateDisabled}
                         showOutsideDays
                     />
 

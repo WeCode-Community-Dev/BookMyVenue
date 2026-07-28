@@ -22,6 +22,7 @@ export default function PackageCard({
     evening = false,
     onClick,
     disabled = false,
+    booked = false,
 }: PackageCardProps) {
     return (
         <div
@@ -65,7 +66,7 @@ export default function PackageCard({
                     </span>
 
                     {available && (
-                        <span className={packageCardStyle.availableBadge}>
+                        <span className={booked ? "rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700" : packageCardStyle.availableBadge}>
                             {available}
                         </span>
                     )}
@@ -89,7 +90,9 @@ export default function PackageCard({
                     onClick={(e) => { e.stopPropagation(); if (!disabled && onClick) onClick(); }}
                     className={`${packageCardStyle.btnUnselected} ${disabled ? packageCardStyle.btnDisabled : ""}`}
                 >
-                    {disabled ? (
+                    {booked ? (
+                        <AppText textName="BOOKED" textModule="BUTTON" />
+                    ) : disabled ? (
                         <AppText textName="UNAVAILABLE" textModule="BUTTON" />
                     ) : (
                         <AppText textName="SELECT_PACKAGE" textModule="BUTTON" />

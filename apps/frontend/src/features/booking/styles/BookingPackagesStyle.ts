@@ -10,7 +10,8 @@ export const bookingPackagesStyle = {
         "shadow-sm",
         "w-full",
         "max-w-full",
-        "overflow-hidden"
+        "overflow-hidden",
+        "min-w-0"
     ),
     header: clsx(
         "mb-6",
@@ -48,6 +49,7 @@ export const bookingPackagesStyle = {
         "overflow-x-auto",
         "gap-5",
         "pb-2",
-        "scrollbar-thin"
+        "scrollbar-thin",
+        "min-w-0"
     )
 };

@@ -47,7 +47,8 @@
         "SELECT_PACKAGE_FIRST": "पहले एक पैकेज चुनें",
         "SELECTED": "चयनित",
         "SELECT_PACKAGE": "पैकेज चुनें",
-        "UNAVAILABLE": "अनुपलब्ध"
+        "UNAVAILABLE": "अनुपलब्ध",
+        "BOOKED": "बुक किया हुआ"
     },
     "LABEL": {
         "WELCOME_BACK": "वापसी पर स्वागत है",
@@ -97,6 +98,7 @@
         "VERIFIED_VENUE": "सत्यापित स्थान",
         "AVAILABLE": "उपलब्ध",
         "UNAVAILABLE": "अनुपलब्ध",
+        "BOOKED": "बुक किया हुआ",
         "GUEST_COUNT": "{count} मेहमान",
         "MORE": "+{count} और",
         "PRICE_UNIT": "/ प्रति दिन से",
