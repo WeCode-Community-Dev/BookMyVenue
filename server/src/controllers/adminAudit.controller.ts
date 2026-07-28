@@ -5,7 +5,6 @@ import { HTTP_STATUS } from '@/constants/http';
 
 /**
  * GET /admin/audit-logs
- * Fetch paginated administrative action audit logs with filtering capability.
  */
 export const getAdminAuditLogs = async (req: Request, res: Response, next: NextFunction) => {
   try {
