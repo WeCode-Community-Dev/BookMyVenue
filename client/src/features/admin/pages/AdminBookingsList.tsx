@@ -18,7 +18,6 @@ const AdminBookingsList = () => {
 
   return (
     <div className="space-y-6">
-      {/* ── Header ─────────────────────────────────────────────── */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
@@ -30,10 +29,8 @@ const AdminBookingsList = () => {
         </div>
       </div>
 
-      {/* ── Stats Cards ────────────────────────────────────────── */}
       <BookingsStats stats={stats} loading={loading} />
 
-      {/* ── Toolbar ────────────────────────────────────────────── */}
       <BookingsToolbar
         search={controls.search}
         setSearch={controls.setSearch}
@@ -46,7 +43,6 @@ const AdminBookingsList = () => {
         categories={categories}
       />
 
-      {/* ── Content ────────────────────────────────────────────── */}
       {loading ? (
         <Loading />
       ) : bookings.length === 0 ? (

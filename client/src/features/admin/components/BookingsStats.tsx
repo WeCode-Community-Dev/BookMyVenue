@@ -1,4 +1,3 @@
-// src/features/admin/components/admin-bookings/BookingsStats.tsx
 import React from 'react';
 import { CalendarDays, CheckCircle2, XCircle } from 'lucide-react';
 import type { BookingsStatsProps } from '../types/bookings/AdminBookings.types';

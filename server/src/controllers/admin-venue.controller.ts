@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import '@/models/owner.model';
 import { HTTP_STATUS } from '@/constants/http';
 import { MESSAGES } from '@/constants/messages';
+import { logAdminAction } from '@/utils/auditLogger';
 import success from '@/utils/response';
 
 // GET /admin/venues
@@ -56,7 +57,6 @@ export const rejectVenue = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
-import { logAdminAction } from '@/utils/auditLogger';
 
 // PATCH /admin/venues/:id/feature
 export const toggleFeatured = async (req: Request, res: Response, next: NextFunction) => {

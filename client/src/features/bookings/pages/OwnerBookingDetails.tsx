@@ -402,15 +402,6 @@ export default function OwnerBookingDetails() {
                   Update Booking State
                 </label>
                 <div className="flex flex-col gap-2">
-                  <button
-                    disabled={updating || bookingStatusStr !== 'reserved'}
-                    onClick={() => handleStatusUpdate({ bookingStatus: 'confirmed' })}
-                    className="w-full flex items-center justify-between px-4 py-3 border border-success/20 hover:border-success bg-success/5 hover:bg-success/15 text-success text-xs font-bold rounded-2xl transition-all cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
-                  >
-                    <span>Confirm Reservation</span>
-                    <CheckCircle className="w-4 h-4" />
-                  </button>
-
                   <div>
                     <button
                       disabled={updating || bookingStatusStr !== 'confirmed' || !isCheckoutPassed}
