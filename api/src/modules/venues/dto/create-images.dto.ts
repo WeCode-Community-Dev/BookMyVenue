@@ -7,5 +7,5 @@ export class CreateImagesDto {
   @ArrayMinSize(1)
   @ValidateNested({ each: true })
   @Type(() => CreateImageDto)
-  images: CreateImageDto[];
+  images!: CreateImageDto[];
 }

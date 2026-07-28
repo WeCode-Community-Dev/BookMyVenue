@@ -25,7 +25,7 @@ export class CreateImageDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(2048)
-  url: string;
+  url!: string;
 
   @Transform(trimOptionalString)
   @IsOptional()

@@ -43,7 +43,7 @@ export class CreateVenueDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(255)
-  name: string;
+  name!: string;
 
   @Transform(trimOptionalString)
   @IsOptional()
@@ -55,13 +55,13 @@ export class CreateVenueDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(500)
-  address: string;
+  address!: string;
 
   @Transform(trimString)
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  city: string;
+  city!: string;
 
   @Transform(trimOptionalString)
   @IsOptional()
@@ -73,7 +73,7 @@ export class CreateVenueDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  country: string;
+  country!: string;
 
   @Transform(trimOptionalString)
   @IsOptional()
@@ -97,7 +97,7 @@ export class CreateVenueDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(120)
-  timezone: string;
+  timezone!: string;
 
   @Transform(trimString)
   @IsString()

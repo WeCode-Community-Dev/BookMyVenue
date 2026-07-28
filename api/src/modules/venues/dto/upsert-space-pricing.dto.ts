@@ -47,17 +47,17 @@ function IsGreaterThanOrEqual(
 
 export class UpsertSpacePricingDto {
   @IsEnum(PricingType)
-  pricingType: PricingType;
+  pricingType!: PricingType;
 
   @Type(() => Number)
   @IsNumber()
   @IsPositive()
-  amount: number;
+  amount!: number;
 
   @IsString()
   @IsNotEmpty()
   @MaxLength(3)
-  currency: string;
+  currency!: string;
 
   @IsOptional()
   @Type(() => Number)

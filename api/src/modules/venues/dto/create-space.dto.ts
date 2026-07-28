@@ -46,7 +46,7 @@ export class CreateSpaceDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(255)
-  name: string;
+  name!: string;
 
   @Transform(trimOptionalString)
   @IsOptional()
@@ -101,7 +101,7 @@ export class CreateSpaceDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  categoryId: string;
+  categoryId!: string;
 
   @Transform(toUuidArray)
   @IsArray()

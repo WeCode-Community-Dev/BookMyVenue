@@ -41,19 +41,19 @@ export function IsAfter(
 
 export class CreateBookingDto {
   @IsUUID('4')
-  spaceId: string;
+  spaceId!: string;
 
   @IsDateString()
-  startAt: string;
+  startAt!: string;
 
   @IsDateString()
   @IsAfter('startAt', {
     message: 'endAt must be after startAt',
   })
-  endAt: string;
+  endAt!: string;
 
   @IsEnum(PricingType)
-  pricingType: PricingType;
+  pricingType!: PricingType;
 
   @IsOptional()
   @Type(() => Number)

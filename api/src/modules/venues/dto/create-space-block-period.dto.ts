@@ -12,13 +12,13 @@ import {
 
 export class CreateSpaceBlockedPeriodDto {
     @IsDateString()
-    startAt: string;
+    startAt!: string;
 
     @IsDateString()
     @IsAfter('startAt', {
         message: 'endAt must be after startAt',
     })
-    endAt: string;
+    endAt!: string;
 
     @IsOptional()
     @IsString()

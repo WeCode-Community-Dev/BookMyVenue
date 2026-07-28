@@ -6,10 +6,10 @@ export class LoginDto {
   @Transform(normalizeEmail)
   @IsNotEmpty()
   @IsEmail()
-  email: string;
+  email!: string;
 
   @IsString()
   @IsNotEmpty()
   @MinLength(8)
-  password: string;
+  password!: string;
 }

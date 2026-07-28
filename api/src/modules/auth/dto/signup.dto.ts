@@ -21,7 +21,7 @@ export class SignupDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  firstName: string;
+  firstName!: string;
 
   @Transform(trimOptionalString)
   @IsOptional()
@@ -33,22 +33,22 @@ export class SignupDto {
   @IsNotEmpty()
   @IsEmail()
   @MaxLength(255)
-  email: string;
+  email!: string;
 
   @Transform(trimString)
   @IsString()
   @IsNotEmpty()
   @MinLength(8)
-  password: string;
+  password!: string;
 
   @Transform(trimString)
   @IsString()
   @IsIn([UserRole.CUSTOMER, UserRole.VENUE_OWNER])
-  role: typeof UserRole.CUSTOMER | typeof UserRole.VENUE_OWNER;
+  role!: typeof UserRole.CUSTOMER | typeof UserRole.VENUE_OWNER;
 
   @Transform(trimString)
   @IsOptional()
   @IsString()
   @IsPhoneNumber('IN')
-  phone: string;
+  phone!: string;
 }
