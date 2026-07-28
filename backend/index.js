@@ -9,6 +9,8 @@ const categoryRoutes = require("./routes/category");
 const amenityRoutes = require("./routes/amenity");
 const authRoutes = require("./routes/auth");
 const adminRoutes = require("./routes/admin");
+const bookingRoutes = require("./routes/booking");
+const { scheduleMaterializationJob } = require("./jobs/scheduleMaterializationJob");
 
 const PORT = process.env.PORT || 8000;
 
@@ -24,10 +26,12 @@ app.use("/api/venueOwner", venueOwnerRoutes);
 app.use("/api/venueCategories", categoryRoutes);
 app.use("/api/amenities", amenityRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/bookings", bookingRoutes);
 
 connectDB()
    .then(() => {
       console.log("Connected to database successfully!");
+      scheduleMaterializationJob();
       app.listen(PORT, () => {
          console.log(`Server started and listening on port ${PORT}`);
       });

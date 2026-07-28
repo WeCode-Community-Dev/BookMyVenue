@@ -11,6 +11,7 @@ import {
   VenueOwnerDashboard,
   VenueOwnerMyVenues,
   EditVenuePage,
+  ManageSlotsPage,
   VenueOwnerBookings,
   VenueOwnerAnalytics,
   VenueOwnerSettings,
@@ -41,6 +42,7 @@ function App() {
             <Route path='/venue-owner/dashboard' element={<VenueOwnerDashboard />} />
             <Route path='/venue-owner/my-venues' element={<VenueOwnerMyVenues />} />
             <Route path='/venue-owner/venues/edit/:id' element={<EditVenuePage />} />
+            <Route path='/venue-owner/venues/:id/slots' element={<ManageSlotsPage />} />
             <Route path='/venue-owner/bookings' element={<VenueOwnerBookings />} />
             <Route path='/venue-owner/analytics' element={<VenueOwnerAnalytics />} />
             <Route path='/venue-owner/settings' element={<VenueOwnerSettings />} />
