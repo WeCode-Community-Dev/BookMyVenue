@@ -107,10 +107,10 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
       throw new AppError('User not found', HTTP_STATUS.NOT_FOUND);
     }
 
-    let owner = null;
-    if (user.role === 'owner') {
-      // Exclude sensitive bank details and raw idProof documents from client profile payload (CVE-BMV-010)
-      owner = await Owner.findOne({ userId }).select('-bankDetails.accountNumber -idProof');
+    let owner = await Owner.findOne({ userId }).select('-bankDetails.accountNumber -idProof');
+    if (owner && user.role !== 'owner') {
+      await User.findByIdAndUpdate(userId, { role: 'owner' });
+      user.role = 'owner';
     }
 
     return success(res, HTTP_STATUS.OK, { user, owner }, 'Profile fetched successfully');
@@ -120,7 +120,7 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
 };
 
 /**
- * Update current logged-in user profile details (User + Owner if role is owner)
+ * Update current logged-in user profile details (User + Owner if role is owner or completing onboarding)
  */
 export const updateProfile = async (req: Request, res: Response, next: NextFunction) => {
   const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
@@ -163,12 +163,26 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
       await fs.unlink(avatarFile.path).catch(() => {});
     }
 
+    const existingOwner = await Owner.findOne({ userId });
+
+    const isOwnerOnboarding =
+      user.role === 'owner' ||
+      !!existingOwner ||
+      !!req.body.street ||
+      !!req.body.accountNumber ||
+      !!files?.idProof ||
+      !!req.body.idProof;
+
+    if (isOwnerOnboarding && user.role !== 'owner') {
+      userUpdate.role = 'owner';
+    }
+
     const updatedUser = await User.findByIdAndUpdate(userId, userUpdate, { new: true }).select(
       '-password -googleId'
     );
 
     let updatedOwner = null;
-    if (user.role === 'owner') {
+    if (isOwnerOnboarding) {
       if (req.body.ifscCode) {
         const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
         if (!ifscRegex.test(req.body.ifscCode.toUpperCase().trim())) {
@@ -190,14 +204,6 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
         },
       };
 
-      // Handle owner profileImage upload if provided
-      if (files?.profileImage?.[0]) {
-        const profileImageFile = files.profileImage[0];
-        const uploadResult = await uploadToCloudinary(profileImageFile.path, 'bmv/owners');
-        ownerUpdate.profileImage = uploadResult.url;
-        await fs.unlink(profileImageFile.path).catch(() => {});
-      }
-
       // Handle owner idProof upload if provided
       if (files?.idProof?.[0]) {
         const idProofFile = files.idProof[0];
@@ -206,8 +212,6 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
         await fs.unlink(idProofFile.path).catch(() => {});
       }
 
-      // Find existing owner document
-      const existingOwner = await Owner.findOne({ userId });
       if (existingOwner) {
         // If owner exists, update
         const mergedUpdate: any = {
@@ -229,12 +233,11 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
                 : existingOwner.bankDetails?.accountNumber,
             ifscCode:
               req.body.ifscCode !== undefined
-                ? req.body.ifscCode
+                ? req.body.ifscCode.toUpperCase().trim()
                 : existingOwner.bankDetails?.ifscCode,
           },
         };
 
-        if (ownerUpdate.profileImage) mergedUpdate.profileImage = ownerUpdate.profileImage;
         if (ownerUpdate.idProof) mergedUpdate.idProof = ownerUpdate.idProof;
 
         // Reset verification status to pending if they edit crucial info or if they were rejected

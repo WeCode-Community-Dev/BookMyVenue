@@ -86,13 +86,12 @@ const Signup = () => {
     setError(null);
     try {
       const { data } = await googleAuthApi(credentialResponse.credential, role);
-
-      const user = data.data.user;
-      setAuth(user);
-
-      let path = getRoleRedirect(user.role);
-
-      navigate(path);
+      const user = data.data?.user || data.data;
+      if (user) {
+        setAuth(user);
+        let path = getRoleRedirect(user.role);
+        navigate(path);
+      }
     } catch (error) {
       console.log('Google auth Error: ', error);
       setError('Google Auth Failed');

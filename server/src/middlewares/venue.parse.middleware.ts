@@ -18,6 +18,10 @@ export const parseVenueFormData = (req: Request, res: Response, next: NextFuncti
       req.body.capacity = Number(req.body.capacity);
     }
 
+    if (req.body.availability) {
+      req.body.availability = JSON.parse(req.body.availability);
+    }
+
     next();
   } catch (error) {
     next(new Error('Invalid form data'));

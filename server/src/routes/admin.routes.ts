@@ -20,7 +20,7 @@ const router = Router();
 router.use(authMiddleware, authorizeRoles('admin'));
 
 // Dashboard
-router.route('/dashboard').get(dashboardController.adminDashboardController);
+router.route('/dashboard').get(asyncHandler(dashboardController.adminDashboardController));
 
 // Categories
 router
@@ -44,6 +44,7 @@ router.route('/users/:id/unblock').patch(userController.unblockUser);
 
 import * as transactionController from '@/controllers/transaction.controller';
 import * as adminAuditController from '@/controllers/adminAudit.controller';
+import { asyncHandler } from '@/utils/asyncHandler';
 
 // Owners
 router.route('/owners/:id/approve').patch(ownerController.approveOwner);

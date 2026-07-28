@@ -6,11 +6,7 @@ import { AppError } from '@/utils/AppError';
 import { HTTP_STATUS } from '@/constants/http';
 import { IAvailability } from '@/types/availability.types';
 
-/**
- * Unified Availability Engine
- * Validates all venue scheduling rules, operating hours/days, min/max duration,
- * buffer times, blackout dates, lead time, advance window, and atomic overlap checks.
- */
+
 export const validateVenueAvailability = async (
   venueId: string,
   startDateTime: Date,
@@ -19,10 +15,10 @@ export const validateVenueAvailability = async (
 ): Promise<IAvailability> => {
   const now = new Date();
 
+  //Basic cases
   if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
     throw new AppError('Invalid start or end date format', HTTP_STATUS.BAD_REQUEST);
   }
-
   if (startDateTime >= endDateTime) {
     throw new AppError('End date must be after the start date', HTTP_STATUS.BAD_REQUEST);
   }
@@ -40,13 +36,13 @@ export const validateVenueAvailability = async (
     throw new AppError('Bookings cannot be placed more than 365 days in advance', HTTP_STATUS.BAD_REQUEST);
   }
 
-  // 3. 15-Minute Slot Alignment Check
+  // 3. 15-Minute Slot Alignment Check (10:34 not valid)
   if (startDateTime.getMinutes() % 15 !== 0 || endDateTime.getMinutes() % 15 !== 0) {
     throw new AppError('Booking start and end times must align to 15-minute slot intervals', HTTP_STATUS.BAD_REQUEST);
   }
 
   // Fetch venue availability config
-  const query = Availability.findOne({ venueId });
+  const query =  Availability.findOne({ venueId });
   if (session) query.session(session);
   const availability = await query;
 

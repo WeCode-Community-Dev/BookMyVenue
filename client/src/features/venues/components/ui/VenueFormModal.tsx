@@ -1,6 +1,18 @@
-import { useEffect, useState, useRef } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
-import { X, Plus, Trash2, MapPin, Upload, Loader2, Pencil } from 'lucide-react';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { useForm, useWatch, Controller } from 'react-hook-form';
+import {
+  X,
+  Plus,
+  Trash2,
+  MapPin,
+  Upload,
+  Loader2,
+  Pencil,
+  LocateFixed,
+  Clock,
+  CalendarDays,
+  IndianRupee,
+} from 'lucide-react';
 import ImageEditorModal from './ImageEditorModal';
 import { ownerVenuesApi } from '../../services/owner-venues.api';
 import type { Venue } from '../../types/venues.types';
@@ -11,6 +23,7 @@ import 'leaflet/dist/leaflet.css';
 import { venueSchema, type FormValues } from '../../schemas/venue.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { publicVenuesApi } from '@/features/public/services/public-venues.api';
+import { DAYS_OF_WEEK } from '../../constants/availability.constants';
 
 type Props = {
   venue: Venue | null; // null = create mode
@@ -27,7 +40,10 @@ const VenueFormModal = ({ venue, onClose, onSuccess }: Props) => {
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>(venue?.images || []);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [isLoadingCategories, setIsLoadingCategories] = useState<boolean>(false)
+  const [isLoadingCategories, setIsLoadingCategories] = useState<boolean>(false);
+  const [isLocating, setIsLocating] = useState<boolean>(false);
+  const [isGeocoding, setIsGeocoding] = useState<boolean>(false);
+
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
@@ -51,7 +67,6 @@ const VenueFormModal = ({ venue, onClose, onSuccess }: Props) => {
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(venueSchema),
-
     defaultValues: {
       name: venue?.name || '',
       description: venue?.description || '',
@@ -69,24 +84,73 @@ const VenueFormModal = ({ venue, onClose, onSuccess }: Props) => {
       longitude: defaultLng,
       latitude: defaultLat,
       capacity: venue?.capacity || 1,
+      // Availability defaults
+      openingTime: venue?.availability?.openingTime || '09:00',
+      closingTime: venue?.availability?.closingTime || '22:00',
+      availableDays: venue?.availability?.availableDays || [0, 1, 2, 3, 4, 5, 6],
+      minBookingDuration: venue?.availability?.minBookingDuration || 1,
+      maxBookingDuration: venue?.availability?.maxBookingDuration ?? null,
+      pricePerHour: venue?.availability?.pricePerHour || 1000,
+      bufferTime: venue?.availability?.bufferTime || 0,
     },
   });
 
   const longitude = useWatch({ control, name: 'longitude' });
   const latitude = useWatch({ control, name: 'latitude' });
 
+  // Reverse geocoding helper
+  const reverseGeocode = useCallback(
+    async (lat: number, lng: number) => {
+      setIsGeocoding(true);
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data && data.address) {
+          const addr = data.address;
+          const street =
+            addr.road ||
+            addr.pedestrian ||
+            addr.suburb ||
+            addr.neighbourhood ||
+            addr.amenity ||
+            addr.suburb ||
+            '';
+          const city =
+            addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
+          const district = addr.state_district || addr.county || addr.district || city || '';
+          const state = addr.state || '';
+          const pincode =
+            addr.postcode && /^[1-9][0-9]{5}$/.test(addr.postcode) ? addr.postcode : '';
+
+          if (street) setValue('street', street, { shouldValidate: true });
+          if (city) setValue('city', city, { shouldValidate: true });
+          if (district) setValue('district', district, { shouldValidate: true });
+          if (state) setValue('state', state, { shouldValidate: true });
+          if (pincode) setValue('pincode', pincode, { shouldValidate: true });
+        }
+      } catch (err) {
+        console.error('Reverse geocoding error:', err);
+      } finally {
+        setIsGeocoding(false);
+      }
+    },
+    [setValue]
+  );
+
   // Load categories for dropdown
   useEffect(() => {
-    setIsLoadingCategories(true)
+    setIsLoadingCategories(true);
     publicVenuesApi
       .getCategories()
       .then((res) => {
-        setCategories(res?.data?.categories);
+        setCategories(res?.data?.categories || []);
       })
       .catch(() => toast.error('Failed to load categories'))
-      .finally(() => setIsLoadingCategories(false))
-  }, [venue, setValue]);
-
+      .finally(() => setIsLoadingCategories(false));
+  }, []);
 
   // Initialize Leaflet map
   useEffect(() => {
@@ -110,20 +174,25 @@ const VenueFormModal = ({ venue, onClose, onSuccess }: Props) => {
 
     marker.on('dragend', () => {
       const pos = marker.getLatLng();
-      setValue('latitude', parseFloat(pos.lat.toFixed(6)));
-      setValue('longitude', parseFloat(pos.lng.toFixed(6)));
+      const lat = parseFloat(pos.lat.toFixed(6));
+      const lng = parseFloat(pos.lng.toFixed(6));
+      setValue('latitude', lat, { shouldValidate: true });
+      setValue('longitude', lng, { shouldValidate: true });
+      reverseGeocode(lat, lng);
     });
 
     map.on('click', (e: L.LeafletMouseEvent) => {
       marker.setLatLng(e.latlng);
-      setValue('latitude', parseFloat(e.latlng.lat.toFixed(6)));
-      setValue('longitude', parseFloat(e.latlng.lng.toFixed(6)));
+      const lat = parseFloat(e.latlng.lat.toFixed(6));
+      const lng = parseFloat(e.latlng.lng.toFixed(6));
+      setValue('latitude', lat, { shouldValidate: true });
+      setValue('longitude', lng, { shouldValidate: true });
+      reverseGeocode(lat, lng);
     });
 
     mapInstanceRef.current = map;
     markerRef.current = marker;
 
-    // Resize fix for modal
     setTimeout(() => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.invalidateSize();
@@ -135,7 +204,7 @@ const VenueFormModal = ({ venue, onClose, onSuccess }: Props) => {
       mapInstanceRef.current = null;
       markerRef.current = null;
     };
-  }, []);
+  }, [defaultLat, defaultLng, setValue, reverseGeocode]);
 
   // Sync marker when coords change via input
   useEffect(() => {
@@ -144,6 +213,38 @@ const VenueFormModal = ({ venue, onClose, onSuccess }: Props) => {
       mapInstanceRef.current.setView([latitude, longitude], mapInstanceRef.current.getZoom());
     }
   }, [latitude, longitude]);
+
+  // Handle "Use Current Location" button click
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported by your browser');
+      return;
+    }
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = parseFloat(pos.coords.latitude.toFixed(6));
+        const lng = parseFloat(pos.coords.longitude.toFixed(6));
+
+        setValue('latitude', lat, { shouldValidate: true });
+        setValue('longitude', lng, { shouldValidate: true });
+
+        if (markerRef.current && mapInstanceRef.current) {
+          markerRef.current.setLatLng([lat, lng]);
+          mapInstanceRef.current.setView([lat, lng], 15);
+        }
+
+        reverseGeocode(lat, lng);
+        toast.success('Updated location to your current position');
+        setIsLocating(false);
+      },
+      (err) => {
+        toast.error('Unable to retrieve location: ' + err.message);
+        setIsLocating(false);
+      },
+      { enableHighAccuracy: true }
+    );
+  };
 
   // Image file handling
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -171,7 +272,6 @@ const VenueFormModal = ({ venue, onClose, onSuccess }: Props) => {
       setCropQueue((prev) => [...prev, ...newQueueItems]);
     }
 
-    // Clear the input so the same files can be selected again if needed
     e.target.value = '';
   };
 
@@ -269,6 +369,20 @@ const VenueFormModal = ({ venue, onClose, onSuccess }: Props) => {
 
       formData.append('capacity', String(data.capacity));
 
+      // Availability as JSON
+      formData.append(
+        'availability',
+        JSON.stringify({
+          openingTime: data.openingTime,
+          closingTime: data.closingTime,
+          availableDays: data.availableDays,
+          minBookingDuration: data.minBookingDuration,
+          maxBookingDuration: data.maxBookingDuration || null,
+          pricePerHour: data.pricePerHour,
+          bufferTime: data.bufferTime || 0,
+        })
+      );
+
       // Amenities
       formData.append('amenities', JSON.stringify(amenities));
 
@@ -295,62 +409,67 @@ const VenueFormModal = ({ venue, onClose, onSuccess }: Props) => {
   };
 
   return (
-    <div className="fixed inset-0 z-60 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm p-4 sm:p-6">
-      <div className="relative w-full max-w-3xl rounded-3xl border border-border bg-card shadow-2xl my-8">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-border px-6 py-4">
-          <h2 className="text-lg font-bold text-foreground">
-            {isEditMode ? 'Edit Venue' : 'Add New Venue'}
-          </h2>
+    <div className="fixed inset-0 z-60 flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-sm p-4 sm:p-6">
+      <div className="relative w-full max-w-5xl rounded-2xl border border-border bg-card shadow-2xl my-8">
+
+        {/* ── Modal Header ── */}
+        <div className="flex items-center justify-between border-b border-border px-8 py-5">
+          <div>
+            <h2 className="text-xl font-bold text-foreground tracking-tight">
+              {isEditMode ? 'Edit Venue' : 'Add New Venue'}
+            </h2>
+            <p className="text-xs text-muted mt-0.5">
+              {isEditMode ? 'Update your venue details below' : 'Fill in the details to list your venue'}
+            </p>
+          </div>
           <button
             onClick={onClose}
             className="rounded-lg p-2 text-muted hover:text-foreground hover:bg-background transition-all cursor-pointer"
           >
-            <X size={18} />
+            <X size={20} />
           </button>
         </div>
 
-        {/* Form */}
+        {/* ── Scrollable Form Body ── */}
         <form
           onSubmit={handleSubmit(onSubmit as any)}
-          className="p-6 space-y-6 max-h-[75vh] overflow-y-auto"
+          className="overflow-y-auto max-h-[78vh]"
         >
-          {/* Basic Info */}
-          <fieldset className="space-y-4">
-            <legend className="text-sm font-bold text-foreground uppercase tracking-wider mb-2">
-              Basic Information
-            </legend>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+          {/* ════════════════════════════════════════
+              SECTION 1 — Basic Information + Images
+          ════════════════════════════════════════ */}
+          <div className="px-8 py-6 border-b border-border">
+            {/* Section Header */}
+            <div className="flex items-center gap-3 mb-5">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">1</span>
+              <h3 className="text-sm font-bold text-foreground uppercase tracking-widest">Basic Information</h3>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+
+            {/* Name + Category */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
               <div>
-                <label className="block text-xs font-semibold text-muted mb-1.5">
-                  Venue Name *
-                </label>
+                <label className="block text-xs font-semibold text-muted mb-1.5">Venue Name *</label>
                 <input
-                  {...register('name', {
-                    required: 'Name is required',
-                    minLength: { value: 2, message: 'Min 2 characters' },
-                  })}
-                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                  {...register('name')}
+                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
                   placeholder="Enter venue name"
                 />
                 {errors.name && <p className="text-xs text-error mt-1">{errors.name.message}</p>}
               </div>
               <div>
                 <label className="block text-xs font-semibold text-muted mb-1.5">Category *</label>
-
-                {/* If loading, show a disabled select with a spinner icon */}
                 {isLoadingCategories ? (
                   <div className="flex items-center w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-muted opacity-60 cursor-not-allowed">
                     <Loader2 size={16} className="animate-spin mr-2" />
                     Loading categories...
                   </div>
                 ) : (
-                  /* If done loading, show the real select */
                   <>
                     <select
-                      {...register('categoryId', { required: 'Category is required' })}
-                      className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none cursor-pointer focus:border-primary focus:ring-2 focus:ring-primary/10"
+                      {...register('categoryId')}
+                      className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none cursor-pointer focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
                     >
                       <option value="">Select a category</option>
                       {categories.map((cat) => (
@@ -365,105 +484,153 @@ const VenueFormModal = ({ venue, onClose, onSuccess }: Props) => {
                   </>
                 )}
               </div>
-
             </div>
 
+            {/* Description + Capacity */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-5">
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-semibold text-muted mb-1.5">Description *</label>
+                <textarea
+                  {...register('description')}
+                  rows={4}
+                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none resize-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                  placeholder="Describe your venue (min 50 characters)..."
+                />
+                {errors.description && (
+                  <p className="text-xs text-error mt-1">{errors.description.message}</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-muted mb-1.5">Capacity (People) *</label>
+                <input
+                  type="number"
+                  {...register('capacity', { valueAsNumber: true })}
+                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                  placeholder="Max capacity"
+                  min="1"
+                />
+                {errors.capacity && (
+                  <p className="text-xs text-error mt-1">{errors.capacity.message}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Images Sub-section */}
             <div>
-              <label className="block text-xs font-semibold text-muted mb-1.5">Description *</label>
-              <textarea
-                {...register('description', { required: 'Description is required' })}
-                rows={3}
-                className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none resize-none focus:border-primary focus:ring-2 focus:ring-primary/10"
-                placeholder="Describe your venue..."
-              />
-              {errors.description && (
-                <p className="text-xs text-error mt-1">{errors.description.message}</p>
+              <label className="block text-xs font-semibold text-muted mb-2 flex items-center gap-1.5">
+                <Upload size={13} className="text-primary" />
+                Venue Images
+              </label>
+
+              {/* Existing images (edit mode) */}
+              {existingImages.length > 0 && (
+                <div className="grid gap-3 grid-cols-3 sm:grid-cols-5 mb-3">
+                  {existingImages.map((url, i) => (
+                    <div key={url} className="relative group rounded-xl overflow-hidden border border-border aspect-video">
+                      <img src={url} alt={`Venue ${i + 1}`} className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setEditingImage({ url, index: i, isExisting: true })}
+                        className="absolute top-1 right-8 rounded-full bg-primary/90 p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                      >
+                        <Pencil size={11} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeExistingImage(i)}
+                        className="absolute top-1 right-1 rounded-full bg-error/90 p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                      >
+                        <Trash2 size={11} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               )}
+
+              {/* New image previews */}
+              {imagePreviews.length > 0 && (
+                <div className="grid gap-3 grid-cols-3 sm:grid-cols-5 mb-3">
+                  {imagePreviews.map((url, i) => (
+                    <div key={url} className="relative group rounded-xl overflow-hidden border border-primary/30 aspect-video">
+                      <img src={url} alt={`New ${i + 1}`} className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setEditingImage({ url, index: i, isExisting: false })}
+                        className="absolute top-1 right-8 rounded-full bg-primary/90 p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                      >
+                        <Pencil size={11} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeNewImage(i)}
+                        className="absolute top-1 right-1 rounded-full bg-error/90 p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                      >
+                        <Trash2 size={11} />
+                      </button>
+                      <span className="absolute bottom-1 left-1 rounded bg-primary/80 px-1.5 py-0.5 text-[9px] font-bold text-white">NEW</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Upload Drop Zone */}
+              <label className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-background/60 py-5 text-sm text-muted hover:border-primary/50 hover:text-primary transition-all cursor-pointer">
+                <Upload size={16} />
+                <span className="font-medium">Click to upload images</span>
+                <input type="file" multiple accept="image/jpeg, image/png, image/webp" onChange={handleImageSelect} className="hidden" />
+              </label>
             </div>
-          </fieldset>
+          </div>
 
-          {/* Address */}
-          <fieldset className="space-y-4">
-            <legend className="text-sm font-bold text-foreground uppercase tracking-wider mb-2">
-              Address
-            </legend>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="block text-xs font-semibold text-muted mb-1.5">Street *</label>
-                <input
-                  {...register('street', { required: 'Street is required' })}
-                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
-                  placeholder="Street address"
-                />
-                {errors.street && (
-                  <p className="text-xs text-error mt-1">{errors.street.message}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-muted mb-1.5">City *</label>
-                <input
-                  {...register('city', { required: 'City is required' })}
-                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
-                  placeholder="City"
-                />
-                {errors.city && <p className="text-xs text-error mt-1">{errors.city.message}</p>}
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-muted mb-1.5">District *</label>
-                <input
-                  {...register('district', { required: 'District is required' })}
-                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
-                  placeholder="District"
-                />
-                {errors.district && (
-                  <p className="text-xs text-error mt-1">{errors.district.message}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-muted mb-1.5">State *</label>
-                <input
-                  {...register('state', { required: 'State is required' })}
-                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
-                  placeholder="State"
-                />
-                {errors.state && <p className="text-xs text-error mt-1">{errors.state.message}</p>}
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-muted mb-1.5">Pincode *</label>
-                <input
-                  {...register('pincode', { required: 'Pincode is required' })}
-                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
-                  placeholder="Pincode"
-                />
-                {errors.pincode && (
-                  <p className="text-xs text-error mt-1">{errors.pincode.message}</p>
-                )}
-              </div>
+          {/* ════════════════════════════════════════
+              SECTION 2 — Address & Map
+          ════════════════════════════════════════ */}
+          <div className="px-8 py-6 border-b border-border">
+            {/* Section Header */}
+            <div className="flex items-center gap-3 mb-5">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">2</span>
+              <h3 className="text-sm font-bold text-foreground uppercase tracking-widest">Address</h3>
+              <div className="flex-1 h-px bg-border" />
             </div>
-          </fieldset>
 
-          {/* Location Map */}
-          <fieldset className="space-y-4">
-            <legend className="text-sm font-bold text-foreground uppercase tracking-wider mb-2">
-              <span className="inline-flex items-center gap-2">
-                <MapPin size={16} />
-                Location on Map
-              </span>
-            </legend>
+            {/* Map sub-section */}
+            <div className="mb-5">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-semibold text-muted flex items-center gap-1.5">
+                  <MapPin size={13} className="text-primary" />
+                  Pin on Map
+                </label>
+                <button
+                  type="button"
+                  onClick={handleUseCurrentLocation}
+                  disabled={isLocating}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-primary/10 hover:bg-primary/20 border border-primary/20 px-3 py-1.5 text-xs font-semibold text-primary transition-all cursor-pointer disabled:opacity-50"
+                >
+                  {isLocating ? <Loader2 size={13} className="animate-spin" /> : <LocateFixed size={13} />}
+                  <span>{isLocating ? 'Locating...' : 'Use Current Location'}</span>
+                </button>
+              </div>
+              <div ref={mapRef} className="h-56 w-full rounded-xl border border-border overflow-hidden z-0 shadow-inner" />
+              <p className="text-[10px] text-muted mt-1.5 flex items-center gap-1">
+                Click on the map, drag marker, or use current location to auto-fill the fields below.
+                {isGeocoding && <Loader2 size={11} className="animate-spin text-primary ml-1" />}
+              </p>
+            </div>
 
-            <div
-              ref={mapRef}
-              className="h-64 w-full rounded-xl border border-border overflow-hidden z-0"
-            />
-
-            <div className="grid gap-4 sm:grid-cols-2">
+            {/* Lat / Lng */}
+            <div className="grid grid-cols-2 gap-4 mb-5">
               <div>
                 <label className="block text-xs font-semibold text-muted mb-1.5">Longitude</label>
                 <input
                   type="number"
                   step="any"
-                  {...register('longitude', { required: true, valueAsNumber: true })}
-                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                  {...register('longitude', { valueAsNumber: true })}
+                  onChange={(e) => {
+                    const lng = parseFloat(e.target.value);
+                    setValue('longitude', lng);
+                    if (!isNaN(lng) && !isNaN(latitude)) reverseGeocode(latitude, lng);
+                  }}
+                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
                 />
               </div>
               <div>
@@ -471,47 +638,214 @@ const VenueFormModal = ({ venue, onClose, onSuccess }: Props) => {
                 <input
                   type="number"
                   step="any"
-                  {...register('latitude', { required: true, valueAsNumber: true })}
-                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                  {...register('latitude', { valueAsNumber: true })}
+                  onChange={(e) => {
+                    const lat = parseFloat(e.target.value);
+                    setValue('latitude', lat);
+                    if (!isNaN(lat) && !isNaN(longitude)) reverseGeocode(lat, longitude);
+                  }}
+                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
                 />
               </div>
             </div>
-            <p className="text-[10px] text-muted">
-              Click on the map or drag the marker to set location
-            </p>
-          </fieldset>
 
-          {/* Capacity */}
-          <fieldset className="space-y-4">
-            <legend className="text-sm font-bold text-foreground uppercase tracking-wider mb-2">
-              Capacity
-            </legend>
-            <div className="grid gap-4 sm:grid-cols-1">
+            {/* Address fields */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-semibold text-muted mb-1.5">Street *</label>
+                <input
+                  {...register('street')}
+                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                  placeholder="Street address"
+                />
+                {errors.street && <p className="text-xs text-error mt-1">{errors.street.message}</p>}
+              </div>
               <div>
-                <label className="block text-xs font-semibold text-muted mb-1.5">Capacity *</label>
+                <label className="block text-xs font-semibold text-muted mb-1.5">City *</label>
+                <input
+                  {...register('city')}
+                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                  placeholder="City"
+                />
+                {errors.city && <p className="text-xs text-error mt-1">{errors.city.message}</p>}
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-muted mb-1.5">District *</label>
+                <input
+                  {...register('district')}
+                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                  placeholder="District"
+                />
+                {errors.district && <p className="text-xs text-error mt-1">{errors.district.message}</p>}
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-muted mb-1.5">State *</label>
+                <input
+                  {...register('state')}
+                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                  placeholder="State"
+                />
+                {errors.state && <p className="text-xs text-error mt-1">{errors.state.message}</p>}
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-muted mb-1.5">Pincode *</label>
+                <input
+                  {...register('pincode')}
+                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                  placeholder="6-digit Pincode"
+                />
+                {errors.pincode && <p className="text-xs text-error mt-1">{errors.pincode.message}</p>}
+              </div>
+            </div>
+          </div>
+
+          {/* ════════════════════════════════════════
+              SECTION 3 — Availabilities & Pricing
+          ════════════════════════════════════════ */}
+          <div className="px-8 py-6 border-b border-border">
+            {/* Section Header */}
+            <div className="flex items-center gap-3 mb-5">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">3</span>
+              <h3 className="text-sm font-bold text-foreground uppercase tracking-widest">Availabilities &amp; Pricing</h3>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+
+            {/* Opening / Closing time */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
+              <div>
+                <label className="block text-xs font-semibold text-muted mb-1.5 flex items-center gap-1.5">
+                  <Clock size={13} className="text-primary" />
+                  Opening Time *
+                </label>
+                <input
+                  type="time"
+                  {...register('openingTime')}
+                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                />
+                {errors.openingTime && <p className="text-xs text-error mt-1">{errors.openingTime.message}</p>}
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-muted mb-1.5 flex items-center gap-1.5">
+                  <Clock size={13} className="text-primary" />
+                  Closing Time *
+                </label>
+                <input
+                  type="time"
+                  {...register('closingTime')}
+                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                />
+                {errors.closingTime && <p className="text-xs text-error mt-1">{errors.closingTime.message}</p>}
+              </div>
+            </div>
+
+            {/* Available Days */}
+            <div className="mb-5">
+              <label className="block text-xs font-semibold text-muted mb-2 flex items-center gap-1.5">
+                <CalendarDays size={13} className="text-primary" />
+                Available Days *
+              </label>
+              <Controller
+                name="availableDays"
+                control={control}
+                render={({ field }) => (
+                  <div className="flex flex-wrap gap-2">
+                    {DAYS_OF_WEEK.map((day) => {
+                      const isSelected = field.value?.includes(day.value);
+                      return (
+                        <button
+                          type="button"
+                          key={day.value}
+                          onClick={() => {
+                            const current = field.value || [];
+                            const newValue = isSelected
+                              ? current.filter((v) => v !== day.value)
+                              : [...current, day.value];
+                            field.onChange(newValue);
+                          }}
+                          className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-primary text-white shadow-sm'
+                              : 'bg-background border border-border text-muted hover:border-primary/40'
+                          }`}
+                        >
+                          {day.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              />
+              {errors.availableDays && <p className="text-xs text-error mt-1">{errors.availableDays.message}</p>}
+            </div>
+
+            {/* Pricing + Durations */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-xs font-semibold text-muted mb-1.5 flex items-center gap-1">
+                  <IndianRupee size={12} className="text-primary" />
+                  Price Per Hour (₹) *
+                </label>
                 <input
                   type="number"
-                  {...register('capacity', {
-                    required: 'Required',
-                    valueAsNumber: true,
-                    min: { value: 1, message: 'Min 1' },
-                  })}
-                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
-                  placeholder="Max capacity"
+                  {...register('pricePerHour', { valueAsNumber: true })}
+                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                  placeholder="e.g. 1000"
+                  min="1"
                 />
-                {errors.capacity && (
-                  <p className="text-xs text-error mt-1">{errors.capacity.message}</p>
-                )}
+                {errors.pricePerHour && <p className="text-xs text-error mt-1">{errors.pricePerHour.message}</p>}
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-muted mb-1.5">Buffer Time (Minutes)</label>
+                <input
+                  type="number"
+                  {...register('bufferTime', { valueAsNumber: true })}
+                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                  placeholder="0"
+                  min="0"
+                />
+                {errors.bufferTime && <p className="text-xs text-error mt-1">{errors.bufferTime.message}</p>}
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-muted mb-1.5">Min Booking Duration (Hours) *</label>
+                <input
+                  type="number"
+                  {...register('minBookingDuration', { valueAsNumber: true })}
+                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                  min="1"
+                />
+                {errors.minBookingDuration && <p className="text-xs text-error mt-1">{errors.minBookingDuration.message}</p>}
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-muted mb-1.5">
+                  Max Booking Duration (Hours){' '}
+                  <span className="font-normal text-[10px] text-muted">(Optional)</span>
+                </label>
+                <input
+                  type="number"
+                  {...register('maxBookingDuration', {
+                    setValueAs: (v) => (v === '' || v === null ? null : parseInt(v, 10)),
+                  })}
+                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                  placeholder="No limit"
+                  min="1"
+                />
+                {errors.maxBookingDuration && <p className="text-xs text-error mt-1">{errors.maxBookingDuration.message}</p>}
               </div>
             </div>
-          </fieldset>
+          </div>
 
-          {/* Amenities */}
-          <fieldset className="space-y-4">
-            <legend className="text-sm font-bold text-foreground uppercase tracking-wider mb-2">
-              Amenities
-            </legend>
-            <div className="flex gap-2">
+          {/* ════════════════════════════════════════
+              SECTION 4 — Amenities
+          ════════════════════════════════════════ */}
+          <div className="px-8 py-6">
+            {/* Section Header */}
+            <div className="flex items-center gap-3 mb-5">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">4</span>
+              <h3 className="text-sm font-bold text-foreground uppercase tracking-widest">Amenities</h3>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+
+            <div className="flex gap-2 mb-3">
               <input
                 value={amenityInput}
                 onChange={(e) => setAmenityInput(e.target.value)}
@@ -521,8 +855,8 @@ const VenueFormModal = ({ venue, onClose, onSuccess }: Props) => {
                     addAmenity();
                   }
                 }}
-                className="flex-1 rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
-                placeholder="e.g. Parking, WiFi, AC..."
+                className="flex-1 rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                placeholder="e.g. Parking, WiFi, AC, Projector..."
               />
               <button
                 type="button"
@@ -532,6 +866,7 @@ const VenueFormModal = ({ venue, onClose, onSuccess }: Props) => {
                 <Plus size={16} />
               </button>
             </div>
+
             {amenities.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {amenities.map((item, i) => (
@@ -545,96 +880,20 @@ const VenueFormModal = ({ venue, onClose, onSuccess }: Props) => {
                       onClick={() => removeAmenity(i)}
                       className="text-muted hover:text-error transition-colors cursor-pointer"
                     >
-                      <X size={12} />
+                      <X size={11} />
                     </button>
                   </span>
                 ))}
               </div>
             )}
-          </fieldset>
-
-          {/* Images */}
-          <fieldset className="space-y-4">
-            <legend className="text-sm font-bold text-foreground uppercase tracking-wider mb-2">
-              Images
-            </legend>
-
-            {/* Existing images (edit mode) */}
-            {existingImages.length > 0 && (
-              <div className="grid gap-3 grid-cols-3 sm:grid-cols-4">
-                {existingImages.map((url, i) => (
-                  <div
-                    key={url}
-                    className="relative group rounded-xl overflow-hidden border border-border"
-                  >
-                    <img src={url} alt={`Venue ${i + 1}`} className="h-24 w-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => setEditingImage({ url, index: i, isExisting: true })}
-                      className="absolute top-1 right-8 rounded-full bg-primary/90 p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                    >
-                      <Pencil size={12} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeExistingImage(i)}
-                      className="absolute top-1 right-1 rounded-full bg-error/90 p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                    >
-                      <Trash2 size={12} />
-                    </button>
-                  </div>
-                ))}
-              </div>
+            {amenities.length === 0 && (
+              <p className="text-xs text-muted/60 italic">No amenities added yet.</p>
             )}
-
-            {/* New image previews */}
-            {imagePreviews.length > 0 && (
-              <div className="grid gap-3 grid-cols-3 sm:grid-cols-4">
-                {imagePreviews.map((url, i) => (
-                  <div
-                    key={url}
-                    className="relative group rounded-xl overflow-hidden border border-primary/30"
-                  >
-                    <img src={url} alt={`New ${i + 1}`} className="h-24 w-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => setEditingImage({ url, index: i, isExisting: false })}
-                      className="absolute top-1 right-8 rounded-full bg-primary/90 p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                    >
-                      <Pencil size={12} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeNewImage(i)}
-                      className="absolute top-1 right-1 rounded-full bg-error/90 p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                    >
-                      <Trash2 size={12} />
-                    </button>
-                    <span className="absolute bottom-1 left-1 rounded bg-primary/80 px-1.5 py-0.5 text-[9px] font-bold text-white">
-                      NEW
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Upload button */}
-            <label className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-background py-6 text-sm text-muted hover:border-primary/50 hover:text-primary transition-all cursor-pointer">
-              <Upload size={18} />
-              <span className="font-medium">Click to upload images</span>
-              <input
-                type="file"
-                multiple
-                accept="image/jpeg, image/png, image/webp"
-                onChange={handleImageSelect}
-                className="hidden"
-              />
-            </label>
-          </fieldset>
+          </div>
         </form>
 
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-3 border-t border-border px-6 py-4">
+        {/* ── Modal Footer ── */}
+        <div className="flex items-center justify-end gap-3 border-t border-border px-8 py-4">
           <button
             type="button"
             onClick={onClose}
@@ -647,13 +906,14 @@ const VenueFormModal = ({ venue, onClose, onSuccess }: Props) => {
             type="submit"
             onClick={handleSubmit(onSubmit as any)}
             disabled={submitting}
-            className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-primary/20 hover:bg-accent transition-all disabled:opacity-50 active:scale-95 cursor-pointer"
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-primary/20 hover:bg-accent transition-all disabled:opacity-50 active:scale-95 cursor-pointer"
           >
             {submitting && <Loader2 size={16} className="animate-spin" />}
             {isEditMode ? 'Update Venue' : 'Create Venue'}
           </button>
         </div>
       </div>
+
       <ImageEditorModal
         isOpen={!!editingImage || cropQueue.length > 0}
         onClose={handleCancelCrop}

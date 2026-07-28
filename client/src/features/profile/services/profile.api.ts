@@ -20,7 +20,6 @@ export interface ProfileResponse {
     owner?: {
       _id: string;
       userId: string;
-      profileImage?: string;
       idProof: string;
       address: {
         street: string;

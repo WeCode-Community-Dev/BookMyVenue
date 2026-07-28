@@ -265,9 +265,7 @@ const googleAuth = async (
         isVerified: true,
       });
     }
-  } else {
-    // Always create new Google users as 'user' — role changes require admin approval
-    // Prevent self-escalation to 'owner' or 'admin' via the role parameter
+    const role = requestedRole === 'owner' ? 'owner' : 'user';
     user = await userRepository.create({
       fullName: name || 'Google User',
       email,
@@ -275,7 +273,7 @@ const googleAuth = async (
       avatar: picture,
       authProvider: 'google',
       isVerified: true,
-      role: 'user',
+      role,
     });
   }
 

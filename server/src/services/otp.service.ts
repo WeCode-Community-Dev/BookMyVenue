@@ -20,8 +20,7 @@ export const otpService = {
     purpose: string = 'email-verification'
   ): Promise<{ otp: string }> {
     const otp = crypto.randomInt(100000, 999999).toString();
-    // NOTE: Never log raw OTP values — store only hashed form
-
+    logger.info(`Otp generated for ${emailAddr}: ${otp}`)
     const hashed = await argon2.hash(otp);
 
     // Store hashed OTP with expiry

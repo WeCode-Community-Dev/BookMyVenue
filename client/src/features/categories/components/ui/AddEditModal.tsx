@@ -224,7 +224,7 @@ const AddEditModal = ({ category, onClose, onSuccess }: Props) => {
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Provide a detailed description of the category..."
                   maxLength={500}
-                  className="min-h-[140px] w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted/65 outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/10 resize-y"
+                  className="min-h-35 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted/65 outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/10 resize-y"
                 />
               </div>
 

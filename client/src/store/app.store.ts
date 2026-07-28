@@ -4,7 +4,6 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 export interface OwnerDetails {
   _id: string;
   userId: string;
-  profileImage?: string;
   idProof: string;
   address: {
     street: string;
@@ -57,7 +56,7 @@ export const useAppStore = create<AppState>()(
       isAuthenticated: false,
       _hasHydrated: false,
 
-      setAuth: (user) => set({ user, wishlist: user.wishlist || [], isAuthenticated: true }),
+      setAuth: (user) => set({ user, wishlist: user?.wishlist || [], isAuthenticated: true }),
       setOwner: (owner) => set({ owner }),
       setWishlist: (wishlist) => set({ wishlist }),
       logout: () => set({ user: null, owner: null, wishlist: [], isAuthenticated: false }),

@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 const objectIdRegex = /^[0-9a-fA-F]{24}$/;
 const indianPincodeRegex = /^[1-9][0-9]{5}$/;
+const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
 export const venueSchema = z
   .object({
@@ -62,9 +63,17 @@ export const venueSchema = z
       .min(1, 'At least one image is required')
       .max(10, 'Maximum 10 images allowed')
       .optional(),
+
+    // Availability fields
+    openingTime: z.string().regex(timeRegex, 'Required (HH:mm)'),
+    closingTime: z.string().regex(timeRegex, 'Required (HH:mm)'),
+    availableDays: z.array(z.number()).min(1, 'Select at least one day'),
+    minBookingDuration: z.number().min(1, 'Minimum 1 hour'),
+    maxBookingDuration: z.number().nullable().optional(),
+    pricePerHour: z.number().min(1, 'Minimum ₹1'),
+    bufferTime: z.number().min(0).optional(),
   })
   .superRefine((data, ctx) => {
-    // Kerala sanity check (optional)
     if (
       data.latitude !== undefined &&
       data.longitude !== undefined &&
@@ -76,6 +85,28 @@ export const venueSchema = z
         message: 'Location coordinates appear invalid',
       });
     }
+
+    if (data.closingTime && data.openingTime && data.closingTime <= data.openingTime) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['closingTime'],
+        message: 'Closing time must be after opening time',
+      });
+    }
+
+    if (
+      data.maxBookingDuration !== null &&
+      data.maxBookingDuration !== undefined &&
+      data.minBookingDuration !== undefined &&
+      data.maxBookingDuration < data.minBookingDuration
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['maxBookingDuration'],
+        message: 'Max duration must be >= min duration',
+      });
+    }
   });
 
 export type FormValues = z.infer<typeof venueSchema>;
+
