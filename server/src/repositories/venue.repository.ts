@@ -207,12 +207,9 @@ export const findPublicVenues = async (query: GetPublicVenuesQueryDTO) => {
     if (maxCapacity !== undefined) filter.capacity.$lte = maxCapacity;
   }
 
-  if (minPrice !== undefined || maxPrice !== undefined) {
-    filter['pricing.amount'] = {};
-    if (minPrice !== undefined) filter['pricing.amount'].$gte = minPrice;
-    if (maxPrice !== undefined) filter['pricing.amount'].$lte = maxPrice;
-  }
-
+  // Remove price logic from the base filter
+  // It will be applied after looking up Availability
+  
   if (search) {
     const escaped = escapeRegex(search);
     filter.$or = [
@@ -236,17 +233,60 @@ export const findPublicVenues = async (query: GetPublicVenuesQueryDTO) => {
     }
   }
 
-  // Dynamic sort
+  // Build the aggregation pipeline 
+  const pipeline: any[]= [];
+
+  // 1. Initial filter match
+  pipeline.push({ $match: filter });
+
+  // 2. Lookup Availability
+  pipeline.push({
+    $lookup: {
+      from: 'availabilities',
+      localField: '_id',
+      foreignField: 'venueId',
+      as: 'availability',
+    },
+  });
+
+  // 3. Unwind availability (treat it as a single object like Mongoose populate justOne: true)
+  pipeline.push({
+    $unwind: { path: '$availability', preserveNullAndEmptyArrays: true },
+  });
+
+  // 4. Apply Price Filter
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    const priceMatch: any = {};
+    if (minPrice !== undefined) priceMatch.$gte = minPrice;
+    if (maxPrice !== undefined) priceMatch.$lte = maxPrice;
+    pipeline.push({ $match: { 'availability.pricePerHour': priceMatch } });
+  }
+
+  // 5. Lookup Category (mimic populate('categoryId'))
+  pipeline.push({
+    $lookup: {
+      from: 'categories',
+      localField: 'categoryId',
+      foreignField: '_id',
+      as: 'categoryId',
+    },
+  });
+
+  pipeline.push({
+    $unwind: { path: '$categoryId', preserveNullAndEmptyArrays: true },
+  });
+
+  // 6. Dynamic Sort
   let sortOption: Record<string, 1 | -1>;
   switch (sort) {
     case 'oldest':
       sortOption = { createdAt: 1 };
       break;
     case 'price_asc':
-      sortOption = { 'pricing.amount': 1 };
+      sortOption = { 'availability.pricePerHour': 1 };
       break;
     case 'price_desc':
-      sortOption = { 'pricing.amount': -1 };
+      sortOption = { 'availability.pricePerHour': -1 };
       break;
     case 'capacity_asc':
       sortOption = { capacity: 1 };
@@ -260,17 +300,25 @@ export const findPublicVenues = async (query: GetPublicVenuesQueryDTO) => {
       break;
   }
 
-  const skip = (page - 1) * limit;
+  pipeline.push({ $sort: sortOption });
 
-  const [venues, total] = await Promise.all([
-    Venue.find(filter)
-      .populate('categoryId', 'name')
-      .populate('availability')
-      .sort(sortOption)
-      .skip(skip)
-      .limit(limit),
-    Venue.countDocuments(filter),
-  ]);
+  // Add virtual id
+  pipeline.push({
+    $addFields: { id: '$_id' },
+  });
+
+  // 7. Pagination with $facet to get data and total count simultaneously
+  const skip = (page - 1) * limit;
+  pipeline.push({
+    $facet: {
+      metadata: [{ $count: 'total' }],
+      data: [{ $skip: skip }, { $limit: limit }],
+    },
+  });
+
+  const results = await Venue.aggregate(pipeline);
+  const total = results[0]?.metadata[0]?.total || 0;
+  const venues = results[0]?.data || [];
 
   return {
     venues,
