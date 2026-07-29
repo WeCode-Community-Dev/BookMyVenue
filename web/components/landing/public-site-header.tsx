@@ -34,7 +34,7 @@ export function PublicSiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          {user.name ?
+          {user?.name?.trim() ?
             <UserMenu name={user.name} initials={user.initials} />
             :
             <>

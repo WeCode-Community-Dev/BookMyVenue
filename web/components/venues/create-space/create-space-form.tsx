@@ -172,7 +172,7 @@ export function CreateSpaceForm({ venueId }: CreateSpaceFormProps) {
         categoryId: form.categoryId,
         spaceAmenityIds: form.amenityIds,
         spaceImageIds: images.map((image) => image.id),
-        coverImageId: coverImageFromServer,
+        ...(coverImageFromServer && { coverImageId: coverImageFromServer }),
       });
 
       toast.success("Space created successfully.");

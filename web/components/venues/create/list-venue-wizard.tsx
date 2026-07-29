@@ -82,7 +82,7 @@ export function ListVenueWizard() {
         longitude: Number(basicsForm.longitude),
         venueImageIds: images.map((image) => image.id),
         venueAmenityIds: selectedAmenityIds,
-        coverImageId: coverImageFromServer,
+        ...(coverImageFromServer && { coverImageId: coverImageFromServer }),
       });
       toast.success('Venue published successfully');
 
