@@ -50,6 +50,14 @@ export class VenuesController {
     return this.venuesService.findOneVenue(id);
   }
 
+  @Get('venues/:id/stats')
+  getVenueStats(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Headers('authorization') authorization: string,
+  ) {
+    return this.venuesService.getVenueStats(id, authorization);
+  }
+
   @Patch('venues/:id')
   updateVenue(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateVenueDto) {
     return this.venuesService.updateVenue(id, dto);

@@ -12,7 +12,7 @@ type ManageSpaceHeaderProps = {
 };
 
 export function ManageSpaceHeader({ space, venueId }: ManageSpaceHeaderProps) {
-  const status = getSpaceDisplayStatus(space.id);
+  const status = getSpaceDisplayStatus(space);
 
   return (
     <div className="flex flex-col gap-4">

@@ -578,6 +578,31 @@ export type OwnerStatsResponse = {
     totalBookings: number;
 }
 
+export type VenueStatsResponse = {
+    totalSpaces: number;
+    totalBookings: number;
+}
+
+export async function getVenueStats(id: string): Promise<VenueStatsResponse> {
+    try {
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+            throw new Error('No access token found');
+        }
+        const response = await apiFetch(`/venues/${id}/stats`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: accessToken,
+            },
+        });
+        return response;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
 export async function getOwnerStats(): Promise<OwnerStatsResponse> {
     try {
         const accessToken = localStorage.getItem('accessToken');

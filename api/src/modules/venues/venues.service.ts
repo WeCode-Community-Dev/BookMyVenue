@@ -1121,6 +1121,51 @@ export class VenuesService {
       throw error;
     }
   }
+
+  async getVenueStats(
+    id: string,
+    authorization: string,
+  ): Promise<{
+    totalSpaces: number;
+    totalBookings: number;
+  }> {
+    try {
+      const payload = verifyAccessToken(this.jwtService, authorization);
+
+      if (payload.role !== UserRole.VENUE_OWNER) {
+        throw new UnauthorizedException(
+          'You are not authorized to access this resource',
+        );
+      }
+
+      const stats = await this.prismaService.venue.findUnique({
+        where: { id, ownerId: payload.sub },
+        select: {
+          _count: {
+            select: {
+              spaces: true,
+              bookings: true,
+            },
+          },
+        },
+      });
+
+      if (!stats) {
+        throw new NotFoundException('Venue not found');
+      }
+
+      return {
+        totalSpaces: stats._count.spaces,
+        totalBookings: stats._count.bookings,
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      console.error(error);
+      throw error;
+    }
+  }
   
   
 

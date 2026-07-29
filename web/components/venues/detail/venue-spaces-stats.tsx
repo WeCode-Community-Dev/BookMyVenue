@@ -11,11 +11,10 @@ export function VenueSpacesStats({ stats }: { stats: VenueDisplayStats }) {
         <div className="flex flex-col gap-3">
           <StatRow label="Total Spaces" value={stats.totalSpaces} />
           <StatRow
-            label="Active Bookings"
-            value={stats.activeBookings}
+            label="Total Bookings"
+            value={stats.totalBookings}
             valueClassName="text-surface-tint"
           />
-          <StatRow label="Avg. Capacity" value={stats.avgCapacity} />
         </div>
       </CardContent>
     </Card>

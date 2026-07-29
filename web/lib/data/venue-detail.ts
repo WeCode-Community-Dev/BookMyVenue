@@ -19,18 +19,15 @@ export const VENUE_DETAIL_TABS: { id: VenueDetailTab; label: string }[] = [
   { id: "bookings", label: "Bookings" },
 ];
 
-export type SpaceDisplayStatus = "available" | "booked";
+export type SpaceDisplayStatus = "available" | "not available";
 
 export type VenueDisplayStats = {
   totalSpaces: number;
-  activeBookings: number;
-  avgCapacity: number;
+  totalBookings: number;
 };
 
-const DUMMY_RATING = 4.9;
-const DUMMY_REVIEW_COUNT = 124;
-const DUMMY_ACTIVE_BOOKINGS = 48;
-const DEFAULT_AVG_CAPACITY = 150;
+const DUMMY_RATING = 0.0  ;
+const DUMMY_REVIEW_COUNT = 0;
 
 export function getVenueRating() {
   return DUMMY_RATING;
@@ -50,35 +47,11 @@ export function getImageUrl(url: string): string {
 }
 
 export function getVenueLocation(venue: VenueDetails): string {
-  return [venue.city, venue.country].filter(Boolean).join(", ");
+  return [venue.city,venue.state, venue.country].filter(Boolean).join(", ");
 }
 
-export function computeVenueStats(venue: VenueDetails): VenueDisplayStats {
-  const totalSpaces = venue.spaces.length;
-  const capacities = venue.spaces
-    .map((space) => parseFloat(space.capacityValue ?? ""))
-    .filter((value) => !Number.isNaN(value));
-
-  const avgCapacity =
-    capacities.length > 0
-      ? Math.round(
-          capacities.reduce((sum, value) => sum + value, 0) / capacities.length,
-        )
-      : DEFAULT_AVG_CAPACITY;
-
-  return {
-    totalSpaces,
-    activeBookings: DUMMY_ACTIVE_BOOKINGS,
-    avgCapacity,
-  };
-}
-
-export function getSpaceDisplayStatus(spaceId: string): SpaceDisplayStatus {
-  let hash = 0;
-  for (let i = 0; i < spaceId.length; i++) {
-    hash = (hash + spaceId.charCodeAt(i)) % 2;
-  }
-  return hash === 0 ? "available" : "booked";
+export function getSpaceDisplayStatus(space: Space): SpaceDisplayStatus {
+  return space.isActive ? "available" : "not available";
 }
 
 export function getUniqueCategories(spaces: Space[]): string[] {

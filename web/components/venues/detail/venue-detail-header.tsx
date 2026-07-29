@@ -25,7 +25,7 @@ export function VenueDetailHeader({ venue }: VenueDetailHeaderProps) {
 
   return (
     <div className="relative overflow-hidden rounded-xl">
-      <div className="relative aspect-3/1 min-h-[200px] w-full sm:min-h-[240px]">
+      <div className="relative aspect-3/1 min-h-50 w-full sm:min-h-60">
         {coverImage ? (
           <Image
             src={getImageUrl(coverImage.image.url)}

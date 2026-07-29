@@ -2,12 +2,13 @@
 
 import { useMemo, useState } from "react";
 
+import { useFetch } from "@/hooks/useFetch";
 import type { VenueDetails } from "@/lib/data/venues";
 import {
-  computeVenueStats,
   filterSpacesByCategory,
   getUniqueCategories,
 } from "@/lib/data/venue-detail";
+import { getVenueStats } from "@/services/venueServices";
 
 import { AddSpaceCard } from "./add-space-card";
 import { SpaceCard } from "./space-card";
@@ -21,7 +22,7 @@ type VenueSpacesTabProps = {
 export function VenueSpacesTab({ venue }: VenueSpacesTabProps) {
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  const stats = useMemo(() => computeVenueStats(venue), [venue]);
+  const { data: stats } = useFetch(() => getVenueStats(venue.id));
   const categories = useMemo(
     () => getUniqueCategories(venue.spaces),
     [venue.spaces],
@@ -34,7 +35,9 @@ export function VenueSpacesTab({ venue }: VenueSpacesTabProps) {
   return (
     <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
       <aside className="flex flex-col gap-4">
-        <VenueSpacesStats stats={stats} />
+        <VenueSpacesStats
+          stats={stats ?? { totalSpaces: 0, totalBookings: 0 }}
+        />
         <VenueCategoryFilter
           categories={categories}
           selectedCategory={selectedCategory}

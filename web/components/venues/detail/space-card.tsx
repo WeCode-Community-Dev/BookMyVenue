@@ -38,7 +38,7 @@ type SpaceCardProps = {
 
 export function SpaceCard({ space, venueId }: SpaceCardProps) {
   const coverImage = getSpaceCoverImage(space);
-  const status = getSpaceDisplayStatus(space.id);
+  const status = getSpaceDisplayStatus(space);
   const photoCount = space.images.length;
   const amenityCount = space.amenities.length;
 
