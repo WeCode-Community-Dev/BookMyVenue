@@ -26,7 +26,7 @@ export function VenueLocationSection({ venue }: VenueLocationSectionProps) {
 
     const map = new maplibregl.Map({
       container: mapContainer.current,
-      style: "https://demotiles.maplibre.org/style.json",
+      style: "https://tiles.openfreemap.org/styles/liberty",
       center: [lng, lat],
       zoom: 14,
       interactive: false,

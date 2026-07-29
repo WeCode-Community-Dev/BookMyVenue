@@ -73,7 +73,7 @@ export function VenueImageGallery({ venue }: VenueImageGalleryProps) {
                     View All Photos
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-4xl">
+                <DialogContent className="w-full sm:max-w-4xl">
                   <DialogHeader>
                     <DialogTitle>All Photos</DialogTitle>
                   </DialogHeader>
@@ -119,7 +119,7 @@ export function VenueImageGallery({ venue }: VenueImageGalleryProps) {
               View All Photos
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-3xl">
+          <DialogContent className="w-full sm:max-w-4xl">
             <DialogHeader>
               <DialogTitle>All Photos</DialogTitle>
             </DialogHeader>

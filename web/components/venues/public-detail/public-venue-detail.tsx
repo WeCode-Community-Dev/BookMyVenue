@@ -80,7 +80,7 @@ export function PublicVenueDetail({ venue }: PublicVenueDetailProps) {
             onSelectSpace={setSelectedSpaceId}
           />
           <VenueLocationSection venue={venue} />
-          <VenueReviewsSection />
+          {/* <VenueReviewsSection /> */}
         </div>
 
         <VenueBookingSidebar venue={venue} selectedSpace={selectedSpace} />

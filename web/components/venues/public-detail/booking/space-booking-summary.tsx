@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Calendar, Clock, Info, Star } from "lucide-react";
 import { toast } from "sonner";
 
@@ -11,7 +11,7 @@ import {
   computeSpaceBookingTotal,
   formatDisplayDate,
   formatTimeRangeLabel,
-  getSpaceHourlyPrice,
+  getDefaultPricingType,
 } from "@/lib/data/public-venue-detail";
 import {
   getVenueRating,
@@ -21,6 +21,7 @@ import {
   buildBookingIsoRange,
   createBooking,
 } from "@/services/bookingServices";
+import { getSpacePricing } from "@/services/venueServices";
 
 type SpaceBookingSummaryProps = {
   spaceId: string;
@@ -36,12 +37,42 @@ export function SpaceBookingSummary({
   onBookingCreated,
 }: SpaceBookingSummaryProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const hourlyRate = getSpaceHourlyPrice(spaceId);
+  const [hourlyRate, setHourlyRate] = useState(0);
   const rating = getVenueRating();
   const reviewCount = getVenueReviewCount();
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const records = await getSpacePricing(spaceId);
+        if (cancelled) return;
+
+        const pricingType = getDefaultPricingType(records);
+        if (pricingType === "HOURLY") {
+          const amount = records.find(
+            (record) => record.pricingType === "HOURLY",
+          )?.amount;
+          setHourlyRate(amount ? parseFloat(amount) || 0 : 0);
+        } else {
+          setHourlyRate(0);
+        }
+      } catch {
+        if (!cancelled) setHourlyRate(0);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [spaceId]);
+
   const breakdown = selectedRange
     ? computeSpaceBookingTotal(hourlyRate, selectedRange.hours)
     : null;
+
+
 
   async function handleContinueBooking() {
     if (!selectedRange) {

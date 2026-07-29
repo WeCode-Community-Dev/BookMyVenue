@@ -42,7 +42,7 @@ export function SpaceBookingGallery({ space, venue }: SpaceBookingGalleryProps) 
       );
     }
     return (
-      <div className="relative aspect-[16/9] overflow-hidden rounded-xl">
+      <div className="relative aspect-video overflow-hidden rounded-xl">
         <Image
           src={getImageUrl(cover.image.url)}
           alt={cover.image.altText || space.name}
