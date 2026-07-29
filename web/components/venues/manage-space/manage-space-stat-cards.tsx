@@ -8,7 +8,6 @@ import {
 
 import { Card, CardContent } from "@/components/ui/card";
 import type { Space } from "@/lib/data/venues";
-import { spaceManageDummy } from "@/lib/data/space-manage";
 import { cn } from "@/lib/utils";
 
 type StatItem = {
@@ -24,12 +23,7 @@ type ManageSpaceStatCardsProps = {
 
 export function ManageSpaceStatCards({ space }: ManageSpaceStatCardsProps) {
   const stats: StatItem[] = [
-    {
-      label: "Upcoming Bookings",
-      value: String(spaceManageDummy.upcomingBookings),
-      icon: CalendarDays,
-      iconClassName: "bg-blue-100 text-blue-600",
-    },
+    //TODO:upcoming bookings add
     {
       label: "Total Amenities",
       value: String(space.amenities.length),

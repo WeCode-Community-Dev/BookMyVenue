@@ -35,11 +35,6 @@ export const SPACE_MANAGE_TABS: {
   { id: "settings", label: "Settings", icon: "settings" },
 ];
 
-export const spaceManageDummy = {
-  spaceType: "Indoor Premium",
-  upcomingBookings: 12,
-};
-
 export type SpaceManageActivityIcon =
   | "bell"
   | "refresh-cw"

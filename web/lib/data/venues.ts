@@ -10,11 +10,7 @@ export type VenueStatus = "active" | "inactive";
 //   image: {id: string, url: string, altText: string};
 // };
 
-export const venuesSummary = {
-  totalVenues: 12,
-  activeBookings: 48,
-  totalSpaces: 34,
-};
+
 
 export type Amenity = {
   id: string;

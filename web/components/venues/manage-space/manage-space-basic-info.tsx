@@ -6,7 +6,6 @@ import { ReviewField } from "@/components/venues/create/review-field";
 import type { Space } from "@/lib/data/venues";
 import {
   formatSpaceCapacityLabel,
-  spaceManageDummy,
 } from "@/lib/data/space-manage";
 
 type ManageSpaceBasicInfoProps = {
@@ -39,7 +38,6 @@ export function ManageSpaceBasicInfo({ space, venueId }: ManageSpaceBasicInfoPro
           <ReviewField label="Space Name" value={space.name} />
           <ReviewField label="Category" value={space.category.name} />
           <ReviewField label="Capacity" value={capacity} />
-          <ReviewField label="Space Type" value={spaceManageDummy.spaceType} />
         </div>
         <ReviewField
           label="Description"

@@ -37,7 +37,7 @@ export function ManageSpaceHeader({ space, venueId }: ManageSpaceHeaderProps) {
           </p>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
+        {/* <div className="flex shrink-0 items-center gap-2">
           <Button variant="outline" size="sm" className="gap-1.5" asChild>
             <Link href={`/my-venues/${venueId}`}>
               <Eye className="size-3.5" />
@@ -48,7 +48,7 @@ export function ManageSpaceHeader({ space, venueId }: ManageSpaceHeaderProps) {
             <Upload className="size-3.5" />
             Publish Updates
           </Button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

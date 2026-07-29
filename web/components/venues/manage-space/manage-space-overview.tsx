@@ -16,7 +16,7 @@ export function ManageSpaceOverview({ space, venueId }: ManageSpaceOverviewProps
       <div className="flex flex-col gap-6">
         <ManageSpaceBasicInfo space={space} venueId={venueId} />
         <ManageSpaceStatCards space={space} />
-        <ManageSpaceActivity />
+        {/* <ManageSpaceActivity /> */}
       </div>
       <ManageSpaceSidebar space={space} venueId={venueId} />
     </div>
