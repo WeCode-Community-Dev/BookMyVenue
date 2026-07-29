@@ -63,7 +63,7 @@
 | **ORM** | Prisma | Clean schema definitions, type-safe queries, pairs well with NestJS |
 | **Authentication** | Google OAuth + Email OTP + JWT | Low-friction login plus secure session management |
 | **Payment Gateway** | Razorpay | India-focused, supports UPI / cards / net banking |
-| **Maps** | OpenStreetMap + OpenLayers | Completely free alternative to Google Maps |
+| **Maps** | OpenStreetMap + OpenLayers+ googlemap + (satellite view + road map)| Completely free alternative to Google Maps |
 | **Image Storage** | Cloudinary | Free tier, easy venue image management |
 | **Email Service** | Nodemailer | Email OTP delivery and booking confirmation emails |
 | **Caching / OTP Store** | Upstash Redis | Serverless, pay-per-request — no server to host or maintain. Used specifically for OTP storage with auto-expiry, rate limiting (login/OTP requests), and booking slot locks. General-purpose caching and session blacklisting remain deferred to Phase 2 |
