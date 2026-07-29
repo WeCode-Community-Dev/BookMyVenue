@@ -1,4 +1,11 @@
+import { Car, Ruler, Users, type LucideIcon } from "lucide-react";
+
 import type { Space, VenueDetails, VenueImage } from "@/lib/data/venues";
+import { CapacityType } from "@/lib/data/venues";
+import {
+  formatSpaceArea,
+  formatSpaceCapacity,
+} from "@/lib/data/public-venue-detail";
 
 export type VenueDetailTab =
   | "overview"
@@ -68,11 +75,39 @@ export function formatCapacity(space: Space): string {
   if (!space.capacityValue) {
     return "—";
   }
+
+  const capacityLabel = formatSpaceCapacity(space);
+  if (capacityLabel) {
+    return capacityLabel;
+  }
+
+  const areaLabel = formatSpaceArea(space);
+  if (areaLabel) {
+    return areaLabel;
+  }
+
   const value = parseFloat(space.capacityValue);
   if (Number.isNaN(value)) {
     return space.capacityValue;
   }
-  return `${Math.round(value)} Max`;
+
+  if (!space.capacityType) {
+    return `up to ${Math.round(value)}`;
+  }
+
+  return `${Math.round(value)}`;
+}
+
+export function getCapacityIcon(capacityType: CapacityType | null): LucideIcon {
+  switch (capacityType) {
+    case CapacityType.CARS:
+      return Car;
+    case CapacityType.SQFT:
+    case CapacityType.SQM:
+      return Ruler;
+    default:
+      return Users;
+  }
 }
 
 export function filterSpacesByCategory(

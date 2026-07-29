@@ -90,7 +90,8 @@ export function formatSpaceCapacity(space: Space): string | null {
   if (
     type === CapacityType.PEOPLE ||
     type === CapacityType.SEATS ||
-    type === CapacityType.PLAYERS
+    type === CapacityType.PLAYERS ||
+    type === CapacityType.CARS
   ) {
     return `up to ${Math.round(value)}`;
   }

@@ -9,7 +9,6 @@ import {
   Settings,
   Sparkles,
   Trash2,
-  Users,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -24,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import type { Space } from "@/lib/data/venues";
 import {
   formatCapacity,
+  getCapacityIcon,
   getImageUrl,
   getSpaceCoverImage,
   getSpaceDisplayStatus,
@@ -41,6 +41,7 @@ export function SpaceCard({ space, venueId }: SpaceCardProps) {
   const status = getSpaceDisplayStatus(space);
   const photoCount = space.images.length;
   const amenityCount = space.amenities.length;
+  const CapacityIcon = getCapacityIcon(space.capacityType);
 
   return (
     <Card className="gap-0 overflow-hidden rounded-lg border-0 bg-surface-container-lowest py-0 shadow-elevation-1 ring-0">
@@ -63,7 +64,7 @@ export function SpaceCard({ space, venueId }: SpaceCardProps) {
             variant="outline"
             className="gap-1 border-transparent bg-black/60 text-white backdrop-blur-sm"
           >
-            <Users className="size-3" />
+            <CapacityIcon className="size-3" />
             {formatCapacity(space)}
           </Badge>
         </div>
