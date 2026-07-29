@@ -9,15 +9,17 @@ import { useState } from "react";
 
 import { VenueDetailHeader } from "./venue-detail-header";
 import { VenueDetailTabs, VenueTabPlaceholder } from "./venue-detail-tabs";
+import { VenueOverviewTab } from "./venue-overview-tab";
 import { VenueSpacesTab } from "./venue-spaces-tab";
+import { VenueDetails } from "@/lib/data/venues";
 
 type VenueDetailPageProps = {
   venueId: string;
 };
 
 export function VenueDetailPage({ venueId }: VenueDetailPageProps) {
-  const [activeTab, setActiveTab] = useState<VenueDetailTab>("spaces");
-  const { data: venue, isLoading, error } = useFetch(() => getVenue(venueId));
+  const [activeTab, setActiveTab] = useState<VenueDetailTab>("overview");
+  const { data: venue, isLoading, error } = useFetch<VenueDetails>(() => getVenue(venueId));
 
   if (isLoading) {
     return (
@@ -44,9 +46,9 @@ export function VenueDetailPage({ venueId }: VenueDetailPageProps) {
     <div className="flex flex-col gap-6 lg:gap-8">
       <VenueDetailHeader venue={venue} />
       <VenueDetailTabs activeTab={activeTab} onTabChange={setActiveTab} />
-      {activeTab === "spaces" ? (
-        <VenueSpacesTab venue={venue} />
-      ) : (
+      {activeTab === "overview" && <VenueOverviewTab venue={venue} />}
+      {activeTab === "spaces" && <VenueSpacesTab venue={venue} />}
+      {activeTab !== "overview" && activeTab !== "spaces" && (
         <VenueTabPlaceholder tabLabel={activeTabLabel} />
       )}
     </div>
