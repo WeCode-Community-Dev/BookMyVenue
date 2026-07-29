@@ -17,6 +17,7 @@ import {
 } from '../../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service';
 import { verifyAccessToken } from '../auth/helpers/token';
+import { BookingListQueryDto } from './dto/booking-list-query.dto';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { assertSlotAvailable } from './helpers/availability';
 
@@ -41,9 +42,17 @@ export type BookingListItem = {
   startAt: Date;
   endAt: Date;
   status: BookingStatus;
+  guests: number | null;
+  amount: string;
+  currency: string;
+  pricingType: PricingType;
   customer: {
     firstName: string;
     lastName: string | null;
+  };
+  venue: {
+    id: string;
+    name: string;
   };
   space: {
     id: string;
@@ -225,7 +234,10 @@ export class BookingsService {
     }
   }
 
-  async findAllForUser(authorization: string): Promise<BookingListItem[]> {
+  async findAllForUser(
+    authorization: string,
+    query: BookingListQueryDto = {},
+  ): Promise<BookingListItem[]> {
     const payload = verifyAccessToken(this.jwtService, authorization);
     if (payload.role !== UserRole.VENUE_OWNER) {
       throw new UnauthorizedException(
@@ -233,35 +245,77 @@ export class BookingsService {
       );
     }
 
+    const isUpcoming = query.upcoming === true;
+    const sortBy = query.sortBy ?? (isUpcoming ? 'startAt' : 'startAt');
+    const sortOrder = query.sortOrder ?? (isUpcoming ? 'asc' : 'desc');
+
+    const where = {
+      venue: { ownerId: payload.sub },
+      ...(isUpcoming
+        ? {
+            startAt: { gte: new Date() },
+            status: { in: ACTIVE_BOOKING_STATUSES },
+          }
+        : query.status
+          ? { status: query.status }
+          : {}),
+    };
+
+    const page = query.page ?? 1;
+    const limit = isUpcoming ? (query.limit ?? 10) : query.limit;
+    const skip = limit ? (page - 1) * limit : undefined;
+
     const bookings = await this.prismaService.booking.findMany({
-      where: {
-        venue: { ownerId: payload.sub },
-        startAt: { gte: new Date() },
-        status: { in: ACTIVE_BOOKING_STATUSES },
-      },
+      where,
       include: {
         user: { select: { firstName: true, lastName: true } },
+        venue: { select: { id: true, name: true } },
         space: { select: { id: true, name: true } },
       },
-      orderBy: { startAt: 'asc' },
-      take: 10,
+      orderBy: { [sortBy]: sortOrder },
+      ...(limit ? { take: limit, skip } : {}),
     });
 
-    return bookings.map((booking) => ({
+    return bookings.map((booking) => this.toBookingListItem(booking));
+  }
+
+  private toBookingListItem(booking: {
+    id: string;
+    bookingNumber: string;
+    startAt: Date;
+    endAt: Date;
+    status: BookingStatus;
+    guests: number | null;
+    amount: Decimal;
+    currency: string;
+    pricingType: PricingType;
+    user: { firstName: string; lastName: string | null };
+    venue: { id: string; name: string };
+    space: { id: string; name: string };
+  }): BookingListItem {
+    return {
       id: booking.id,
       bookingNumber: booking.bookingNumber,
       startAt: booking.startAt,
       endAt: booking.endAt,
       status: booking.status,
+      guests: booking.guests,
+      amount: booking.amount.toString(),
+      currency: booking.currency,
+      pricingType: booking.pricingType,
       customer: {
         firstName: booking.user.firstName,
         lastName: booking.user.lastName,
+      },
+      venue: {
+        id: booking.venue.id,
+        name: booking.venue.name,
       },
       space: {
         id: booking.space.id,
         name: booking.space.name,
       },
-    }));
+    };
   }
 
   findOne(_id: string) {

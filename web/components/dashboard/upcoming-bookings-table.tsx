@@ -69,7 +69,7 @@ export function UpcomingBookingsTable() {
           Upcoming Bookings
         </CardTitle>
         <Link
-          href="#"
+          href="/bookings"
           className="text-sm font-medium text-surface-tint hover:underline"
         >
           View All

@@ -40,15 +40,54 @@ export type BookingListItem = {
   startAt: string;
   endAt: string;
   status: BookingStatus;
+  guests: number | null;
+  amount: string;
+  currency: string;
+  pricingType: PricingType;
   customer: {
     firstName: string;
     lastName: string | null;
+  };
+  venue: {
+    id: string;
+    name: string;
   };
   space: {
     id: string;
     name: string;
   };
 };
+
+export type BookingSortField =
+  | "bookingNumber"
+  | "startAt"
+  | "amount"
+  | "guests"
+  | "status"
+  | "createdAt";
+
+export type OwnerBookingsQuery = {
+  sortBy?: BookingSortField;
+  sortOrder?: "asc" | "desc";
+  status?: BookingStatus;
+  upcoming?: boolean;
+  page?: number;
+  limit?: number;
+};
+
+function buildBookingsQueryString(query: OwnerBookingsQuery = {}): string {
+  const params = new URLSearchParams();
+
+  if (query.sortBy) params.set("sortBy", query.sortBy);
+  if (query.sortOrder) params.set("sortOrder", query.sortOrder);
+  if (query.status) params.set("status", query.status);
+  if (query.upcoming) params.set("upcoming", "true");
+  if (query.page) params.set("page", String(query.page));
+  if (query.limit) params.set("limit", String(query.limit));
+
+  const queryString = params.toString();
+  return queryString ? `?${queryString}` : "";
+}
 
 function redirectToLogin(): never {
   const returnUrl = window.location.pathname + window.location.search;
@@ -109,10 +148,17 @@ export async function createBooking(
 }
 
 export async function getBookings(): Promise<BookingListItem[]> {
+  return getOwnerBookings({ upcoming: true });
+}
+
+export async function getOwnerBookings(
+  query: OwnerBookingsQuery = {},
+): Promise<BookingListItem[]> {
   try {
     const accessToken = getAccessToken();
+    const queryString = buildBookingsQueryString(query);
 
-    return apiFetch("/bookings", {
+    return apiFetch(`/bookings${queryString}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

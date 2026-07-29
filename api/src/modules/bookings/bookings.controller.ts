@@ -7,8 +7,10 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { BookingsService } from './bookings.service';
+import { BookingListQueryDto } from './dto/booking-list-query.dto';
 import { CreateBookingDto } from './dto/create-booking.dto';
 
 @Controller('bookings')
@@ -24,8 +26,11 @@ export class BookingsController {
   }
 
   @Get()
-  findAll(@Headers('authorization') authorization: string) {
-    return this.bookingsService.findAllForUser(authorization);
+  findAll(
+    @Headers('authorization') authorization: string,
+    @Query() query: BookingListQueryDto,
+  ) {
+    return this.bookingsService.findAllForUser(authorization, query);
   }
 
   @Get('spaces/:spaceId/occupancy')
