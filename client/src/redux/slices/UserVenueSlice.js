@@ -1,0 +1,128 @@
+import { API_ROUTES } from "@/constants/apiRoutes"
+import api from "@/lib/axios"
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
+
+const initialState = {
+    loading: true,
+    error: null,
+    venues: [],
+    selectedVenue:null,
+    pagination: {
+        venues: {
+            totalPages: 0,
+            totalCount: 0
+        },
+    }
+}
+
+
+export const getVenues = createAsyncThunk('user/venues', async(params = {}, { rejectWithValue}) => {
+    try {
+        console.log('params: ', params)
+        const response = await api.get(API_ROUTES.USER.VENUE.VENUES, {
+            params: {
+                page: params.page || 1,
+                limit: params.limit || 10,
+                search: params.search || "",  
+                category: params.category || undefined ,
+                amenities: params.amenities,
+                rating: params.rating || 0,
+                capacityType: params.capacityType || "",
+                capacity: params.capacity || "",
+                priceType: params.priceType || "",
+                minPrice: params.minPrice || "",
+                maxPrice: params.maxPrice || ""
+            },
+            paramsSerializer: {
+                indexes: null
+            }
+        })
+
+        console.log('response: ', response.data.data)
+        return response.data.data
+    } catch (error) {
+        return rejectWithValue("Failed to get venues", error)
+    }
+})
+
+export const getVenueById = createAsyncThunk(
+    'user/venue-by-id',
+    async (id, { rejectWithValue }) => {
+        try {
+            const response = await api.get(
+                API_ROUTES.USER.VENUE.GET_BY_ID(id)
+            );
+
+            return response.data.data
+        } catch (error) {
+
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to get venue details"
+            );
+        }
+    }
+);
+
+export const getTopVenues = createAsyncThunk('user/top-venues', async(_,{ rejectWithValue}) => {
+    try {
+        console.log('reached here...')
+        const response = await api.get(API_ROUTES.USER.VENUE.TOP_VENUES)
+        console.log('response: ', response.data.data)
+        return response.data.data
+    } catch (error) {
+        return rejectWithValue("Failed to get top venues", error)
+    }
+})
+
+
+const userVenueSlice = createSlice({
+    name: 'UserVenueSlice',
+    initialState,
+    reducers: {},
+    extraReducers: (builder) => {
+        builder 
+         .addCase(getVenues.pending, (state) => {
+            state.loading = true
+         })
+         .addCase(getVenues.fulfilled, (state, action) => {
+            state.loading = false
+            state.venues = action.payload.data
+            state.pagination.venues.totalCount = action.payload.totalCount
+            state.pagination.venues.totalPages = action.payload.totalPages
+         })
+         .addCase(getVenues.rejected, (state, action) => {
+            state.loading = false
+            state.error = action.payload 
+         })
+         .addCase(getTopVenues.pending, (state) => {
+            state.loading = true
+         })
+
+         // get venue by id
+
+        .addCase(getVenueById.pending, (state) => {
+            state.loading = true
+            state.error = null
+        })
+        .addCase(getVenueById.fulfilled, (state, action) => {
+            state.loading = false
+            state.selectedVenue = action.payload
+        })
+        .addCase(getVenueById.rejected, (state, action) => {
+            state.loading = false
+            state.error = action.payload
+        })
+
+
+         .addCase(getTopVenues.fulfilled, (state, action) => {
+            state.loading = false
+            state.venues = action.payload.venues
+         })
+         .addCase(getTopVenues.rejected, (state, action) => {
+            state.loading = false
+            state.error = action.payload 
+         })
+    }
+})
+
+export default userVenueSlice.reducer

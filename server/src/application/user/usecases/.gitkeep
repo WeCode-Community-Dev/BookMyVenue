@@ -1,0 +1,35 @@
+import { NotFoundError } from "../../../../domain/errors/NotFoundError.js";
+import { ValidationError } from "../../../../domain/errors/ValidationError.js";
+
+export class UserUpdateProfileImageUsecase {
+
+    constructor(userRepository){
+        this._userRepository = userRepository;
+    }
+
+    async execute(userId, profileImage){
+
+        const user = await this._userRepository.findById(userId);
+
+        if(!user){
+            throw new NotFoundError("User not found");
+        }
+
+        if(user.isBlocked){
+            throw new ValidationError(
+                "Blocked users cannot update profile image"
+            );
+        }
+
+        if(!profileImage){
+            throw new ValidationError("Profile image is required");
+        }
+
+        const updatedUser = await this._userRepository.updateProfileImage(
+            userId,
+            profileImage
+        );
+
+        return updatedUser;
+    }
+}
