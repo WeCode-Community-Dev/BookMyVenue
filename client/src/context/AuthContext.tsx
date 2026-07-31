@@ -17,6 +17,7 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   token: string | null;
+  loading: boolean;
 
   login: (token: string, user: User) => void;
 
@@ -36,6 +37,8 @@ export function AuthProvider({
 
   const [token, setToken] = useState<string | null>(null);
 
+  const [loading, setLoading] = useState(true);
+
   // Load authentication data from localStorage
   // when the application starts.
   useEffect(() => {
@@ -46,6 +49,8 @@ export function AuthProvider({
       setToken(savedToken);
       setUser(JSON.parse(savedUser));
     }
+    setLoading(false);
+
   }, []);
 
   // Login
@@ -71,6 +76,7 @@ export function AuthProvider({
       value={{
         user,
         token,
+        loading,
         login,
         logout,
       }}

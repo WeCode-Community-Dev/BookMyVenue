@@ -46,6 +46,7 @@ export const createVenue = async (
     const files = req.files as {
       [fieldname: string]: Express.Multer.File[];
     };
+    const venueImages = files.venue_images || [];
 
     if (
       !files ||
@@ -151,6 +152,25 @@ export const createVenue = async (
       );
     }
 
+
+for (const image of venueImages) {
+  await client.query(
+    `INSERT INTO venue_images (
+      venue_id,
+      file_name,
+      file_path,
+      mime_type
+    )
+    VALUES ($1, $2, $3, $4)`,
+    [
+      venue.id,
+      image.originalname,
+      image.path,
+      image.mimetype,
+    ]
+  );
+}
+
     await client.query("COMMIT");
 
     res.status(201).json({
@@ -186,22 +206,45 @@ export const getMyVenues = async (
 
     const result = await pool.query(
       `SELECT
-        id,
-        owner_id,
-        name,
-        category,
-        description,
-        address,
-        city,
-        capacity,
-        base_price,
-        approval_status,
-        is_active,
-        created_at,
-        updated_at
-      FROM venues
-      WHERE owner_id = $1
-      ORDER BY created_at DESC`,
+        v.id,
+        v.owner_id,
+        v.name,
+        v.category,
+        v.description,
+        v.address,
+        v.city,
+        v.capacity,
+        v.base_price,
+        v.approval_status,
+        v.is_active,
+        v.created_at,
+        v.updated_at,
+
+        MIN(vi.file_path) AS thumbnail
+
+        FROM venues v
+
+        LEFT JOIN venue_images vi
+        ON v.id = vi.venue_id
+
+        WHERE v.owner_id = $1
+
+        GROUP BY
+          v.id,
+          v.owner_id,
+          v.name,
+          v.category,
+          v.description,
+          v.address,
+          v.city,
+          v.capacity,
+          v.base_price,
+          v.approval_status,
+          v.is_active,
+          v.created_at,
+          v.updated_at
+
+        ORDER BY v.created_at DESC` ,
       [req.user.id]
     );
 
@@ -776,3 +819,258 @@ export const getPublicVenueDetails = async (
   }
 };
 
+export const getOwnerVenueDetails = async (
+    req: AuthRequest,
+    res: Response
+): Promise<void> => {
+  try{
+
+      const { id } = req.params;
+
+      const ownerId = req.user?.id;
+
+      const venueResult = await pool.query(
+      `
+       SELECT *
+       FROM venues
+       WHERE id = $1
+       AND owner_id = $2
+      `,
+        [id, ownerId]
+      );
+
+      if(venueResult.rows.length ===0){
+        res.status(404).json({
+          message: "venue not found",
+        });
+        return;
+      }
+
+      const imageResult =await pool.query(
+        `
+          SELECT *
+          FROM venue_images
+          WHERE venue_id =$1
+          ORDER BY id
+        `,
+        [id]
+      );
+
+      const documentResult = await pool.query(
+        `
+          SELECT *
+          FROM venue_documents
+          WHERE venue_id =$1
+          ORDER BY id
+        `,
+        [id]
+      );
+    
+      res.status(200).json({
+        venue : venueResult.rows[0],
+        images : imageResult.rows,
+        documents : documentResult.rows,
+      });
+
+  }catch (error){
+    console.error(error);
+
+    res.status(500).json({
+      message : "Failed to fetch venue details",
+    });
+  }
+};
+
+export const updateVenue = async (
+    req: AuthRequest,
+    res: Response
+): Promise<void> => {
+
+  console.log(req.body);
+  console.log("BODY:", req.body);
+  console.log("FILES:", req.files);
+
+  if (!req.user) {
+  res.status(401).json({
+    message: "User not authenticated",
+  });
+  return;
+ }
+
+  const {id} =req.params;
+  const ownerId = req.user.id;
+
+  const {
+    name,
+    category,
+    description,
+    address,
+    city,
+    capacity,
+    base_price,
+  }=req.body;
+
+  const files = (req.files as {
+  [fieldname: string]: Express.Multer.File[];
+  }) || {};
+
+  const venueImages = files.venue_images || [];
+
+  const documentFiles = [
+  {
+    document_type: "owner_id_proof",
+    file: files.owner_id_proof?.[0],
+  },
+  {
+    document_type: "ownership_proof",
+    file: files.ownership_proof?.[0],
+  },
+  {
+    document_type: "business_registration",
+    file: files.business_registration?.[0],
+  },
+];
+
+const client = await pool.connect();
+
+  try{
+
+    await client.query("BEGIN");
+
+    const venueResult = await client.query(
+      `
+      SELECT * FROM venues
+      WHERE id = $1
+      AND owner_id =$2
+      `,
+      [id,ownerId]
+    );
+
+    if(venueResult.rows.length === 0){
+
+      await client.query("ROLLBACK");
+
+      res.status(404).json({
+        message : "Venue not found",
+      });
+
+      return;
+    }
+
+    const updatedVenue = await client.query(
+    `
+      UPDATE venues
+      SET
+       name = $1,
+        category = $2,
+        description = $3,
+        address = $4,
+        city = $5,
+        capacity = $6,
+        base_price = $7,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $8
+      AND owner_id = $9
+      RETURNING *;
+      `,
+     [
+    name,
+    category,
+    description,
+    address,
+    city,
+    Number(capacity),
+    Number(base_price),
+    id,
+    ownerId,
+    ]
+  );
+
+  if (venueImages.length > 0) {
+      await client.query(
+      `
+        DELETE FROM venue_images
+        WHERE venue_id = $1
+      `,
+      [id]
+    );
+
+    for (const image of venueImages) {
+      await client.query(
+      `
+      INSERT INTO venue_images (
+        venue_id,
+        file_name,
+        file_path,
+        mime_type
+        )
+      VALUES ($1, $2, $3, $4)
+      `,
+    [
+      id,
+      image.originalname,
+      image.path,
+      image.mimetype,
+    ]
+    );
+    }
+    }
+
+    for (const document of documentFiles) {
+
+      if (!document.file) {
+        continue;
+      }
+
+      await client.query(
+        `
+        DELETE FROM venue_documents
+        WHERE venue_id = $1
+        AND document_type = $2
+        `,
+        [
+        id,
+         document.document_type,
+         ]
+       );
+
+       await client.query(
+      `
+        INSERT INTO venue_documents (
+          venue_id,
+          document_type,
+          file_name,
+          file_path,
+          mime_type
+          )
+          VALUES ($1, $2, $3, $4, $5)
+        `,
+      [
+        id,
+        document.document_type,
+        document.file.originalname,
+        document.file.path,
+        document.file.mimetype,
+      ]
+    );
+
+  }
+
+  await client.query("COMMIT");
+  res.status(200).json({
+    message: "Venue updated successfully",
+    venue: updatedVenue.rows[0],
+  });
+
+  }catch(error){
+  await client.query("ROLLBACK");
+
+    console.error(error);
+    res.status(500).json({
+      message:"Failed to update venue",
+    });
+  }finally{
+    client.release();
+  }
+
+}

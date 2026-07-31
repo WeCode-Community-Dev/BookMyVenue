@@ -11,7 +11,11 @@ function ProtectedRoute({
   children,
   allowedRoles,
 }: ProtectedRouteProps) {
-  const { user, token } = useAuth();
+  const { user, token , loading } = useAuth();
+
+  if (loading) {
+  return <h2>Loading...</h2>;
+}
 
   // User is not logged in
   if (!token || !user) {
