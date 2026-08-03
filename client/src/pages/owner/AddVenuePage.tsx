@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ImageDropzone from "../../components/ImageDropzone";
 import api from "../../services/api";
+import { useNavigate } from "react-router-dom";
 
 function AddVenuePage (){
   const[name,setName] = useState("");
@@ -10,6 +11,7 @@ function AddVenuePage (){
   const[city ,setCity]= useState("");
   const[capacity, setCapacity] = useState("");
   const[basePrice, setBasePrice] = useState("");
+  const navigate = useNavigate();
   
 
   const[ownerIdProof, setOwnerIdProof] = useState<File | null>(null);
@@ -58,20 +60,9 @@ function AddVenuePage (){
     );
 
     alert(response.data.message);
+    
+    navigate("/owner/dashboard");
 
-    setName("");
-    setCategory("");
-    setDescription("");
-    setAddress("");
-    setCity("");
-    setCapacity("");
-    setBasePrice("");
-
-    setOwnerIdProof(null);
-    setOwnershipProof(null);
-    setBusinessRegistration(null);
-
-    setImages([]);
   } catch (error) {
     console.error(error);
     alert("Failed to create venue");

@@ -1074,3 +1074,73 @@ const client = await pool.connect();
   }
 
 }
+
+export const deleteVenue = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+
+      if (!req.user) {
+          res.status(401).json({
+          message: "User not authenticated",
+          });
+        return;
+      }
+
+    const { id } = req.params;
+    const ownerId = req.user.id;
+
+     const client = await pool.connect();
+
+    try {
+
+      await client.query("BEGIN");
+
+      const venueResult = await client.query(
+      `
+        SELECT *
+        FROM venues
+        WHERE id = $1
+        AND owner_id = $2
+      `,
+        [id, ownerId]
+      );
+
+      if(venueResult.rows.length ===0){
+        await client.query("ROLLBACK");
+
+        res.status(404).json({
+          message : "venue not found"
+        });
+
+        return;
+      }
+
+      await client.query(
+          `
+           DELETE FROM venues
+           WHERE id = $1
+           AND owner_id = $2
+         `,
+           [id, ownerId]
+      );
+
+      await client.query("COMMIT");
+
+      res.status(200).json({
+         message: "Venue deleted successfully",
+      });
+
+    } catch (error) {
+      await client.query("ROLLBACK");
+
+      console.error(error);
+
+      res.status(500).json({
+        message : "Failed to delete venue",
+      });
+
+    } finally {
+      client.release();
+    }
+};

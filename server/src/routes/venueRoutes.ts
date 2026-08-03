@@ -11,6 +11,7 @@ import {
   getPublicVenueDetails,
   getOwnerVenueDetails,
   updateVenue,
+  deleteVenue,
 } from "../controllers/venueController.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import { allowRoles } from "../middleware/roleMiddleware.js";
@@ -25,6 +26,8 @@ router.get("/my-venues", authMiddleware, allowRoles("owner"), getMyVenues);
 router.get("/owner/:id", authMiddleware, allowRoles("owner"), getOwnerVenueDetails);
 
 router.put("/owner/:id", authMiddleware, allowRoles("owner"), uploadVenueDocuments, updateVenue);
+
+router.delete("/owner/:id",authMiddleware,allowRoles("owner"),deleteVenue);
 
 router.get("/", getApprovedVenues);
 

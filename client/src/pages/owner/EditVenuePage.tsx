@@ -1,12 +1,26 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate,useParams } from "react-router-dom";
 import api from "../../api/api";
-import type { Venue } from "../../types/venue";
 
 
 const EditVenuePage = () => {
   const { id } = useParams();
-  const [venue, setVenue] = useState<Venue | null>(null);
+  const navigate = useNavigate();
+  const [images, setImages] = useState<any[]>([]);
+  const [documents, setDocuments] = useState<any[]>([]);
+  const [newImages, setNewImages] = useState<File[]>([]);
+  const [newDocuments, setNewDocuments] = useState<{
+        owner_id_proof: File | null;
+        ownership_proof: File | null;
+        business_registration: File | null;
+      }>({
+      owner_id_proof: null,
+      ownership_proof: null,
+      business_registration: null,
+    });
+
+  
+
   const [formData, setFormData] = useState({
     name: "",
     category: "",
@@ -22,7 +36,8 @@ const EditVenuePage = () => {
     try{
         const response = await api.get(`/venues/owner/${id}`);
         console.log(response.data);
-        setVenue(response.data.venue);
+        setImages(response.data.images);
+        setDocuments(response.data.documents);
 
         setFormData({
           name: response.data.venue.name,
@@ -65,11 +80,28 @@ const EditVenuePage = () => {
         data.append("capacity", formData.capacity.toString());
         data.append("base_price", formData.base_price.toString());
 
-        console.log(formData);
+        for (const image of newImages) {
+                  data.append("venue_images", image);
+            }
+        
+        if (newDocuments.owner_id_proof) {
+          data.append(  "owner_id_proof", newDocuments.owner_id_proof);
+          }
+
+        if (newDocuments.ownership_proof) {
+          data.append(  "ownership_proof",  newDocuments.ownership_proof);
+          }
+
+        if (newDocuments.business_registration) {
+          data.append(  "business_registration",  newDocuments.business_registration);
+          }
+
 
         await api.put(`/venues/owner/${id}`, data);
 
         alert("Venue updated successfully!");
+
+        navigate("/owner/dashboard");
 
       }catch(error){
         console.error(error);
@@ -78,12 +110,13 @@ const EditVenuePage = () => {
     };
 
   return (
-    <div style={{ padding: "20px", maxWidth: "700px", margin: "0 auto" }}>
+      <div className="edit-venue-container">
       <h1>Edit Venue</h1>
 
       <form onSubmit={handleSubmit}>
+        <div className="form-grid">
 
-        <div>
+        <div className="full-width form-group">
           <label>Venue Name</label>
           <input
             type="text"
@@ -97,7 +130,7 @@ const EditVenuePage = () => {
           />
         </div>
 
-        <div>
+        <div >
           <label>Category</label>
 
           <select
@@ -119,9 +152,9 @@ const EditVenuePage = () => {
             <option value="cafe_space">Cafe Space</option>
             <option value="outdoor_event_space">Outdoor event space</option>
           </select>
-         </div>
+        </div>
 
-          <div>
+        <div className="full-width form-group">
             <label>Address</label>
 
              <textarea
@@ -134,7 +167,7 @@ const EditVenuePage = () => {
                   })
                 }
               />
-          </div>
+         </div>
 
 
         <div>
@@ -152,7 +185,7 @@ const EditVenuePage = () => {
           />
         </div>
 
-        <div>
+        <div className="full-width form-group">
           <label>Description</label>
 
           <textarea
@@ -197,11 +230,98 @@ const EditVenuePage = () => {
           />
         </div>
 
+        <div className="venue-images-section full-width">
+
+          <h2 className="venue-images-title">
+            Venue Images
+          </h2>
+
+          <div className="venue-images-grid">
+            {images.map((image) => (
+            <img
+              key={image.id}
+              src={`http://localhost:5001/${image.file_path}`}
+              alt="Venue"
+              className="venue-image"
+            />
+            ))}
+          </div>
+
+        </div>
+
+        <div className="upload-images-section full-width">
+
+          <label>
+              Choose New Images
+          </label>
+
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={(event) => {
+
+            if (!event.target.files) return;
+
+            setNewImages(Array.from(event.target.files));
+
+          }} />
+
+        </div>
+
+        <div className="documents-section full-width">
+
+          <h2 className="documents-title">
+          Documents
+          </h2>
+
+          {documents.map((document) => (
+
+          <div
+            key={document.id}
+            className="document-card"
+            >
+
+            <h4>
+             {document.document_type
+               .split("_")
+               .map(
+                 (word: string) =>
+                  word.charAt(0).toUpperCase() +
+                  word.slice(1)
+                )
+              .join(" ")}
+            </h4>
+
+            <p>{document.file_name}</p>
+
+            <input type="file" onChange={(event) => {
+
+              if (!event.target.files?.[0]) return;
+
+              setNewDocuments({
+                  ...newDocuments,
+                  [document.document_type]: event.target.files[0],
+                });
+
+                }}
+            />
+
+          </div>
+
+          ))}
+
+        </div>
+
         <br />
 
-        <button type="submit">
+        <div className="button-row">
+          <button type="submit">
           Save Changes
         </button>
+        </div>
+
+        </div>
 
       </form>
     </div>

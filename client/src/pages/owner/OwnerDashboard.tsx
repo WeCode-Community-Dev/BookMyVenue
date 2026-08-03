@@ -15,7 +15,31 @@
     pending: "Verification Pending",
     approved: "Admin Verified",
     rejected: "Admin Rejected",
-};
+    };
+    const handleDelete = async (venueId: number) => { 
+      const confirmed = window.confirm("Are you sure want to delete this venue?");
+
+      if (!confirmed){
+        return;
+      }
+
+      try {
+
+          await api.delete(`/venues/owner/${venueId}`);
+
+          setVenues((previousVenues) =>
+              previousVenues.filter((venue) => venue.id !== venueId)
+          );
+
+          alert("Venue deleted successfully");
+
+      } catch (error) {
+
+        console.error(error);
+        alert("Failed to delete venue");
+
+      }
+    };
 
     useEffect(() => {
       const fetchMyVenues = async () => {
@@ -46,23 +70,23 @@
       <div style={{ padding: "20px" }}>
         <div>
 
-        <h1>Owner Dashboard</h1>
+              <h1>Owner Dashboard</h1>
           
-          <button className="add-venue-btn" onClick={() => navigate("/owner/add-venue")}  >
-              + Add Venue
-          </button>
+              <button className="add-venue-btn" onClick={() => navigate("/owner/add-venue")}>
+                  + Add Venue
+              </button>
 
-        <hr />
+          <hr />
         </div> 
        
         <div>
-        <h2>My Venues</h2>
+          <h2>My Venues</h2>
 
-        {venues.length === 0 ? (
-          <p>No venues added yet.</p>
-        ) : (
-            venues.map((venue) => (
-             <div key={venue.id} 
+          {venues.length === 0 ? (
+           <p>No venues added yet.</p>
+           ) : (
+             venues.map((venue) => (
+              <div key={venue.id} 
                   className = "venue-card">
 
               <div className="venue-image">
@@ -100,21 +124,23 @@
               </div>
 
              <div className ="venue-actions"> 
-              <button className="view-btn"
-                  onClick={() => navigate(`/owner/venues/${venue.id}`)}>
-                  View
-              </button>
-              
-              <button className="edit-btn"
-                  onClick={() => navigate(`/owner/venues/${venue.id}/edit`)}>
-                  Edit
-              </button>
+                <button className="view-btn"
+                    onClick={() => navigate(`/owner/venues/${venue.id}`)}>
+                    View
+                </button>
+                  
+                <button className="edit-btn"
+                    onClick={() => navigate(`/owner/venues/${venue.id}/edit`)}>
+                    Edit
+                </button>
 
-              <button className="delete-btn">-Delete</button>
-             </div>
+                <button className="delete-btn" onClick={()=> handleDelete(venue.id)}>
+                  -Delete
+                </button>
+              </div>
+              </div>
             </div>
-             </div>
-              ))
+            ))
         )}
       </div>
     </div>

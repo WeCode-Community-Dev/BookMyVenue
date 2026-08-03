@@ -1,0 +1,123 @@
+
+.venue-images-section {
+  margin-top: 30px;
+}
+
+.venue-images-title {
+  margin-bottom: 15px;
+}
+
+.venue-images-grid {
+  display: grid;
+    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap: 15px;
+}
+
+.venue-image {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.upload-images-section {
+  margin-top: 20px;
+}
+
+.upload-images-section label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.documents-section {
+  margin-top: 40px;
+}
+
+.documents-title {
+  margin-bottom: 20px;
+}
+
+.document-card {
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.document-card h4 {
+  margin-bottom: 8px;
+}
+
+.document-card p {
+  color: #555;
+}
+
+.edit-venue-container {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 40px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.08);
+}
+
+.edit-venue-container h1{
+    text-align:center;
+    margin-bottom:40px;
+}
+
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0,1fr));
+    gap:24px 40px;
+}
+
+.form-grid > div{
+    width:100%;
+}
+
+.form-grid label{
+    display:block;
+    margin-bottom:8px;
+    font-weight:600;
+}
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+}
+
+
+.full-width{
+    grid-column:1 / 3;
+}
+
+.form-grid input,
+.form-grid select,
+.form-grid textarea{
+    width:100%;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:15px;
+    box-sizing:border-box;
+}
+
+.button-row{
+    display:flex;
+    justify-content:flex-end;
+    margin-top:30px;
+}
+
+.button-row button{
+    padding:12px 30px;
+    font-size:16px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    background:#2563eb;
+    color:white;
+}
