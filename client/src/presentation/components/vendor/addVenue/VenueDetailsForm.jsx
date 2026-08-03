@@ -36,11 +36,20 @@ const VenueDetailsForm = ({
   onRemoveExistingImage,
   errors = {},
 }) => {
-  const handleImageChange = (event) => {
-    const files = Array.from(event.target.files || []);
+const handleImageChange = (event) => {
+  const files = Array.from(event.target.files || []);
 
-    setImages(files);
-  };
+  setImages((prevImages) => [...prevImages, ...files]);
+
+  // Clear image validation error when images are added
+  setErrors((prev) => ({
+    ...prev,
+    images: "",
+  }));
+
+  // Allow selecting the same file again if needed
+  event.target.value = "";
+};
 
   const handleLicenseChange = (event) => {
     const file = event.target.files?.[0];

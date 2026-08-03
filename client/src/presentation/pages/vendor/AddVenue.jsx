@@ -125,163 +125,125 @@ const AddVenue = () => {
   // HANDLE SUBMIT
   // ==============================
 
-  const handleSubmit = async () => {
-    setErrors({});
+const handleSubmit = async () => {
+  setErrors({});
 
-    const formValues = {
-      name: venueName,
-      category,
-      description,
+  const formValues = {
+    name: venueName,
+    category,
+    description,
 
-      addressLine1,
-      city,
-      state,
-      country,
+    addressLine1,
+    city,
+    state,
+    country,
 
-      phone,
-      pincode,
+    phone,
+    pincode,
 
-      websiteUrl,
-      googleMapLink,
+    websiteUrl,
+    googleMapLink,
 
-      seatingCapacity: pricing.seatingCapacity,
-      standingCapacity: pricing.standingCapacity,
-      pricePerHour: pricing.pricePerHour,
-      pricePerDay: pricing.pricePerDay,
-      securityDeposit: pricing.securityDeposit,
-      weekendSurcharge: pricing.weekendSurcharge,
-      minimumBookingHours: pricing.minimumBookingHours,
+    seatingCapacity: pricing.seatingCapacity,
+    standingCapacity: pricing.standingCapacity,
+    pricePerHour: pricing.pricePerHour,
+    pricePerDay: pricing.pricePerDay,
+    securityDeposit: pricing.securityDeposit,
+    weekendSurcharge: pricing.weekendSurcharge,
+    minimumBookingHours: pricing.minimumBookingHours,
 
-      amenities,
-      images,
-      license,
-    };
+    amenities,
+    images,
+    license,
+  };
 
-    // ==============================
-    // ZOD VALIDATION
-    // ==============================
+  // ==============================
+  // ZOD VALIDATION
+  // ==============================
 
-    const result = createVenueSchema.safeParse(formValues);
+  const result = createVenueSchema.safeParse(formValues);
 
-    if (!result.success) {
-      const fieldErrors = {};
+  if (!result.success) {
+    const fieldErrors = {};
 
-      result.error.issues.forEach((issue) => {
-        const fieldName = issue.path[0];
-
-        fieldErrors[fieldName] = issue.message;
-      });
-
-      setErrors(fieldErrors);
-
-      return;
-    }
-
-    // ==============================
-    // VENDOR VALIDATION
-    // ==============================
-
-    // if (!vendorId) {
-    //   toast.error("Vendor profile is still loading.");
-
-    //   return;
-    // }
-
-
-    // ==============================
-    // FORM DATA
-    // ==============================
-
-    const formData = new FormData();
-
-    formData.append("name", venueName);
-    formData.append("category", category);
-    formData.append("description", description);
-
-    formData.append("addressLine1", addressLine1);
-    formData.append("city", city);
-    formData.append("state", state);
-    formData.append("country", country);
-
-    formData.append("phone", phone);
-    formData.append("pincode", pincode);
-
-    formData.append("websiteUrl", websiteUrl);
-    formData.append("googleMapLink", googleMapLink);
-
-    formData.append(
-      "amenities",
-      JSON.stringify(amenities)
-    );
-
-    formData.append(
-      "seatingCapacity",
-      pricing.seatingCapacity
-    );
-
-    formData.append(
-      "standingCapacity",
-      pricing.standingCapacity
-    );
-
-    formData.append(
-    "pricePerHour",
-    String(pricing.pricePerHour)
-  );
-
-    formData.append(
-      "pricePerDay",
-      pricing.pricePerDay
-    );
-
-
-    formData.append(
-      "securityDeposit",
-      pricing.securityDeposit
-    );
-
-    formData.append(
-      "weekendSurcharge",
-      pricing.weekendSurcharge
-    );
-
-    formData.append(
-      "minimumBookingHours",
-      pricing.minimumBookingHours
-    );
-
-   // formData.append("vendorId", vendorId);
-
-    if (license) {
-      formData.append("license", license);
-    }
-
-    images.forEach((image) => {
-      formData.append("images", image);
+    result.error.issues.forEach((issue) => {
+      fieldErrors[issue.path[0]] = issue.message;
     });
 
-    // ==============================
-    // DISPATCH THUNK
-    // ==============================
+    setErrors(fieldErrors);
+    return;
+  }
 
-    try {
-      await dispatch(createVenue(formData)).unwrap();
+  // ==============================
+  // IMAGE VALIDATION
+  // ==============================
 
-      toast.success("Venue created successfully!");
+  if (images.length < 3) {
+    setErrors((prev) => ({
+      ...prev,
+      images: "Please upload at least 3 venue images.",
+    }));
 
-      resetForm();
+    toast.error("Please upload at least 3 venue images.");
+    return;
+  }
 
-      dispatch(clearVenueState());
-      navigate(ROUTES.VENDOR.VENUES);
+  // ==============================
+  // FORM DATA
+  // ==============================
 
-} 
-catch (errorMessage) {
-  toast.error(
-    typeof errorMessage === "string"
-      ? errorMessage
-      : errorMessage?.message || "Failed to create venue"
-  );
-}  };
+  const formData = new FormData();
+
+  formData.append("name", venueName);
+  formData.append("category", category);
+  formData.append("description", description);
+
+  formData.append("addressLine1", addressLine1);
+  formData.append("city", city);
+  formData.append("state", state);
+  formData.append("country", country);
+
+  formData.append("phone", phone);
+  formData.append("pincode", pincode);
+
+  formData.append("websiteUrl", websiteUrl);
+  formData.append("googleMapLink", googleMapLink);
+
+  formData.append("amenities", JSON.stringify(amenities));
+
+  formData.append("seatingCapacity", pricing.seatingCapacity);
+  formData.append("standingCapacity", pricing.standingCapacity);
+  formData.append("pricePerHour", String(pricing.pricePerHour));
+  formData.append("pricePerDay", pricing.pricePerDay);
+  formData.append("securityDeposit", pricing.securityDeposit);
+  formData.append("weekendSurcharge", pricing.weekendSurcharge);
+  formData.append("minimumBookingHours", pricing.minimumBookingHours);
+
+  if (license) {
+    formData.append("license", license);
+  }
+
+  images.forEach((image) => {
+    formData.append("images", image);
+  });
+
+  try {
+    await dispatch(createVenue(formData)).unwrap();
+
+    toast.success("Venue created successfully!");
+
+    resetForm();
+    dispatch(clearVenueState());
+
+    navigate(ROUTES.VENDOR.VENUES);
+  } catch (errorMessage) {
+    toast.error(
+      typeof errorMessage === "string"
+        ? errorMessage
+        : errorMessage?.message || "Failed to create venue"
+    );
+  }
+};
 
   return (
     <div className="flex min-h-screen bg-slate-50">
