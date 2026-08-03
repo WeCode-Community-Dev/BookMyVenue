@@ -96,6 +96,7 @@ import { ChangeVendorPasswordUsecase } from '../../application/vendor/usecases/p
 import { UserChangePasswordUsecase } from '../../application/user/usecases/profile/user.changePassword.usecase.js'
 import { UserGetSimilarVenuesUsecase } from '../../application/user/usecases/venue/user.getSimilarVenues.usecase.js'
 import { UserCancelBookingUsecase } from "../../application/user/usecases/booking/user.cancelBooking.usecase.js";
+import { UserAvailabilityUsecase } from "../../application/user/usecases/booking/user.availability.usecase.js";
 
 //
 import { ReservationService } from "../../infrastructure/services/reservationService.js";
@@ -374,6 +375,12 @@ const iUserConfirmBookingUsecase =
         iVenueRepository,
         iMailService
     );
+
+const iUserAvailabilityUsecase =
+    new UserAvailabilityUsecase(
+        bookingRepository
+    );
+
 const iUserGetBookingsUsecase =
     new UserGetBookingsUsecase(bookingRepository);
 
@@ -508,7 +515,8 @@ export const iUserBookingController =
         iUserConfirmBookingUsecase,
         iUserGetBookingsUsecase,
         iUserGetBookingByIdUsecase,
-        iUserCancelBookingUsecase
+        iUserCancelBookingUsecase,
+        iUserAvailabilityUsecase
     );
 
 export { iUserPaymentReminderUsecase };

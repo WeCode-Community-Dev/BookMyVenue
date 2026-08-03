@@ -9,6 +9,7 @@ import VenueGallery from "@/presentation/components/user/venueDetails/VenueGalle
 import VenueHeader from "@/presentation/components/user/venueDetails/VenueHeader";
 import VenueAbout from "@/presentation/components/user/venueDetails/VenueAbout";
 import { getVenueById } from "@/redux/slices/UserVenueSlice";
+import { fetchAvailability } from "@/redux/slices/UserBookingSlice";
 import BookingCard from "@/presentation/components/user/venueDetails/BookingCard";
 import SimilarVenues from "@/presentation/components/user/venueDetails/SimilarVenues";
 import VenueAvailability from "@/presentation/components/user/venueDetails/VenueAvailability";
@@ -39,6 +40,24 @@ export default function VenueDetails() {
       dispatch(getVenueById(id));
     }
   }, [dispatch, id]);
+
+  useEffect(() => {
+  if (id) {
+    dispatch(
+      fetchAvailability({
+        venueId: id,
+        month: new Date().getMonth() + 1,
+        year: new Date().getFullYear(),
+      })
+    );
+  }
+}, [dispatch, id]);
+
+const {
+  availabilityData,
+} = useSelector(
+  (state) => state.userBooking
+);
 
   return (
     <>
@@ -76,7 +95,9 @@ export default function VenueDetails() {
                 <div className="lg:col-span-2">
                   <VenueAbout description={selectedVenue.description} />
                   <VenueAmenities amenities={selectedVenue.amenities} />
-                  <VenueAvailability venue={selectedVenue} onAvailabilityChange={setAvailability} />
+                  <VenueAvailability venue={selectedVenue}
+                  availability={availabilityData} 
+                  onAvailabilityChange={setAvailability} />
                   <VenueReviews rating={selectedVenue.rating} 
                     reviews={selectedVenue.reviews} />
                   <HostedBy

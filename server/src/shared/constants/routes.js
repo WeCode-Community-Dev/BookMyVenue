@@ -118,6 +118,8 @@ export const ROUTES = {
         GET_ALL: "/booking",
         GET_BY_ID: "/booking/:bookingId",
         CANCEL: "/bookings/:bookingId/cancel",
+        AVAILABILITY: "/booking/:venueId/availability"
+
     }
 
     }

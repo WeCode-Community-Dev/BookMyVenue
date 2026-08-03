@@ -10,7 +10,7 @@ const initialState = {
   currentBooking: null,
 
   reservation: null,
-
+  availabilityData: {},
   totalPages: 1,
 
   totalCount: 0,
@@ -29,6 +29,36 @@ const initialState = {
   
 };
 
+// ======================================
+//  AVAILABILITY
+// ======================================
+export const fetchAvailability = createAsyncThunk(
+  "booking/fetchAvailability",
+  async ({ venueId, month, year }, { rejectWithValue }) => {
+    try {
+
+
+      const response = await api.get(
+        API_ROUTES.USER.BOOKINGS.AVAILABILITY(venueId),
+        {
+          params: {
+            month,
+            year,
+          },
+        }
+      );
+console.log("API Response:", response.data);
+
+      return response.data.data;
+    } catch (err) {
+      console.log(err.response);
+
+      return rejectWithValue(
+        err.response?.data?.message
+      );
+    }
+  }
+);
 // ======================================
 // RESERVE BOOKING
 // ======================================
@@ -101,7 +131,6 @@ export const confirmBooking = createAsyncThunk(
 export const getBookings = createAsyncThunk(
   "userBooking/getBookings",
   async ({ page = 1, limit = 5, status, }, { rejectWithValue }) => {
-    console.log(page, limit, status);
     try {
       const response = await api.get(API_ROUTES.USER.BOOKINGS.GET_ALL, {
         params: {
@@ -289,7 +318,24 @@ const userBookingSlice = createSlice({
   extraReducers: (builder) => {
     builder
 
-      // =========================
+    //=========================
+    //AVAILABILITY
+    //=========================
+.addCase(fetchAvailability.pending, (state) => {
+    state.loading = true;
+})
+
+.addCase(fetchAvailability.fulfilled, (state, action) => {
+    state.loading = false;
+    state.availabilityData = action.payload;
+})
+
+.addCase(fetchAvailability.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload;
+})      
+
+// =========================
       // Get All Bookings
       // =========================
 

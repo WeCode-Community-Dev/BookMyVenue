@@ -120,6 +120,11 @@ router.get(
     authHandler(iTokenService),
     iUserBookingController.getBookings
 );
+router.get(
+    ROUTES.USER.BOOKING.AVAILABILITY,
+    authHandler(iTokenService),
+    iUserBookingController.getAvailability
+);
 
 router.get(
 

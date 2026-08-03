@@ -31,7 +31,6 @@ export class BookingRepositoryImpl extends BookingRepository {
                 .populate("vendorId", "fullName email phone companyName")
                 .populate("venueId");
         if (!booking) return null;
-        console.log("Mongo Booking:", booking);
         return BookingMapper.mapToEntity(booking);
     }
 
@@ -102,6 +101,28 @@ export class BookingRepositoryImpl extends BookingRepository {
             },
         };
     }
+
+async findByVenue(venueId, month, year) {
+
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 1);
+
+
+
+    const bookings = await BookingModel.find({
+        venueId,
+        bookingDate: {
+            $gte: startDate,
+            $lt: endDate,
+        },
+        status: {
+            $ne: BookingStatus.CANCELLED,
+        },
+    });
+
+
+    return bookings.map((doc) => BookingMapper.mapToEntity(doc));
+}
 
     async findByVenueAndDate(
         venueId,
@@ -403,13 +424,6 @@ async hasOverlappingBooking(
     startTime,
     endTime
 ) {
-    console.log("=== Repository Input ===");
-    console.log({
-        venueId,
-        bookingDate,
-        startTime,
-        endTime,
-    });
 
     const booking = await BookingModel.findOne({
         venueId,
@@ -425,8 +439,7 @@ async hasOverlappingBooking(
         },
     });
 
-    console.log("=== Booking Found ===");
-    console.log(booking);
+
 
     return Boolean(booking);
 }

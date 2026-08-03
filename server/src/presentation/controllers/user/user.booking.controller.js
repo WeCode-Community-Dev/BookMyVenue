@@ -9,13 +9,15 @@ export class UserBookingController {
         userConfirmBookingUsecase,
         userGetBookingsUsecase,
         userGetBookingByIdUsecase,
-         userCancelBookingUsecase
+        userCancelBookingUsecase,
+        userAvailabilityUsecase
     ) {
         this._userReserveBookingUsecase = userReserveBookingUsecase;
         this._userConfirmBookingUsecase = userConfirmBookingUsecase;
          this._userGetBookingsUsecase = userGetBookingsUsecase;
         this._userGetBookingByIdUsecase = userGetBookingByIdUsecase;
          this._userCancelBookingUsecase = userCancelBookingUsecase;
+        this._userAvailabilityUsecase = userAvailabilityUsecase;
     }
 
     reserveBooking = asyncHandler(async (req, res) => {
@@ -129,5 +131,25 @@ export class UserBookingController {
         );
 
     });
+
+getAvailability = asyncHandler(async (req, res) => {
+
+    const { venueId } = req.params;
+    const { month, year } = req.query;
+
+
+    const result = await this._userAvailabilityUsecase.execute(
+        venueId,
+        Number(month),
+        Number(year)
+    );
+
+    return sendSuccess(
+        res,
+        statusCode.OK,
+        "Availability fetched successfully.",
+        result
+    );
+});
 
 }
