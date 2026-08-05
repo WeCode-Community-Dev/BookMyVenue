@@ -182,8 +182,13 @@ export class VenueService {
     );
   }
 
-  async getAllVenues() {
+  async getAllVenues(page: number, limit: number) {
+    const skip = (page - 1) * limit;
+
     return await this.prismaService.venue.findMany({
+      skip,
+      take: limit,
+
       include: {
         owner: {
           select: {
@@ -207,6 +212,7 @@ export class VenueService {
           },
         },
       },
+
       orderBy: {
         createdAt: 'desc',
       },

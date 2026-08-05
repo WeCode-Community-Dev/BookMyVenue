@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -61,8 +62,8 @@ export class VenueController {
   }
 
   @Get('all')
-  getAllVenues() {
-    return this.venueService.getAllVenues();
+  getAllVenues(@Query('page') page = 1, @Query('limit') limit = 10) {
+    return this.venueService.getAllVenues(Number(page), Number(limit));
   }
 
   @Get(':id')
