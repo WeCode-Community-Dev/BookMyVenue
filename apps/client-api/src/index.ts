@@ -1,0 +1,42 @@
+import Fastify, { type FastifyError } from "fastify";
+import cors from "@fastify/cors";
+import { clerkPlugin } from "@clerk/fastify";
+import { Prisma } from "@bookmyvenue/database";
+import { venueRoute } from "./routes/venue.route";
+import { bookingRoute } from "./routes/booking.route";
+import { reviewRoute } from "./routes/review.route";
+import { consumer, producer } from "./utils/kafka";
+import { dashboardRoute } from "./routes/dashboard.route";
+import { AppError } from "./utils/errors";
+import { registerErrorHandler } from "./plugins/error-handler";
+
+const app = Fastify({ logger: true });
+
+registerErrorHandler(app);
+
+await app.register(cors, {
+    origin: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+});
+app.register(clerkPlugin);
+
+app.register(venueRoute, { prefix: "/venue" });
+app.register(bookingRoute, { prefix: "/booking" });
+app.register(reviewRoute, { prefix: "/review" });
+app.register(dashboardRoute, { prefix: "/owner" });
+
+app.get("/health", async () => ({ status: "ok", uptime: process.uptime() }));
+
+const start = async () => {
+    try {
+        await producer.connect();
+        await consumer.connect();
+        await app.listen({ port: Number(process.env.PORT ?? 4000), host: "0.0.0.0" });
+    } catch (err) {
+        app.log.error(err);
+        process.exit(1);
+    }
+};
+
+start();

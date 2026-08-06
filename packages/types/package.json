@@ -1,0 +1,23 @@
+{
+    "name": "@bookmyvenue/types",
+    "version": "1.0.0",
+    "description": "",
+    "type": "module",
+    "main": "src/index.ts",
+    "scripts": {
+        "check-types": "tsc --noEmit"
+    },
+    "devDependencies": {
+        "@bookmyvenue/typescript-config": "workspace:*",
+        "@bookmyvenue/database": "workspace:*"
+    },
+    "exports": {
+        ".": {
+            "import": "./src/index.ts",
+            "types": "./src/index.ts"
+        }
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+}

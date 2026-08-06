@@ -1,0 +1,28 @@
+{
+    "name": "@bookmyvenue/client-api",
+    "version": "1.0.0",
+    "description": "",
+    "main": "src/index.ts",
+    "type": "module",
+    "scripts": {
+        "dev": "tsx --env-file=.env --watch src/index.ts",
+        "build": "tsc --noEmit",
+        "start": "tsx --env-file=.env src/index.ts",
+        "check-types": "tsc --noEmit"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@bookmyvenue/database": "workspace:*",
+        "@bookmyvenue/kafka": "workspace:*",
+        "@clerk/fastify": "^3.1.39",
+        "@fastify/cors": "^11.2.0",
+        "fastify": "^5.8.5"
+    },
+    "devDependencies": {
+        "@bookmyvenue/types": "workspace:*",
+        "@bookmyvenue/typescript-config": "workspace:*",
+        "tsx": "^4.22.4"
+    }
+}

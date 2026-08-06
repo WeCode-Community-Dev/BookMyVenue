@@ -1,0 +1,272 @@
+import { useState } from "react";
+import { z } from "zod";
+import { fmt12h } from "@/lib/utils";
+import { Clock, Plus, Trash2, Eye, EyeOff } from "lucide-react";
+import { SessionInput } from "@bookmyvenue/types";
+
+const newSessionSchema = z
+    .object({
+        label: z.string().min(1, "Session name is required"),
+        startTime: z.string().min(1, "Start time is required"),
+        endTime: z.string().min(1, "End time is required"),
+        price: z.number("Valid price is required").positive("Valid price is required"),
+    })
+    .refine((d) => d.startTime < d.endTime, {
+        message: "End time must be after start time",
+        path: ["endTime"],
+    });
+
+interface Step3Props {
+    form: {
+        name: string;
+        district: string;
+        category: string;
+        capacity: string;
+        amenities: string[];
+        sessions: SessionInput[];
+    };
+    setSessions: (sessions: SessionInput[]) => void;
+    stepError?: string;
+}
+
+const timeToMinutes = (time: string): number => {
+    const [hours, minutes] = time.split(":").map(Number);
+    return hours! * 60 + minutes!;
+};
+
+export function Step3Sessions({ form, setSessions, stepError }: Step3Props) {
+    const [newSession, setNewSession] = useState<SessionInput>({
+        label: "",
+        startTime: "",
+        endTime: "",
+        price: 0,
+    });
+    const [sessionError, setSessionError] = useState("");
+
+    const addCustomSession = () => {
+        const result = newSessionSchema.safeParse(newSession);
+        if (!result.success) {
+            setSessionError(result.error.issues[0]!.message);
+            return;
+        }
+        const label = newSession.label.trim().toLowerCase();
+
+        const isDuplicateLabel = form.sessions.some(
+            (session) => session.label.trim().toLowerCase() === label,
+        );
+
+        if (isDuplicateLabel) {
+            setSessionError("A session with this name already exists");
+            return;
+        }
+
+        const newStartTime = timeToMinutes(newSession.startTime);
+        const newEndTime = timeToMinutes(newSession.endTime);
+
+        const overlappingSession = form.sessions.find((session) => {
+            const existingStartTime = timeToMinutes(session.startTime);
+            const existingEndTime = timeToMinutes(session.endTime);
+
+            return newStartTime < existingEndTime && newEndTime > existingStartTime;
+        });
+
+        if (overlappingSession) {
+            setSessionError(`Session time overlaps with "${overlappingSession.label}" session.`);
+            return;
+        }
+
+        setSessionError("");
+        setSessions([...form.sessions, { ...newSession }]);
+        setNewSession({ label: "", startTime: "", endTime: "", price: 0 });
+    };
+
+    const removeSession = (index: number) => {
+        setSessions(form.sessions.filter((_, i) => i !== index));
+    };
+
+    const toggleSession = (index: number) => {
+        setSessions(
+            form.sessions.map((s, i) =>
+                i === index ? { ...s, isActive: s.isActive === false ? true : false } : s,
+            ),
+        );
+    };
+
+    return (
+        <div className="space-y-5">
+            <div className="border border-border rounded-xl p-4 space-y-3 bg-secondary/30">
+                <p className="text-sm font-semibold text-foreground">Add Custom Session</p>
+                <input
+                    className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="Session name (e.g. Night Gala)"
+                    value={newSession.label}
+                    onChange={(e) => setNewSession((s) => ({ ...s, label: e.target.value }))}
+                />
+                <div className="grid grid-cols-2 gap-3">
+                    <div>
+                        <label className="block text-xs text-muted-foreground mb-1">Start Time</label>
+                        <input
+                            type="time"
+                            className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            value={newSession.startTime}
+                            onChange={(e) => setNewSession((s) => ({ ...s, startTime: e.target.value }))}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs text-muted-foreground mb-1">End Time</label>
+                        <input
+                            type="time"
+                            className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            value={newSession.endTime}
+                            onChange={(e) => setNewSession((s) => ({ ...s, endTime: e.target.value }))}
+                        />
+                    </div>
+                </div>
+                <div>
+                    <label className="block text-xs text-muted-foreground mb-1">Session Price (₹)</label>
+                    <input
+                        type="number"
+                        className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        placeholder="e.g. 18000"
+                        value={newSession.price || ""}
+                        onChange={(e) =>
+                            setNewSession((s) => ({
+                                ...s,
+                                price: e.target.value === "" ? 0 : Number(e.target.value),
+                            }))
+                        }
+                    />
+                </div>
+                {sessionError && <p className="text-red-500 text-xs">{sessionError}</p>}
+                <button
+                    type="button"
+                    onClick={addCustomSession}
+                    className="flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
+                >
+                    <Plus className="w-4 h-4" /> Add Session
+                </button>
+            </div>
+
+            {stepError && <p className="text-red-500 text-xs -mt-2">{stepError}</p>}
+
+            {form.sessions.length > 0 && (
+                <div>
+                    <p className="text-sm font-semibold text-foreground mb-2">
+                        Sessions ({form.sessions.length})
+                    </p>
+                    <div className="space-y-2">
+                        {form.sessions.map((s, index) => {
+                            const isInactive = s.isActive === false;
+                            return (
+                                <div
+                                    key={s.id ?? index}
+                                    className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-colors ${
+                                        isInactive
+                                            ? "border-dashed border-border bg-secondary/20 opacity-60"
+                                            : "border-border bg-input-background"
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <Clock
+                                            className={`w-4 h-4 shrink-0 ${
+                                                isInactive ? "text-muted-foreground" : "text-primary"
+                                            }`}
+                                        />
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <p
+                                                    className={`text-sm font-semibold ${
+                                                        isInactive
+                                                            ? "text-muted-foreground line-through"
+                                                            : "text-foreground"
+                                                    }`}
+                                                >
+                                                    {s.label}
+                                                </p>
+                                                {isInactive && (
+                                                    <span className="px-1.5 py-0.5 rounded-full bg-muted text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                                                        Inactive
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-xs text-muted-foreground">
+                                                {fmt12h(s.startTime)} – {fmt12h(s.endTime)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        {s.price ? (
+                                            <span
+                                                className={`text-sm font-medium ${
+                                                    isInactive ? "text-muted-foreground" : "text-foreground"
+                                                }`}
+                                            >
+                                                ₹{Number(s.price).toLocaleString("en-IN")}
+                                            </span>
+                                        ) : (
+                                            <span className="text-xs text-muted-foreground">Base price</span>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleSession(index)}
+                                            title={isInactive ? "Activate session" : "Deactivate session"}
+                                            className="text-muted-foreground hover:text-primary transition-colors"
+                                        >
+                                            {isInactive ? (
+                                                <EyeOff className="w-4 h-4" />
+                                            ) : (
+                                                <Eye className="w-4 h-4" />
+                                            )}
+                                        </button>
+                                        {/* Show delete button only when session is just created */}
+                                        {s.isActive == undefined && (
+                                            <button
+                                                type="button"
+                                                onClick={() => removeSession(Number(index))}
+                                                className="text-muted-foreground hover:text-red-500 transition-colors"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
+            <div className="bg-secondary/60 rounded-xl p-4 border border-border">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                    Summary Preview
+                </p>
+                <div className="space-y-1.5 text-sm">
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">Name</span>
+                        <span className="font-medium text-foreground">{form.name || "—"}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">District</span>
+                        <span className="font-medium text-foreground">{form.district || "—"}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">Category</span>
+                        <span className="font-medium text-foreground">{form.category || "—"}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">Capacity</span>
+                        <span className="font-medium text-foreground">
+                            {form.capacity ? `${form.capacity} guests` : "—"}
+                        </span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">Amenities</span>
+                        <span className="font-medium text-foreground text-right max-w-[60%] truncate">
+                            {form.amenities.length ? form.amenities.join(", ") : "None selected"}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}

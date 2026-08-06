@@ -1,0 +1,24 @@
+{
+    "name": "@bookmyvenue/database",
+    "version": "1.0.0",
+    "type": "module",
+    "scripts": {
+        "db:generate": "prisma generate",
+        "db:migrate": "prisma migrate dev",
+        "db:deploy": "prisma migrate deploy"
+    },
+    "devDependencies": {
+        "@bookmyvenue/typescript-config": "workspace:*",
+        "prisma": "^7.8.0"
+    },
+    "dependencies": {
+        "@prisma/adapter-pg": "^7.8.0",
+        "@prisma/client": "^7.8.0",
+        "dotenv": "^17.4.2",
+        "pg": "^8.22.0"
+    },
+    "exports": {
+        ".": "./src/index.ts",
+        "./enums": "./generated/prisma/enums.ts"
+    }
+}

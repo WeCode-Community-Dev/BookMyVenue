@@ -1,0 +1,21 @@
+{
+    "name": "@bookmyvenue/email-service",
+    "version": "1.0.0",
+    "description": "",
+    "type": "module",
+    "scripts": {
+        "dev": "tsx --env-file=.env --watch src/index.ts",
+        "build": "tsc --noEmit",
+        "start": "tsx --env-file=.env src/index.ts",
+        "check-types": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@bookmyvenue/kafka": "workspace:*",
+        "nodemailer": "^9.0.3"
+    },
+    "devDependencies": {
+        "@bookmyvenue/typescript-config": "workspace:*",
+        "@bookmyvenue/types": "workspace:*",
+        "tsx": "^4.22.4"
+    }
+}
