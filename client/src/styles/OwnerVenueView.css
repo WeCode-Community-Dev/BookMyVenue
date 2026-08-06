@@ -1,0 +1,72 @@
+.image-gallery {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+.gallery-image {
+    width: 250px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.owner-venue-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 20px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.venue-header {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.venue-header h1 {
+    font-size: 42px;
+    margin-bottom: 15px;
+}
+
+.venue-information,
+.venue-description,
+.venue-images,
+.venue-documents {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 30px;
+}
+
+.venue-information p {
+    font-size: 18px;
+    margin: 12px 0;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 10px 18px;
+    border-radius: 30px;
+    font-weight: bold;
+    font-size: 15px;
+    margin-top: 10px;
+}
+
+.pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.approved {
+    background: #d4edda;
+    color: #155724;
+}
+
+.rejected {
+    background: #f8d7da;
+    color: #721c24;
+}
