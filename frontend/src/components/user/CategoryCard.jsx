@@ -1,0 +1,39 @@
+export default function CategoryCard({ category, bgColor }) {
+  return (
+    <div
+      className={`
+        group
+        bg-white
+        rounded-2xl
+        px-8
+        py-10
+        shadow-md
+        hover:shadow-xl
+        hover:-translate-y-1
+        hover:scale-[1.02]
+        transition-all
+        duration-300
+        cursor-pointer
+        border-2
+        border-transparent
+        hover:border-red-500
+        ${bgColor}
+      `}
+    >
+      <h3
+        className="
+          text-center
+          text-xl
+          font-semibold
+          text-gray-700
+          transition-colors
+          duration-300
+          group-hover:text-red-500
+        "
+      >
+        {category.name}
+      </h3>
+    </div>
+  );
+}
+

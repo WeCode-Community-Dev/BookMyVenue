@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+body {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
