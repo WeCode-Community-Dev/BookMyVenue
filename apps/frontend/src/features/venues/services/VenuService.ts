@@ -71,8 +71,8 @@ export function getVenueVerified(venue: Venue): boolean {
     return venue.status === "APPROVED";
 }
 
-export async function fetchVenues(): Promise<Venue[]> {
-    const url = `${BASE_URL}/venue/all`;
+export async function fetchVenues(page: number, limit: number): Promise<Venue[]> {
+    const url = `${BASE_URL}/venue/all?page=${page}&limit=${limit}`;
     try {
         const response = await fetch(url);
         if (!response.ok) {

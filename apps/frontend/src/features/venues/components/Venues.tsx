@@ -1,7 +1,7 @@
 "use client";
 
 import { selectAuthLoading, selectIsAuthenticated, selectJustLoggedOut } from "@/features/auth/AuthSlice";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { AppText } from "@/lib/language/LanguageHelper";
 import Card from "@/components/global/card/Card";
@@ -21,6 +21,13 @@ export default function Venues() {
     const isAuthenticated = useSelector(selectIsAuthenticated);
     const loading = useSelector(selectAuthLoading);
     const justLoggedOut = useSelector(selectJustLoggedOut);
+    const limit = 5;
+
+    const loaderRef = useRef<HTMLDivElement | null>(null);
+    // Guards against overlapping/duplicate fetches, independent of React's render timing
+    const isFetchingRef = useRef(false);
+    const hasMoreRef = useRef(true);
+    const pageRef = useRef(1);
 
     const [
         loginOpen, setLoginOpen
@@ -36,8 +43,24 @@ export default function Venues() {
     ] = useState(true);
 
     const [
+        loadingMore, setLoadingMore
+    ] = useState(false);
+
+    const [
+        hasMore, setHasMore
+    ] = useState(true);
+
+    const [
         error, setError
     ] = useState<string | null>(null);
+
+    const [
+        selectedVenue, setSelectedVenue
+    ] = useState<Venue | null>(null);
+
+    const [
+        bookingOpen, setBookingOpen
+    ] = useState(false);
 
     useEffect(() => {
         if (!loading && !isAuthenticated && !justLoggedOut) {
@@ -49,40 +72,90 @@ export default function Venues() {
         isAuthenticated, loading, justLoggedOut
     ]);
 
+    // Keep refs in sync so the observer callback always reads fresh values
+    // without needing to be recreated on every state change.
     useEffect(() => {
-        let active = true;
-        const loadVenues = async () => {
-            try {
-                setLoadingVenues(true);
-                setError(null);
-                const fetched = await fetchVenues();
-                if (active) {
-                    setVenuesList(fetched);
-                }
-            } catch (ApiErr: any) {
-                if (active) {
-                    setError(ApiErr.message || "Failed to load venues.");
-                }
-            } finally {
-                if (active) {
-                    setLoadingVenues(false);
-                }
+        hasMoreRef.current = hasMore;
+    }, [
+        hasMore
+    ]);
+
+    const loadPage = useCallback(async (pageToLoad: number) => {
+        // hard guard: never allow overlap
+        if (isFetchingRef.current) return; 
+        isFetchingRef.current = true;
+
+        if (pageToLoad === 1) {
+            setLoadingVenues(true);
+        } else {
+            setLoadingMore(true);
+        }
+        setError(null);
+
+        try {
+            const response = await fetchVenues(pageToLoad, limit);
+
+            if (response.length === 0) {
+                setHasMore(false);
+                hasMoreRef.current = false;
+            } else {
+                setVenuesList((prev) => {
+                    if (pageToLoad === 1) return response;
+                    return [
+                        ...prev, ...response
+                    ];
+                });
+                pageRef.current = pageToLoad;
             }
-        };
-        loadVenues();
-        return () => {
-            active = false;
-        };
+        } catch (apiErr: any) {
+            setError(apiErr.message || "Failed to load venues.");
+        } finally {
+            if (pageToLoad === 1) {
+                setLoadingVenues(false);
+            } else {
+                setLoadingMore(false);
+            }
+            isFetchingRef.current = false;
+        }
+    }, [
+        limit
+    ]);
+
+    // Initial load
+    useEffect(() => {
+        loadPage(1);
+
     }, [
     ]);
 
-    const [
-        selectedVenue, setSelectedVenue
-    ] = useState<Venue | null>(null);
+    // Observer created ONCE. Reads live state via refs, so no stale
+    // closures and no re-creation churn that causes re-firing.
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (
+                    entries[ 0 ].isIntersecting &&
+                    hasMoreRef.current &&
+                    !isFetchingRef.current
+                ) {
+                    const nextPage = pageRef.current + 1;
+                    loadPage(nextPage);
+                }
+            },
+            // start loading slightly before it's in view
+            { rootMargin: "200px" } 
+        );
 
-    const [
-        bookingOpen, setBookingOpen
-    ] = useState(false);
+        if (loaderRef.current) {
+            observer.observe(loaderRef.current);
+        }
+
+        return () => {
+            return observer.disconnect();
+        };
+    }, [
+        loadPage
+    ]);
 
     return (
         <>
@@ -95,15 +168,12 @@ export default function Venues() {
                 venue={selectedVenue}
                 actionType="pay"
             />
-            {/* <Header /> */}
             <div className={venueStyle.flexContainer}>
-                {/* <Sidebar /> */}
                 <main className={venueStyle.mainSection}>
                     <OfferSection />
                     <EventTypeFilter />
                     <VenueTypeSection />
                     <VenueFiltersBar />
-                    {/* venues are listed below */}
                     <div className={venueStyle.listvenuecontainer}>
                         {loadingVenues
                             ? (
@@ -114,8 +184,11 @@ export default function Venues() {
                             : error
                                 ? (
                                     <div className={venueStyle.errorText}>
-                                        <AppText textName="ERROR_LOADING_VENUES" textModule="MESSAGES" 
-                                            append={{ error }} />
+                                        <AppText
+                                            textName="ERROR_LOADING_VENUES"
+                                            textModule="MESSAGES"
+                                            append={{ error }}
+                                        />
                                     </div>
                                 )
                                 : venuesList.length === 0
@@ -138,6 +211,11 @@ export default function Venues() {
                                             );
                                         })
                                     )}
+                        <div ref={loaderRef}>
+                            {loadingMore && (
+                                <div className={venueStyle.loadingText}>Loading more venues...</div>
+                            )}
+                        </div>
                     </div>
                 </main>
                 <MapPanel />
