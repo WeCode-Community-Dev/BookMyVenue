@@ -1,0 +1,664 @@
+import { useEffect, useState, useRef } from "react";
+import { X, IndianRupee, UploadCloud } from "lucide-react";
+import {
+  parsePolicyDays,
+  validateCancellationPolicyFields,
+  policyPayloadFromFields,
+} from "../../utils/cancellationPolicy";
+import {
+  MAX_VENUE_IMAGES,
+  uploadImagesToCloudinary,
+  validateImageFile,
+} from "../../utils/cloudinaryUpload";
+
+
+const initialFormState = {
+  name: "",
+  location: "",
+  googleMapsUrl: "",
+  googleReviewUrl: "",
+  venueTypeId: "",
+  capacity: "",
+  dailyRate: "",
+  description: "",
+  refund50Days: "",
+  refund25Days: "",
+  cancelCutoffDays: "",
+  advancePercent: "30",
+  allowPayAtVenue: true,
+};
+
+function AddVenueModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  venueTypes = [],
+  amenities = [],
+  submitting = false,
+  error = null,
+}) {
+  const [fields, setFields] = useState(initialFormState);
+  const [selectedAmenityIds, setSelectedAmenityIds] = useState([]);
+  const [errors, setErrors] = useState({});
+
+
+  // Each entry: { key, file, preview } — preview URLs are revoked on removal/reset.
+  const [imageItems, setImageItems] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
+  const [uploadStatus, setUploadStatus] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setFields({
+        ...initialFormState,
+        venueTypeId: venueTypes[0]?.id ?? "",
+      });
+      setSelectedAmenityIds([]);
+      setErrors({});
+      setImageItems((prev) => {
+        prev.forEach((item) => URL.revokeObjectURL(item.preview));
+        return [];
+      });
+      setUploadError(null);
+      setUploadStatus(null);
+      setIsDragging(false);
+    }
+  }, [isOpen, venueTypes]);
+
+  
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFields((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const toggleAmenity = (id) => {
+    setSelectedAmenityIds((prev) =>
+      prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id],
+    );
+  };
+
+  const addImageFiles = (fileList) => {
+    const files = Array.from(fileList ?? []);
+    if (files.length === 0) return;
+
+    const accepted = [];
+    let message = null;
+
+    for (const file of files) {
+      if (imageItems.length + accepted.length >= MAX_VENUE_IMAGES) {
+        message = `You can add up to ${MAX_VENUE_IMAGES} images.`;
+        break;
+      }
+      const fileError = validateImageFile(file);
+      if (fileError) {
+        message = fileError;
+        continue;
+      }
+      accepted.push({
+        key: `${file.name}-${file.lastModified}-${Math.random().toString(36).slice(2)}`,
+        file,
+        preview: URL.createObjectURL(file),
+      });
+    }
+
+    setUploadError(message);
+    if (accepted.length > 0) {
+      setImageItems((prev) => [...prev, ...accepted]);
+    }
+  };
+
+  const handleFileInputChange = (e) => {
+    addImageFiles(e.target.files);
+    e.target.value = "";
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+  const handleDragLeave = () => setIsDragging(false);
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    addImageFiles(e.dataTransfer.files);
+  };
+
+  const removeImage = (key) => {
+    setImageItems((prev) => {
+      const target = prev.find((item) => item.key === key);
+      if (target) URL.revokeObjectURL(target.preview);
+      return prev.filter((item) => item.key !== key);
+    });
+    setUploadError(null);
+  };
+
+  const validate = () => {
+    const next = {};
+    if (!fields.name.trim()) next.name = "Venue name is required";
+    if (!fields.location.trim()) next.location = "Location is required";
+    if (!fields.venueTypeId) next.venueTypeId = "Select a venue type";
+    if (!fields.dailyRate || Number(fields.dailyRate) <= 0)
+      next.dailyRate = "Enter a valid daily rate";
+    if (fields.capacity && Number(fields.capacity) <= 0)
+      next.capacity = "Capacity must be a positive number";
+    const pct = Number(fields.advancePercent);
+    if (!pct || pct < 1 || pct > 100)
+      next.advancePercent = "Advance must be between 1 and 100";
+    const policyError = validateCancellationPolicyFields(
+      parsePolicyDays(fields.refund50Days),
+      parsePolicyDays(fields.refund25Days),
+      parsePolicyDays(fields.cancelCutoffDays),
+    );
+    if (policyError) next.cancellationPolicy = policyError;
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!validate()) return;
+
+  let imageUrls = [];
+
+  if (imageItems.length > 0) {
+    try {
+      setUploading(true);
+      setUploadStatus({ index: 0, total: imageItems.length, percent: 0 });
+      imageUrls = await uploadImagesToCloudinary(
+        imageItems.map((item) => item.file),
+        setUploadStatus,
+      );
+    } catch (err) {
+      setUploadError(err.message || "Image upload failed. Please try again.");
+      setUploading(false);
+      return;
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  onSubmit({
+    name: fields.name.trim(),
+    location: fields.location.trim(),
+    google_maps_url: fields.googleMapsUrl.trim() || null,
+    google_review_url: fields.googleReviewUrl.trim() || null,
+    price_per_day: Number(fields.dailyRate),
+    venue_type_id: Number(fields.venueTypeId),
+    capacity: fields.capacity ? Number(fields.capacity) : null,
+    description: fields.description.trim() || null,
+    image_url: imageUrls[0] ?? null,
+    image_urls: imageUrls,
+    amenityIds: selectedAmenityIds,
+    advance_percent: Number(fields.advancePercent) || 30,
+    allow_pay_at_venue: Boolean(fields.allowPayAtVenue),
+    ...policyPayloadFromFields(
+      fields.refund50Days,
+      fields.refund25Days,
+      fields.cancelCutoffDays,
+    ),
+  });
+};
+
+  const isSubmitDisabled = submitting || uploading;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 backdrop-blur-sm p-4 sm:p-8"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl my-4">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+          <h2 className="text-lg font-bold text-rose-900">Add New Venue</h2>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-colors"
+            aria-label="Close"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="px-6 py-5 space-y-5 max-h-[70vh] overflow-y-auto">
+            {error && (
+              <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-3.5 py-2.5">
+                {error}
+              </p>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Venue Name */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Venue Name
+                </label>
+                <input
+                  name="name"
+                  type="text"
+                  placeholder="e.g. Grand Ballroom"
+                  value={fields.name}
+                  onChange={handleChange}
+                  className={`w-full rounded-xl px-3.5 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none border transition
+                    ${errors.name ? "border-red-400 bg-red-50" : "border-gray-200 bg-gray-50 focus:ring-2 focus:ring-rose-300 focus:border-transparent"}`}
+                />
+                {errors.name && (
+                  <p className="mt-1 text-xs text-red-500">⚠ {errors.name}</p>
+                )}
+              </div>
+
+              {/* Venue Type */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Venue Type
+                </label>
+                <select
+                  name="venueTypeId"
+                  value={fields.venueTypeId}
+                  onChange={handleChange}
+                  className={`w-full rounded-xl px-3.5 py-2.5 text-sm text-gray-800 outline-none border transition
+                    ${errors.venueTypeId ? "border-red-400 bg-red-50" : "border-gray-200 bg-gray-50 focus:ring-2 focus:ring-rose-300 focus:border-transparent"}`}
+                >
+                  <option value="" disabled>
+                    {venueTypes.length === 0 ? "Loading types..." : "Select a type"}
+                  </option>
+                  {venueTypes.map((type) => (
+                    <option key={type.id} value={type.id}>
+                      {type.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.venueTypeId && (
+                  <p className="mt-1 text-xs text-red-500">⚠ {errors.venueTypeId}</p>
+                )}
+              </div>
+
+              {/* Location */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Location
+                </label>
+                <input
+                  name="location"
+                  type="text"
+                  placeholder="City, Kerala"
+                  value={fields.location}
+                  onChange={handleChange}
+                  className={`w-full rounded-xl px-3.5 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none border transition
+                    ${errors.location ? "border-red-400 bg-red-50" : "border-gray-200 bg-gray-50 focus:ring-2 focus:ring-rose-300 focus:border-transparent"}`}
+                />
+                {errors.location && (
+                  <p className="mt-1 text-xs text-red-500">⚠ {errors.location}</p>
+                )}
+              </div>
+
+              {/* Google Maps link — optional, owner pastes share URL */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Google Maps link (optional)
+                </label>
+                <input
+                  name="googleMapsUrl"
+                  type="url"
+                  placeholder="https://maps.app.goo.gl/..."
+                  value={fields.googleMapsUrl}
+                  onChange={handleChange}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none border border-gray-200 bg-gray-50 focus:ring-2 focus:ring-rose-300 focus:border-transparent transition"
+                />
+                <p className="mt-1 text-xs text-gray-400">
+                  Paste the share link from Google Maps so customers can open directions.
+                </p>
+              </div>
+
+              {/* Google review link — used after 4+ star in-app reviews */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Google review link (optional)
+                </label>
+                <input
+                  name="googleReviewUrl"
+                  type="url"
+                  placeholder="https://g.page/r/.../review or writereview link"
+                  value={fields.googleReviewUrl}
+                  onChange={handleChange}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none border border-gray-200 bg-gray-50 focus:ring-2 focus:ring-rose-300 focus:border-transparent transition"
+                />
+                <p className="mt-1 text-xs text-gray-400">
+                  Paste your Google write-a-review link so happy customers can leave a Maps review.
+                </p>
+              </div>
+
+              {/* Capacity */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Capacity (Guests)
+                </label>
+                <input
+                  name="capacity"
+                  type="number"
+                  min="1"
+                  placeholder="500"
+                  value={fields.capacity}
+                  onChange={handleChange}
+                  className={`w-full rounded-xl px-3.5 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none border transition
+                    ${errors.capacity ? "border-red-400 bg-red-50" : "border-gray-200 bg-gray-50 focus:ring-2 focus:ring-rose-300 focus:border-transparent"}`}
+                />
+                {errors.capacity && (
+                  <p className="mt-1 text-xs text-red-500">⚠ {errors.capacity}</p>
+                )}
+              </div>
+
+              {/* Daily Rate */}
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Daily Rate (₹)
+                </label>
+                <div
+                  className={`flex items-center gap-2 rounded-xl px-3.5 py-2.5 border transition
+                    ${errors.dailyRate ? "border-red-400 bg-red-50" : "border-gray-200 bg-gray-50 focus-within:ring-2 focus-within:ring-rose-300 focus-within:border-transparent"}`}
+                >
+                  <IndianRupee size={14} className="text-gray-400 shrink-0" />
+                  <input
+                    name="dailyRate"
+                    type="number"
+                    min="0"
+                    placeholder="25,000"
+                    value={fields.dailyRate}
+                    onChange={handleChange}
+                    className="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400"
+                  />
+                </div>
+                {errors.dailyRate && (
+                  <p className="mt-1 text-xs text-red-500">⚠ {errors.dailyRate}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Amenities */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-2">
+                Amenities
+                {selectedAmenityIds.length > 0 && (
+                  <span className="ml-2 px-1.5 py-0.5 rounded-md bg-rose-100 text-rose-800 text-[10px] font-semibold">
+                    {selectedAmenityIds.length} selected
+                  </span>
+                )}
+              </label>
+              {amenities.length === 0 ? (
+                <p className="text-xs text-gray-400">Loading amenities...</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {amenities.map((amenity) => {
+                    const isSelected = selectedAmenityIds.includes(amenity.id);
+                    return (
+                      <button
+                        key={amenity.id}
+                        type="button"
+                        onClick={() => toggleAmenity(amenity.id)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                          isSelected
+                            ? "bg-rose-900 border-rose-900 text-white"
+                            : "bg-white border-gray-200 text-gray-600 hover:border-rose-300 hover:text-rose-800"
+                        }`}
+                      >
+                        {amenity.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              <p className="mt-1.5 text-xs text-gray-400">
+                These will be linked to the venue right after it&apos;s created.
+              </p>
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Description
+              </label>
+              <textarea
+                name="description"
+                rows={3}
+                placeholder="Describe your venue's unique features..."
+                value={fields.description}
+                onChange={handleChange}
+                className="w-full rounded-xl px-3.5 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none border border-gray-200 bg-gray-50 focus:ring-2 focus:ring-rose-300 focus:border-transparent resize-none"
+              />
+            </div>
+
+            {/* Cancellation policy */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Cancellation policy (optional)
+              </label>
+              <p className="text-xs text-gray-400 mb-3">
+                Days before check-in. Leave all empty for no tiered policy.
+              </p>
+              {errors.cancellationPolicy && (
+                <p className="mb-2 text-xs text-red-500">⚠ {errors.cancellationPolicy}</p>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <input
+                  name="refund50Days"
+                  type="number"
+                  min="1"
+                  placeholder="Full refund days"
+                  value={fields.refund50Days}
+                  onChange={handleChange}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm border border-gray-200 bg-gray-50"
+                />
+                <input
+                  name="refund25Days"
+                  type="number"
+                  min="1"
+                  placeholder="50% refund days"
+                  value={fields.refund25Days}
+                  onChange={handleChange}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm border border-gray-200 bg-gray-50"
+                />
+                <input
+                  name="cancelCutoffDays"
+                  type="number"
+                  min="1"
+                  placeholder="Last cancel days"
+                  value={fields.cancelCutoffDays}
+                  onChange={handleChange}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm border border-gray-200 bg-gray-50"
+                />
+              </div>
+            </div>
+
+            {/* Payment options */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Payment options
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Advance %</label>
+                  <input
+                    name="advancePercent"
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={fields.advancePercent}
+                    onChange={handleChange}
+                    className={`w-full rounded-xl px-3.5 py-2.5 text-sm border ${
+                      errors.advancePercent
+                        ? "border-red-400 bg-red-50"
+                        : "border-gray-200 bg-gray-50"
+                    }`}
+                  />
+                  {errors.advancePercent && (
+                    <p className="mt-1 text-xs text-red-500">⚠ {errors.advancePercent}</p>
+                  )}
+                </div>
+                <label className="flex items-center gap-2 mt-6 text-sm text-gray-700">
+                  <input
+                    type="checkbox"
+                    name="allowPayAtVenue"
+                    checked={Boolean(fields.allowPayAtVenue)}
+                    onChange={(e) =>
+                      setFields((prev) => ({
+                        ...prev,
+                        allowPayAtVenue: e.target.checked,
+                      }))
+                    }
+                    className="rounded border-gray-300 text-rose-900 focus:ring-rose-300"
+                  />
+                  Allow pay at venue
+                </label>
+              </div>
+            </div>
+
+            {/* ── Venue Photos ─────────────────────────────────────── */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Venue Photos
+                <span className="ml-2 text-[10px] font-normal text-gray-400">
+                  {imageItems.length}/{MAX_VENUE_IMAGES} · first photo is the cover
+                </span>
+              </label>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="hidden"
+                onChange={handleFileInputChange}
+              />
+
+              {imageItems.length > 0 && (
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-2">
+                  {imageItems.map((item, index) => (
+                    <div
+                      key={item.key}
+                      className="relative rounded-xl overflow-hidden border border-gray-200 bg-gray-50"
+                    >
+                      <img
+                        src={item.preview}
+                        alt={`Venue photo ${index + 1}`}
+                        className="w-full h-20 object-cover"
+                      />
+                      {index === 0 && (
+                        <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-md bg-rose-900/90 text-white text-[10px] font-semibold">
+                          Cover
+                        </span>
+                      )}
+                      {!uploading && (
+                        <button
+                          type="button"
+                          onClick={() => removeImage(item.key)}
+                          className="absolute top-1 right-1 p-1 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors"
+                          aria-label={`Remove photo ${index + 1}`}
+                        >
+                          <X size={12} />
+                        </button>
+                      )}
+                      {uploading && uploadStatus?.index === index && (
+                        <div className="absolute inset-0 bg-black/45 flex items-center justify-center">
+                          <p className="text-white text-[11px] font-semibold">
+                            {uploadStatus.percent}%
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {imageItems.length < MAX_VENUE_IMAGES && (
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={`flex flex-col items-center justify-center gap-2 h-32 rounded-xl border-2 border-dashed cursor-pointer transition-colors
+                    ${isDragging
+                      ? "border-rose-400 bg-rose-50"
+                      : "border-gray-200 bg-gray-50 hover:border-rose-300 hover:bg-rose-50/40"
+                    }`}
+                >
+                  <UploadCloud
+                    size={26}
+                    className={isDragging ? "text-rose-500" : "text-gray-300"}
+                  />
+                  <div className="text-center">
+                    <p className="text-xs font-medium text-gray-500">
+                      Drag & drop or{" "}
+                      <span className="text-rose-700 underline underline-offset-2">
+                        browse
+                      </span>{" "}
+                      multiple photos
+                    </p>
+                    <p className="text-[11px] text-gray-400 mt-0.5">
+                      JPG, PNG, WEBP or GIF · max 5 MB each
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {uploading && uploadStatus && (
+                <p className="mt-1.5 text-xs text-gray-500">
+                  Uploading photo {uploadStatus.index + 1} of {uploadStatus.total} —{" "}
+                  {uploadStatus.percent}%
+                </p>
+              )}
+
+              {uploadError && (
+                <p className="mt-1.5 text-xs text-red-500">⚠ {uploadError}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitDisabled}
+              className="px-5 py-2.5 rounded-full bg-rose-900 hover:bg-rose-950 text-white text-sm font-semibold transition-colors disabled:opacity-50"
+            >
+              {uploading ? "Uploading…" : submitting ? "Adding…" : "Add Venue"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+export default AddVenueModal;

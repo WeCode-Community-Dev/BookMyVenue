@@ -20,7 +20,7 @@
 - [ ] Bug fix (non-breaking change which fixes an issue)
 - [ ] New feature / Module (non-breaking change which adds functionality)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] Documentation update
+- [ ] Documentation update 
 
 ## Checklist:
 - [ ] I have read the [Contribution Guidelines](CONTRIBUTING.md).

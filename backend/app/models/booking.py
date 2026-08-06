@@ -1,0 +1,68 @@
+from decimal import Decimal
+from datetime import date, datetime, time, timezone
+from typing import Optional
+from sqlalchemy import (
+    Integer, String, Date, Time, Numeric, Text, DateTime,
+    ForeignKey, UniqueConstraint, CheckConstraint,
+)
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from app.db.database import Base
+
+
+class Booking(Base):
+    __tablename__ = "bookings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    venue_id: Mapped[int] = mapped_column(Integer, ForeignKey("venues.id", ondelete="CASCADE"), nullable=False)
+    booking_date: Mapped[date] = mapped_column(Date, nullable=False)
+    time_slot: Mapped[time] = mapped_column(Time, nullable=False)
+    check_in_date: Mapped[date] = mapped_column(Date, nullable=False)
+    check_in_time: Mapped[time] = mapped_column(Time, nullable=False)
+    check_out_date: Mapped[date] = mapped_column(Date, nullable=False)
+    check_out_time: Mapped[time] = mapped_column(Time, nullable=False)
+    num_days: Mapped[int] = mapped_column(Integer, nullable=False)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    payment_option: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    amount_paid: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, default=0)
+    balance_due: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+
+    event_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+
+    guest_count: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending_payment")
+
+    owner_status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
+
+    cancellation_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    cancelled_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    idempotency_key: Mapped[Optional[str]] = mapped_column(String(128), nullable=True, index=True)
+    check_in_token: Mapped[Optional[str]] = mapped_column(String(64), nullable=True, unique=True, index=True)
+    checked_in_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
+
+    venue = relationship("Venue")
+    user = relationship("User")
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "idempotency_key", name="uq_booking_user_idempotency"),
+        CheckConstraint(
+            "status IN ('pending_payment', 'booked', 'cancelled', 'completed')",
+            name="ck_booking_status",
+        ),
+        CheckConstraint(
+            "owner_status IN ('pending', 'accepted', 'rejected')",
+            name="ck_booking_owner_status",
+        ),
+        CheckConstraint(
+            "payment_option IS NULL OR payment_option IN ('full', 'advance', 'pay_at_venue')",
+            name="ck_booking_payment_option",
+        ),
+    )
