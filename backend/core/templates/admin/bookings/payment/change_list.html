@@ -1,0 +1,29 @@
+{% extends "admin/change_list.html" %}
+
+{% block date_hierarchy %}
+    {% if payment_summary_cards %}
+        <div class="col-12">
+            <div class="row bmv-dashboard-stats">
+                {% for card in payment_summary_cards %}
+                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 mb-3">
+                        <div class="bmv-stat-card bmv-stat-card-{{ card.color }}">
+                            <div class="bmv-stat-card-body">
+                                <div class="bmv-stat-card-icon">
+                                    <i class="{{ card.icon }}"></i>
+                                </div>
+                                <div class="bmv-stat-card-content">
+                                    <p class="bmv-stat-card-label">{{ card.label }}</p>
+                                    <h3 class="bmv-stat-card-value">{{ card.value }}</h3>
+                                    {% if card.subtext %}
+                                        <small class="bmv-stat-card-subtext">{{ card.subtext }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+    {{ block.super }}
+{% endblock %}

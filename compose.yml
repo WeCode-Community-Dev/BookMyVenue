@@ -1,0 +1,115 @@
+services:
+  postgres:
+    image: postgis/postgis:16-3.4-alpine
+    environment:
+      POSTGRES_USER: bookmyvenue
+      POSTGRES_PASSWORD: bookmyvenue
+      POSTGRES_DB: bookmyvenue
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/docker/init-databases.sh:/docker-entrypoint-initdb.d/01-init-databases.sh
+      - ./backend/docker/ensure-service-databases.sh:/ensure-service-databases.sh
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bookmyvenue"]
+      interval: 5s
+      retries: 5
+      
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    env_file: ./backend/.env
+    volumes:
+      - ./backend:/app
+    working_dir: /app/core
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    env_file: ./frontend/.env
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+  reviews-rating-service:
+    build:
+      context: ./services/reviews-rating-service
+      dockerfile: Dockerfile
+    env_file: ./services/reviews-rating-service/.env
+    volumes:
+      - ./services/reviews-rating-service:/app
+    ports:
+      - "8006:8006"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # venue-service:
+  #   build:
+  #     context: ./services/venue-service
+  #     dockerfile: Dockerfile
+  #   env_file: ./services/venue-service/.env
+  #   volumes:
+  #     - ./services/venue-service:/app
+  #   ports:
+  #     - "8007:8007"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    env_file: ./backend/.env
+    command: ["celery", "-A", "core", "worker", "-l", "info"]
+    volumes:
+      - ./backend:/app
+    working_dir: /app/core
+    depends_on:
+      backend:
+        condition: service_started
+      redis:
+        condition: service_healthy
+
+  celery_beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    env_file: ./backend/.env
+    command: ["celery", "-A", "core", "beat", "-l", "info"]
+    volumes:
+      - ./backend:/app
+    working_dir: /app/core
+    depends_on:
+      backend:
+        condition: service_started
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  frontend_node_modules:

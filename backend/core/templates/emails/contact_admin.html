@@ -1,0 +1,61 @@
+{% extends "emails/base.html" %}
+
+{% block title %}New contact message — {{ app_name }}{% endblock %}
+
+{% block content %}
+<p style="margin:0 0 16px;font-size:16px;line-height:1.6;">
+  You received a new message from the {{ app_name }} contact form.
+</p>
+
+<table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="margin:24px 0;border-collapse:collapse;">
+  <tr>
+    <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;font-size:14px;color:#6b7280;width:140px;vertical-align:top;">
+      Role
+    </td>
+    <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;font-size:14px;color:#1f2937;font-weight:600;">
+      {{ role_label }}
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;font-size:14px;color:#6b7280;vertical-align:top;">
+      Full name
+    </td>
+    <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;font-size:14px;color:#1f2937;">
+      {{ full_name }}
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;font-size:14px;color:#6b7280;vertical-align:top;">
+      Email
+    </td>
+    <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;font-size:14px;color:#1f2937;">
+      <a href="mailto:{{ email }}" style="color:#059669;text-decoration:none;">{{ email }}</a>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;font-size:14px;color:#6b7280;vertical-align:top;">
+      Phone
+    </td>
+    <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;font-size:14px;color:#1f2937;">
+      {{ phone }}
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;font-size:14px;color:#6b7280;vertical-align:top;">
+      {{ location_label }}
+    </td>
+    <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;font-size:14px;color:#1f2937;">
+      {{ location_value }}
+    </td>
+  </tr>
+</table>
+
+<p style="margin:24px 0 8px;font-size:14px;font-weight:600;color:#1f2937;">
+  Message
+</p>
+<p style="margin:0;padding:16px;background-color:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;font-size:14px;line-height:1.7;color:#374151;white-space:pre-wrap;">{{ message }}</p>
+
+<p style="margin:24px 0 0;font-size:13px;line-height:1.6;color:#6b7280;">
+  Reply directly to this email to respond to {{ full_name }}.
+</p>
+{% endblock %}

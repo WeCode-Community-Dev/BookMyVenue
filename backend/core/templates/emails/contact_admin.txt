@@ -1,0 +1,12 @@
+You received a new message from the {{ app_name }} contact form.
+
+Role: {{ role_label }}
+Full name: {{ full_name }}
+Email: {{ email }}
+Phone: {{ phone }}
+{{ location_label }}: {{ location_value }}
+
+Message:
+{{ message }}
+
+Reply directly to this email to respond to {{ full_name }}.
