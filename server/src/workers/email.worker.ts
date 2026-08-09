@@ -227,11 +227,11 @@ async function dispatch(task: IEmailTask): Promise<void> {
       break;
     }
     default:
-      throw new Error(`Unknown email intent: ${intent}`);
+      throw new Error(`Unknown email intent: ${String(intent)}`);
   }
 }
 
-async function processNextTask(): Promise<void> {
+export async function processNextTask(): Promise<void> {
   if (isShuttingDown) return;
 
   const now = new Date();

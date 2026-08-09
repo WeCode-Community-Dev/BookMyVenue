@@ -1,6 +1,15 @@
 import { resendConfig } from '../constants/env';
 import { VENUE_CONSTANTS } from '../constants/venue.constants';
 
+export function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function buildEmailWrapper(bodyContent: string): string {
   const appName = resendConfig.appName;
   const currentYear = new Date().getFullYear();
@@ -61,6 +70,8 @@ function buildEmailWrapper(bodyContent: string): string {
 export function getPasswordResetTemplate(resetLink: string, email: string): string {
   const appName = resendConfig.appName;
   const isDev = process.env.NODE_ENV === 'development';
+  const safeResetLink = escapeHtml(resetLink);
+  const safeEmail = escapeHtml(email);
 
   const bodyContent = `
     <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">Reset your password</h1>
@@ -71,7 +82,7 @@ export function getPasswordResetTemplate(resetLink: string, email: string): stri
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
       <tr>
         <td style="border-radius:6px;background-color:#1d4ed8;">
-          <a href="${resetLink}"
+          <a href="${safeResetLink}"
              target="_blank"
              rel="noopener noreferrer"
              style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:600;
@@ -102,9 +113,9 @@ export function getPasswordResetTemplate(resetLink: string, email: string): stri
       Do not share this link with anyone.
     </p>
     <p style="margin:8px 0 0;font-size:13px;color:#6b7280;word-break:break-all;">
-      ${resetLink}
+      ${safeResetLink}
     </p>
-    ${isDev ? `<p style="margin:16px 0 0;font-size:13px;color:#92400e;"><strong>Development mode</strong> - Email sent to ${email}</p>` : ''}
+    ${isDev ? `<p style="margin:16px 0 0;font-size:13px;color:#92400e;"><strong>Development mode</strong> - Email sent to ${safeEmail}</p>` : ''}
   `;
 
   return buildEmailWrapper(bodyContent);
@@ -113,14 +124,16 @@ export function getPasswordResetTemplate(resetLink: string, email: string): stri
 // Admin Password Reset Template
 export function getAdminPasswordResetTemplate(newPassword: string, username: string): string {
   const appName = resendConfig.appName;
+  const safeNewPassword = escapeHtml(newPassword);
+  const safeUsername = escapeHtml(username);
   const bodyContent = `
     <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">Your Password Has Been Reset</h1>
     <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#374151;">
-      Hi ${username}, an administrator has reset your password for your <strong>${appName}</strong> account.
+      Hi ${safeUsername}, an administrator has reset your password for your <strong>${appName}</strong> account.
     </p>
     <div style="background-color:#f3f4f6;padding:16px;border-radius:6px;margin-bottom:24px;">
       <p style="margin:0;font-size:15px;color:#374151;">Your new temporary password is:</p>
-      <p style="margin:8px 0 0;font-size:20px;font-weight:700;color:#111827;">${newPassword}</p>
+      <p style="margin:8px 0 0;font-size:20px;font-weight:700;color:#111827;">${safeNewPassword}</p>
     </div>
     <p style="margin:0;font-size:15px;line-height:1.6;color:#374151;">
       Please log in with this new password and change it immediately from your profile settings.
@@ -167,10 +180,16 @@ export function getBookingConfirmationTemplate(details: {
   amount: number;
   paymentReference: string;
 }): string {
+  const safeVenueName = escapeHtml(details.venueName);
+  const safeDate = escapeHtml(details.date);
+  const safeStartTime = escapeHtml(details.startTime);
+  const safeEndTime = escapeHtml(details.endTime);
+  const safePaymentReference = escapeHtml(details.paymentReference);
+
   const bodyContent = `
     <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">Booking Confirmed! 🎉</h1>
     <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#374151;">
-      Your booking at <strong>${details.venueName}</strong> is confirmed.
+      Your booking at <strong>${safeVenueName}</strong> is confirmed.
       Here's a summary of your reservation.
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
@@ -178,18 +197,18 @@ export function getBookingConfirmationTemplate(details: {
       <tr>
         <td style="padding:20px 24px;">
           <p style="margin:0 0 8px;font-size:14px;color:#166534;"><strong>Venue</strong></p>
-          <p style="margin:0 0 16px;font-size:16px;color:#111827;font-weight:600;">${details.venueName}</p>
+          <p style="margin:0 0 16px;font-size:16px;color:#111827;font-weight:600;">${safeVenueName}</p>
           <p style="margin:0 0 8px;font-size:14px;color:#166534;"><strong>Date</strong></p>
-          <p style="margin:0 0 16px;font-size:16px;color:#111827;">${details.date}</p>
+          <p style="margin:0 0 16px;font-size:16px;color:#111827;">${safeDate}</p>
           <p style="margin:0 0 8px;font-size:14px;color:#166534;"><strong>Time</strong></p>
-          <p style="margin:0 0 16px;font-size:16px;color:#111827;">${details.startTime} – ${details.endTime}</p>
+          <p style="margin:0 0 16px;font-size:16px;color:#111827;">${safeStartTime} – ${safeEndTime}</p>
           <p style="margin:0 0 8px;font-size:14px;color:#166534;"><strong>Amount Paid</strong></p>
           <p style="margin:0;font-size:20px;color:#111827;font-weight:700;">₹${details.amount.toLocaleString('en-IN')}</p>
         </td>
       </tr>
     </table>
     <p style="margin:0 0 8px;font-size:13px;color:#9ca3af;">
-      Payment Reference: <code style="font-size:12px;color:#6b7280;">${details.paymentReference}</code>
+      Payment Reference: <code style="font-size:12px;color:#6b7280;">${safePaymentReference}</code>
     </p>
     <p style="margin:16px 0 0;font-size:14px;color:#374151;">
       We look forward to hosting your event. If you have any questions, please reply to this email.
@@ -208,12 +227,17 @@ export function getRefundNotificationTemplate(details: {
   refundReference: string;
 }): string {
   const appName = resendConfig.appName;
+  const safeVenueName = escapeHtml(details.venueName);
+  const safeDate = escapeHtml(details.date);
+  const safeStartTime = escapeHtml(details.startTime);
+  const safeEndTime = escapeHtml(details.endTime);
+  const safeRefundReference = escapeHtml(details.refundReference);
 
   const bodyContent = `
     <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">Booking Unsuccessful – Refund Initiated</h1>
     <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#374151;">
       We're sorry — by the time your payment was processed, the selected slot at
-      <strong>${details.venueName}</strong> had been booked by another customer.
+      <strong>${safeVenueName}</strong> had been booked by another customer.
       We have initiated a full refund.
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
@@ -221,11 +245,11 @@ export function getRefundNotificationTemplate(details: {
       <tr>
         <td style="padding:20px 24px;">
           <p style="margin:0 0 8px;font-size:14px;color:#991b1b;"><strong>Venue</strong></p>
-          <p style="margin:0 0 16px;font-size:16px;color:#111827;font-weight:600;">${details.venueName}</p>
+          <p style="margin:0 0 16px;font-size:16px;color:#111827;font-weight:600;">${safeVenueName}</p>
           <p style="margin:0 0 8px;font-size:14px;color:#991b1b;"><strong>Requested Date</strong></p>
-          <p style="margin:0 0 16px;font-size:16px;color:#111827;">${details.date}</p>
+          <p style="margin:0 0 16px;font-size:16px;color:#111827;">${safeDate}</p>
           <p style="margin:0 0 8px;font-size:14px;color:#991b1b;"><strong>Time Slot</strong></p>
-          <p style="margin:0 0 16px;font-size:16px;color:#111827;">${details.startTime} – ${details.endTime}</p>
+          <p style="margin:0 0 16px;font-size:16px;color:#111827;">${safeStartTime} – ${safeEndTime}</p>
           <p style="margin:0 0 8px;font-size:14px;color:#991b1b;"><strong>Refund Amount</strong></p>
           <p style="margin:0;font-size:20px;color:#111827;font-weight:700;">₹${details.amount.toLocaleString('en-IN')}</p>
         </td>
@@ -243,7 +267,7 @@ export function getRefundNotificationTemplate(details: {
       </tr>
     </table>
     <p style="margin:0;font-size:13px;color:#9ca3af;">
-      Refund Reference: <code style="font-size:12px;color:#6b7280;">${details.refundReference}</code>
+      Refund Reference: <code style="font-size:12px;color:#6b7280;">${safeRefundReference}</code>
     </p>
     <p style="margin:16px 0 0;font-size:14px;color:#374151;">
       We apologise for the inconvenience. Please try booking another available slot on ${appName}.
@@ -261,22 +285,26 @@ export function getBookingCancellationTemplate(details: {
   bookingRef: string;
 }): string {
   const appName = resendConfig.appName;
+  const safeVenueName = escapeHtml(details.venueName);
+  const safeDate = escapeHtml(details.date);
+  const safeTimeRange = escapeHtml(details.timeRange);
+  const safeBookingRef = escapeHtml(details.bookingRef);
 
   const bodyContent = `
     <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">Booking Cancelled</h1>
     <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#374151;">
-      Your booking at <strong>${details.venueName}</strong> has been successfully cancelled.
+      Your booking at <strong>${safeVenueName}</strong> has been successfully cancelled.
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
            style="background-color:#fef2f2;border-radius:8px;margin-bottom:24px;">
       <tr>
         <td style="padding:20px 24px;">
           <p style="margin:0 0 8px;font-size:14px;color:#991b1b;"><strong>Venue</strong></p>
-          <p style="margin:0 0 16px;font-size:16px;color:#111827;font-weight:600;">${details.venueName}</p>
+          <p style="margin:0 0 16px;font-size:16px;color:#111827;font-weight:600;">${safeVenueName}</p>
           <p style="margin:0 0 8px;font-size:14px;color:#991b1b;"><strong>Date</strong></p>
-          <p style="margin:0 0 16px;font-size:16px;color:#111827;">${details.date}</p>
+          <p style="margin:0 0 16px;font-size:16px;color:#111827;">${safeDate}</p>
           <p style="margin:0 0 8px;font-size:14px;color:#991b1b;"><strong>Time Slot</strong></p>
-          <p style="margin:0 0 16px;font-size:16px;color:#111827;">${details.timeRange}</p>
+          <p style="margin:0 0 16px;font-size:16px;color:#111827;">${safeTimeRange}</p>
           <p style="margin:0 0 8px;font-size:14px;color:#991b1b;"><strong>Refund Amount</strong></p>
           <p style="margin:0;font-size:20px;color:#111827;font-weight:700;">₹${details.refundAmount.toLocaleString('en-IN')}</p>
         </td>
@@ -294,7 +322,7 @@ export function getBookingCancellationTemplate(details: {
       </tr>
     </table>
     <p style="margin:0;font-size:13px;color:#9ca3af;">
-      Booking Reference: <code style="font-size:12px;color:#6b7280;">${details.bookingRef}</code>
+      Booking Reference: <code style="font-size:12px;color:#6b7280;">${safeBookingRef}</code>
     </p>
     <p style="margin:16px 0 0;font-size:14px;color:#374151;">
       We hope to host you another time on ${appName}.
@@ -304,10 +332,11 @@ export function getBookingCancellationTemplate(details: {
 }
 
 export function getVenueApprovedTemplate(venueName: string): string {
+  const safeVenueName = escapeHtml(venueName);
   const bodyContent = `
     <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">Venue Approved! 🎉</h1>
     <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#374151;">
-      Great news! Your venue <strong>${venueName}</strong> has been approved by our admin team and is now live on the platform.
+      Great news! Your venue <strong>${safeVenueName}</strong> has been approved by our admin team and is now live on the platform.
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
            style="background-color:#f0fdf4;border-radius:8px;margin-bottom:24px;">
@@ -337,6 +366,8 @@ export function getVenueRejectedTemplate(
   const daysLeft = Math.ceil((editDeadline.getTime() - Date.now()) / (24 * 60 * 60 * 1000));
 
   const maxAttempts = VENUE_CONSTANTS.MAX_SUBMISSION_ATTEMPTS.toString();
+  const safeVenueName = escapeHtml(venueName);
+  const safeReason = escapeHtml(reason);
 
   const attemptNotice =
     submissionNumber >= 7
@@ -348,14 +379,14 @@ export function getVenueRejectedTemplate(
   const bodyContent = `
     <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">Venue Application Update</h1>
     <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#374151;">
-      We reviewed your application for <strong>${venueName}</strong>, but unfortunately, we cannot approve it at this time.
+      We reviewed your application for <strong>${safeVenueName}</strong>, but unfortunately, we cannot approve it at this time.
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
            style="background-color:#fef2f2;border-radius:8px;margin-bottom:24px;">
       <tr>
         <td style="padding:20px 24px;">
           <p style="margin:0 0 8px;font-size:14px;color:#991b1b;"><strong>Reason for Rejection:</strong></p>
-          <p style="margin:0;font-size:15px;color:#7f1d1d;line-height:1.5;">${reason}</p>
+          <p style="margin:0;font-size:15px;color:#7f1d1d;line-height:1.5;">${safeReason}</p>
         </td>
       </tr>
     </table>
@@ -383,17 +414,19 @@ export function getVenueRejectedTemplate(
 }
 
 export function getVenueSuspendedTemplate(venueName: string, reason: string): string {
+  const safeVenueName = escapeHtml(venueName);
+  const safeReason = escapeHtml(reason);
   const bodyContent = `
     <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">Venue Suspended</h1>
     <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#374151;">
-      Your venue <strong>${venueName}</strong> has been temporarily suspended by our admin team and is currently not visible to users.
+      Your venue <strong>${safeVenueName}</strong> has been temporarily suspended by our admin team and is currently not visible to users.
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
            style="background-color:#fef9c3;border-radius:8px;margin-bottom:24px;">
       <tr>
         <td style="padding:20px 24px;">
           <p style="margin:0 0 8px;font-size:14px;color:#854d0e;"><strong>Reason for Suspension:</strong></p>
-          <p style="margin:0;font-size:15px;color:#713f12;line-height:1.5;">${reason}</p>
+          <p style="margin:0;font-size:15px;color:#713f12;line-height:1.5;">${safeReason}</p>
         </td>
       </tr>
     </table>
@@ -405,17 +438,18 @@ export function getVenueSuspendedTemplate(venueName: string, reason: string): st
 }
 
 export function getVenueUnsuspendedTemplate(venueName: string): string {
+  const safeVenueName = escapeHtml(venueName);
   const bodyContent = `
     <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">Your Venue Has Been Reactivated ✅</h1>
     <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#374151;">
-      Great news! Your venue <strong>${venueName}</strong> has been reactivated and is now visible to customers again.
+      Great news! Your venue <strong>${safeVenueName}</strong> has been reactivated and is now visible to customers again.
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
            style="background-color:#f0fdf4;border-radius:8px;margin-bottom:24px;">
       <tr>
         <td style="padding:20px 24px;">
           <p style="margin:0 0 8px;font-size:14px;color:#166534;"><strong>Venue</strong></p>
-          <p style="margin:0;font-size:16px;color:#111827;font-weight:600;">${venueName}</p>
+          <p style="margin:0;font-size:16px;color:#111827;font-weight:600;">${safeVenueName}</p>
         </td>
       </tr>
     </table>
@@ -434,11 +468,12 @@ export function getVenueDeadlineExtendedTemplate(venueName: string, newDeadline:
     year: 'numeric',
   });
   const daysLeft = Math.ceil((newDeadline.getTime() - Date.now()) / (24 * 60 * 60 * 1000));
+  const safeVenueName = escapeHtml(venueName);
 
   const bodyContent = `
     <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">Edit Deadline Extended ✅</h1>
     <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#374151;">
-      Good news! The deadline to edit and resubmit your venue <strong>${venueName}</strong> has been extended.
+      Good news! The deadline to edit and resubmit your venue <strong>${safeVenueName}</strong> has been extended.
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
            style="background-color:#f0fdf4;border-radius:8px;margin-bottom:24px;">
@@ -476,14 +511,14 @@ function getBanScopeDisplay(scope: string, venueName?: string): BanScopeDisplay 
       return {
         label: 'Commenting Ban',
         description: venueName
-          ? `You cannot post reviews or comments on <strong>${venueName}</strong>.`
+          ? `You cannot post reviews or comments on <strong>${escapeHtml(venueName)}</strong>.`
           : 'You cannot post reviews or comments on any venue.',
       };
     case 'owner_dashboard':
       return {
         label: 'Owner Dashboard Ban',
         description: venueName
-          ? `You cannot access the owner dashboard for <strong>${venueName}</strong>.`
+          ? `You cannot access the owner dashboard for <strong>${escapeHtml(venueName)}</strong>.`
           : 'You cannot access the owner dashboard for any of your venues.',
       };
     case 'venue_creation':
@@ -508,6 +543,7 @@ export function getUserBannedTemplate(
   const scopeDisplay = getBanScopeDisplay(scope, venueName);
   const appName = resendConfig.appName;
   const isDev = process.env.NODE_ENV === 'development';
+  const safeReason = escapeHtml(reason);
 
   const expiryHtml = expiresAt
     ? `<p style="margin:16px 0 0;font-size:14px;color:#166534;"><strong>This ban expires on:</strong> ${expiresAt.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })} at ${expiresAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</p>`
@@ -526,7 +562,7 @@ export function getUserBannedTemplate(
           <p style="margin:0 0 16px;font-size:16px;color:#111827;font-weight:600;">${scopeDisplay.label}</p>
           <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#374151;">${scopeDisplay.description}</p>
           <p style="margin:0 0 8px;font-size:14px;color:#991b1b;"><strong>Reason</strong></p>
-          <p style="margin:0;font-size:15px;color:#111827;">${reason}</p>
+          <p style="margin:0;font-size:15px;color:#111827;">${safeReason}</p>
         </td>
       </tr>
     </table>
@@ -578,20 +614,22 @@ export function getUserUnbannedTemplate(): string {
 export function getReviewRemovedTemplate(venueName: string, reason: string): string {
   const appName = resendConfig.appName;
   const isDev = process.env.NODE_ENV === 'development';
+  const safeVenueName = escapeHtml(venueName);
+  const safeReason = escapeHtml(reason);
 
   const bodyContent = `
     <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">Your Review Has Been Removed</h1>
     <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#374151;">
-      An administrator has removed your review for <strong>${venueName}</strong> on <strong>${appName}</strong>.
+      An administrator has removed your review for <strong>${safeVenueName}</strong> on <strong>${appName}</strong>.
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
            style="background-color:#fef2f2;border-radius:8px;margin-bottom:24px;">
       <tr>
         <td style="padding:20px 24px;">
           <p style="margin:0 0 8px;font-size:14px;color:#991b1b;"><strong>Venue</strong></p>
-          <p style="margin:0 0 16px;font-size:16px;color:#111827;font-weight:600;">${venueName}</p>
+          <p style="margin:0 0 16px;font-size:16px;color:#111827;font-weight:600;">${safeVenueName}</p>
           <p style="margin:0 0 8px;font-size:14px;color:#991b1b;"><strong>Reason for Removal</strong></p>
-          <p style="margin:0;font-size:15px;color:#111827;">${reason}</p>
+          <p style="margin:0;font-size:15px;color:#111827;">${safeReason}</p>
         </td>
       </tr>
     </table>
@@ -615,18 +653,19 @@ export function getReviewRemovedTemplate(venueName: string, reason: string): str
 export function getReviewRestoredTemplate(venueName: string): string {
   const appName = resendConfig.appName;
   const isDev = process.env.NODE_ENV === 'development';
+  const safeVenueName = escapeHtml(venueName);
 
   const bodyContent = `
     <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">Your Review Has Been Restored ✅</h1>
     <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#374151;">
-      An administrator has restored your review for <strong>${venueName}</strong> on <strong>${appName}</strong>.
+      An administrator has restored your review for <strong>${safeVenueName}</strong> on <strong>${appName}</strong>.
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
            style="background-color:#f0fdf4;border-radius:8px;margin-bottom:24px;">
       <tr>
         <td style="padding:20px 24px;">
           <p style="margin:0 0 8px;font-size:14px;color:#166534;"><strong>Venue</strong></p>
-          <p style="margin:0;font-size:16px;color:#111827;font-weight:600;">${venueName}</p>
+          <p style="margin:0;font-size:16px;color:#111827;font-weight:600;">${safeVenueName}</p>
         </td>
       </tr>
     </table>

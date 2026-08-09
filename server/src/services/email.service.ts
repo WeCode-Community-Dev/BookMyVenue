@@ -2,7 +2,7 @@ import { Resend } from 'resend';
 import { z } from 'zod';
 import { EmailIntent, type EmailIntentType } from '../constants/email.constants';
 import { resendConfig } from '../constants/env';
-import { logError, logInfo } from '../utils/logger';
+import { logError, logInfo, logWarn } from '../utils/logger';
 import {
   getPasswordResetTemplate,
   getPasswordChangedTemplate,
@@ -22,14 +22,22 @@ import {
 } from './emailTemplateFactory';
 
 // Validates required email configuration on startup.
-export function validateEmailConfig(): void {
+export function getMissingEmailConfigVars(): string[] {
   const missing: string[] = [];
 
   if (!resendConfig.apiKey) missing.push('RESEND_API_KEY');
   if (!resendConfig.fromName) missing.push('EMAIL_FROM_NAME');
   if (!resendConfig.fromEmail) missing.push('EMAIL_FROM_EMAIL');
-  if (!resendConfig.devToEmail) missing.push('RESEND_DEV_EMAIL_ADDRESS');
+  if (process.env.NODE_ENV === 'development' && !resendConfig.devToEmail) {
+    missing.push('RESEND_DEV_RECIPIENT');
+  }
   if (!resendConfig.frontendUrl) missing.push('FRONTEND_URL');
+
+  return missing;
+}
+
+export function validateEmailConfig(): void {
+  const missing = getMissingEmailConfigVars();
 
   if (missing.length > 0) {
     logError('Missing required email environment variables', {
@@ -52,6 +60,54 @@ function getResendClient(): Resend {
     _resend = new Resend(resendConfig.apiKey);
   }
   return _resend;
+}
+
+export function isFromDomainVerified(
+  domain: string,
+  domains: { name: string; status: string }[]
+): boolean {
+  const match = domains.find((d) => d.name === domain);
+  return match?.status === 'verified';
+}
+
+// Warns (never exits) if EMAIL_FROM_EMAIL's domain is not verified in Resend.
+export async function verifyEmailFromDomain(): Promise<void> {
+  const fromEmail = resendConfig.fromEmail;
+  if (!fromEmail) return;
+
+  const domain = fromEmail.split('@')[1];
+  if (!domain) return;
+
+  try {
+    const resend = getResendClient();
+    const { data, error } = await resend.domains.list();
+    if (error) {
+      logWarn('Could not list Resend domains; skipping from-domain verification', {
+        module: 'email.service.ts/verifyEmailFromDomain',
+        providerError: error.message,
+      });
+      return;
+    }
+
+    const domains = data.data;
+    if (!isFromDomainVerified(domain, domains)) {
+      logWarn(
+        `EMAIL_FROM_EMAIL domain "${domain}" is not verified in Resend. Emails may be rejected.`,
+        { module: 'email.service.ts/verifyEmailFromDomain', domain }
+      );
+    } else {
+      logInfo('EMAIL_FROM_EMAIL domain verified in Resend', {
+        module: 'email.service.ts/verifyEmailFromDomain',
+        domain,
+      });
+    }
+  } catch (e) {
+    const err = e as Error;
+    logWarn('Failed to verify Resend from-domain', {
+      module: 'email.service.ts/verifyEmailFromDomain',
+      error: err.message,
+    });
+  }
 }
 
 export interface SendEmailResult {
@@ -308,7 +364,7 @@ class EmailService {
       validatedRecipientEmail,
       `Edit Deadline Extended for "${venueName}"`,
       html,
-      EmailIntent.VENUE_UNSUSPENDED // reuse existing intent or create new one
+      EmailIntent.VENUE_DEADLINE_EXTENDED
     );
   }
 

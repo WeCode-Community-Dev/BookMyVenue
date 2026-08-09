@@ -1,19 +1,26 @@
 import { VenueModel } from '../modules/venue/venue.model';
 import { UserModel } from '../modules/user/user.models';
 import { logModerationAction } from '../modules/moderation/moderationActivity.service';
-import { emailService } from '../services/email.service';
-import { logInfo, logError } from '../utils/logger';
+import { RoleModel } from '../models/role.model';
+import { UserRoleModel } from '../models/user-role.model';
+import { enqueueEmailTask } from '../services/email.repository';
+import { EmailIntent, EmailTaskStatus } from '../constants/email.constants';
+import { logInfo, logError, logWarn } from '../utils/logger';
 import { VENUE_CONSTANTS } from '../constants/venue.constants';
 import mongoose from 'mongoose';
 
-let superAdminId: string | null = null;
-
 async function getSuperAdminId(): Promise<string> {
-  if (superAdminId) return superAdminId;
-  const admin = await UserModel.findOne({ role: 'superAdmin' }).select('_id').lean();
-  if (!admin) throw new Error('SuperAdmin not found for auto-suspend worker');
-  superAdminId = admin._id.toString();
-  return superAdminId;
+  const role = await RoleModel.findOne({ name: 'superAdmin', active: true, deleted: false })
+    .select('_id')
+    .lean();
+  if (!role) throw new Error('SuperAdmin role not found for auto-suspend worker');
+
+  const userRole = await UserRoleModel.findOne({ roleId: role._id, active: true, deleted: false })
+    .select('userId')
+    .lean();
+  if (!userRole) throw new Error('No user assigned to SuperAdmin role for auto-suspend worker');
+
+  return userRole.userId.toString();
 }
 
 export async function checkAndSuspendExpiredVenues(): Promise<number> {
@@ -68,19 +75,31 @@ export async function checkAndSuspendExpiredVenues(): Promise<number> {
         { actor: 'system (superadmin)' }
       );
 
-      // Email owner
-      const owner = await UserModel.findById(venue.ownerUserId).select('email').lean();
-      if (owner?.email) {
-        const daysStr = VENUE_CONSTANTS.EDIT_WINDOW_DAYS.toString();
-        await emailService.sendVenueSuspendedEmail(
-          owner.email,
-          venue.name,
-          `Your venue was auto-suspended because it was not resubmitted within ${daysStr} days of rejection.`
-        );
-      }
-
       await session.commitTransaction();
       suspendedCount++;
+
+      // Notify the owner (after commit — email failure must not roll back the suspension)
+      const owner = await UserModel.findById(venue.ownerUserId).select('email').lean();
+      if (owner?.email) {
+        try {
+          await enqueueEmailTask(
+            owner.email,
+            EmailIntent.VENUE_SUSPENDED,
+            `Important: Your Venue "${venue.name}" has been Suspended`,
+            EmailTaskStatus.PENDING,
+            {
+              venueName: venue.name,
+              reason: VENUE_CONSTANTS.AUTO_SUSPEND_REASON,
+            }
+          );
+        } catch (err) {
+          logWarn('Failed to enqueue auto-suspend venue email', {
+            module: 'venueEditDeadline.worker.ts/checkAndSuspendExpiredVenues',
+            venueId: venue._id,
+            error: (err as Error).message,
+          });
+        }
+      }
     } catch (err: unknown) {
       await session.abortTransaction();
       logError('Failed to auto-suspend venue', { venueId: venue._id, error: err });

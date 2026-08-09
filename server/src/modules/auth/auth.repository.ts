@@ -6,6 +6,7 @@ import type { IRefreshToken } from './models/refresh-token.model';
 import { SessionModel } from './models/session.model';
 import type { ISession } from './models/session.model';
 import { EmailTaskModel } from '../../models/email-task.model';
+import type { EmailIntentType } from '../../constants/email.constants';
 import { RoleModel } from '../../models/role.model';
 import { UserRoleModel } from '../../models/user-role.model';
 import type { TokenRevocationReasonType } from '../../constants/auth.constants';
@@ -176,12 +177,7 @@ export async function createPasswordResetToken(
 
 export async function createEmailTask(
   data: {
-    intent:
-      | 'password_reset'
-      | 'account_notification'
-      | 'email_verification'
-      | 'security_alert'
-      | 'welcome';
+    intent: EmailIntentType;
     recipient: string;
     subject: string;
     metadata: Record<string, string>;

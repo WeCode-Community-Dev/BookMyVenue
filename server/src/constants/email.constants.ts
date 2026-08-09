@@ -2,12 +2,9 @@ export type EmailIntentType = (typeof EmailIntent)[keyof typeof EmailIntent];
 export type EmailTaskStatusType = (typeof EmailTaskStatus)[keyof typeof EmailTaskStatus];
 
 export const EmailIntent = {
-  ACCOUNT_NOTIFICATION: 'account_notification',
-  EMAIL_VERIFICATION: 'email_verification',
   PASSWORD_RESET: 'password_reset',
   ADMIN_PASSWORD_RESET: 'admin_password_reset',
   SECURITY_ALERT: 'security_alert',
-  WELCOME: 'welcome',
   BOOKING_CONFIRMATION: 'booking_confirmation',
   BOOKING_REFUND: 'booking_refund',
   BOOKING_CANCELLATION: 'booking_cancellation',
