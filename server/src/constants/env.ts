@@ -1,4 +1,5 @@
 import type jwt from 'jsonwebtoken';
+import { parseCommaSeparatedValues } from '../utils/envUtils';
 
 export const nodeEnv = process.env.NODE_ENV ?? 'development';
 
@@ -75,5 +76,14 @@ export const swaggerConfig = {
   },
   get pass(): string | undefined {
     return process.env.SWAGGER_PASS;
+  },
+};
+
+export const corsConfig = {
+  get allowedOrigins(): string[] {
+    return parseCommaSeparatedValues(process.env.ALLOWED_ORIGINS);
+  },
+  get allowedHeaders(): string[] {
+    return parseCommaSeparatedValues(process.env.ALLOWED_HEADERS);
   },
 };
