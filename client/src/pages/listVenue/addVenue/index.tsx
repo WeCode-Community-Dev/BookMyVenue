@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { queryClient } from '@/config/queryClient';
 import Spinner from '@/components/common/Spinner';
 import {
   createVenue,
@@ -235,6 +236,7 @@ const AddVenue = () => {
             showSuccess('Venue submitted for review successfully!');
           }
 
+          await queryClient.invalidateQueries({ queryKey: ['my-venues'] });
           navigate('/list-venue/my-venues');
         } catch (error) {
           console.error('Submission failed:', error);

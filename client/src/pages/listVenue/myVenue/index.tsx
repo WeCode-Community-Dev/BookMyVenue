@@ -13,10 +13,16 @@ interface MyVenuesResponse {
 }
 
 const MyVenues = () => {
-  const { data, isLoading, isError, refetch } = useApiQuery<MyVenuesResponse>('my-venues', {
-    url: API_ENDPOINTS.MY_VENUES,
-    method: 'GET',
-  });
+  const { data, isLoading, isError, refetch } = useApiQuery<MyVenuesResponse>(
+    'my-venues',
+    {
+      url: API_ENDPOINTS.MY_VENUES,
+      method: 'GET',
+    },
+    {
+      refetchOnMount: 'always',
+    }
+  );
 
   return (
     <section className="animate-slide-in-right">

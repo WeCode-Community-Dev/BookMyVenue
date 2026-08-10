@@ -136,7 +136,7 @@ export function FlexibleBookingSection({
               </strong>
             </p>
           )}
-          <FieldArray name="pricingRules">
+          <FieldArray name="pricing.pricingRules">
             {({ push, remove }) => (
               <div className="space-y-5">
                 {(pricingRules || []).map((_, index) => (
@@ -145,14 +145,14 @@ export function FlexibleBookingSection({
                       <div>
                         <label className="block mb-2 font-bold">From Time</label>
                         <Field
-                          name={`pricingRules.${index}.fromTime`}
+                          name={`pricing.pricingRules.${index}.fromTime`}
                           type="time"
                           {...(openTime ? { min: openTime } : {})}
                           {...(closeTime ? { max: closeTime } : {})}
                           className={inputCls}
                         />
                         <ErrorMessage
-                          name={`pricingRules.${index}.fromTime`}
+                          name={`pricing.pricingRules.${index}.fromTime`}
                           component="p"
                           className={err}
                         />
@@ -160,14 +160,14 @@ export function FlexibleBookingSection({
                       <div>
                         <label className="block mb-2 font-bold">To Time</label>
                         <Field
-                          name={`pricingRules.${index}.toTime`}
+                          name={`pricing.pricingRules.${index}.toTime`}
                           type="time"
                           {...(openTime ? { min: openTime } : {})}
                           {...(closeTime ? { max: closeTime } : {})}
                           className={inputCls}
                         />
                         <ErrorMessage
-                          name={`pricingRules.${index}.toTime`}
+                          name={`pricing.pricingRules.${index}.toTime`}
                           component="p"
                           className={err}
                         />
@@ -175,13 +175,13 @@ export function FlexibleBookingSection({
                       <div>
                         <label className="block mb-2 font-bold">Price (₹)</label>
                         <Field
-                          name={`pricingRules.${index}.price`}
+                          name={`pricing.pricingRules.${index}.price`}
                           type="number"
                           placeholder="1000"
                           className={inputCls}
                         />
                         <ErrorMessage
-                          name={`pricingRules.${index}.price`}
+                          name={`pricing.pricingRules.${index}.price`}
                           component="p"
                           className={err}
                         />

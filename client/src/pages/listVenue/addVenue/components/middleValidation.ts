@@ -87,6 +87,57 @@ export const middleSchema = Yup.object({
           .typeError('Enter valid base price')
           .required('Enter base price')
           .positive('Must be positive'),
+        pricingRules: Yup.array()
+          .min(1, 'Add at least one pricing rule')
+          .of(
+            Yup.object({
+              fromTime: Yup.string().required('Required'),
+              toTime: Yup.string().required('Required'),
+              price: Yup.number()
+                .typeError('Enter valid price')
+                .required('Required')
+                .positive('Must be positive'),
+            }).test('pricing-rule-times', 'Invalid pricing rule times', function (value) {
+              const { fromTime, toTime } = value as {
+                fromTime?: string;
+                toTime?: string;
+              };
+
+              // toTime must be after fromTime
+              if (fromTime && toTime && toMinutes(toTime) <= toMinutes(fromTime)) {
+                return this.createError({
+                  path: `${this.path}.toTime`,
+                  message: 'To time must be after from time',
+                });
+              }
+
+              // Times must stay within workingHours — read from the root form value.
+              // `this.from` is ordered [current, ...parent chain], so the last entry is the root.
+              const root = (
+                this as unknown as {
+                  from?: { value?: { workingHours?: { open?: string; close?: string } } }[];
+                }
+              ).from?.at(-1)?.value;
+              const open = root?.workingHours?.open;
+              const close = root?.workingHours?.close;
+
+              if (open && close) {
+                if (fromTime && toMinutes(fromTime) < toMinutes(open)) {
+                  return this.createError({
+                    path: `${this.path}.fromTime`,
+                    message: `Must be on or after open time (${open})`,
+                  });
+                }
+                if (toTime && toMinutes(toTime) > toMinutes(close)) {
+                  return this.createError({
+                    path: `${this.path}.toTime`,
+                    message: `Must be on or before close time (${close})`,
+                  });
+                }
+              }
+              return true;
+            })
+          ),
       }).required('Base price is required'),
     otherwise: () => Yup.object(),
   }),
@@ -95,78 +146,6 @@ export const middleSchema = Yup.object({
   samePrice: Yup.string().when('pricingType', {
     is: 'fixedPricing',
     then: (schema) => schema.required('Enter slot price'),
-  }),
-
-  /*
-   * pricingRules — validate each row's times stay within workingHours.
-   * Uses object-level .test() to avoid Yup cyclic-dependency on sibling refs.
-   */
-  pricingRules: Yup.array().when('pricingType', {
-    is: 'timeBasedPricing',
-    then: () =>
-      Yup.array()
-        .min(1, 'Add at least one pricing rule')
-        .of(
-          Yup.object({
-            fromTime: Yup.string().required('Required'),
-            toTime: Yup.string().required('Required'),
-            price: Yup.number()
-              .typeError('Enter valid price')
-              .required('Required')
-              .positive('Must be positive'),
-          }).test('pricing-rule-times', 'Invalid pricing rule times', function (value) {
-            const { fromTime, toTime } = value as {
-              fromTime?: string;
-              toTime?: string;
-            };
-
-            // toTime must be after fromTime
-            if (fromTime && toTime && toMinutes(toTime) <= toMinutes(fromTime)) {
-              return this.createError({
-                path: `${this.path}.toTime`,
-                message: 'To time must be after from time',
-              });
-            }
-
-            // Times must stay within workingHours
-            const workingHours = (
-              this.options as {
-                context?: { workingHours?: { open: string; close: string } };
-              }
-            ).context?.workingHours;
-            const open =
-              workingHours?.open ??
-              (
-                this as unknown as {
-                  from?: { value: { workingHours?: { open?: string } } }[];
-                }
-              ).from?.[2]?.value?.workingHours?.open;
-            const close =
-              workingHours?.close ??
-              (
-                this as unknown as {
-                  from?: { value: { workingHours?: { close?: string } } }[];
-                }
-              ).from?.[2]?.value?.workingHours?.close;
-
-            if (open && close) {
-              if (fromTime && toMinutes(fromTime) < toMinutes(open)) {
-                return this.createError({
-                  path: `${this.path}.fromTime`,
-                  message: `Must be on or after open time (${open})`,
-                });
-              }
-              if (toTime && toMinutes(toTime) > toMinutes(close)) {
-                return this.createError({
-                  path: `${this.path}.toTime`,
-                  message: `Must be on or before close time (${close})`,
-                });
-              }
-            }
-            return true;
-          })
-        ),
-    otherwise: () => Yup.array(),
   }),
 
   /*

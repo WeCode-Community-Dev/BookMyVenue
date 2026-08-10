@@ -1,6 +1,18 @@
 import type { CorsOptions } from 'cors';
 import { corsConfig, nodeEnv } from '../constants/env';
 
+const BASE_ALLOWED_HEADERS = [
+  'Content-Type',
+  'Authorization',
+  'Accept',
+  'Accept-Language',
+  'X-Requested-With',
+] as const;
+
+export function mergeAllowedHeaders(customHeaders: string[]): string[] {
+  return Array.from(new Set([...BASE_ALLOWED_HEADERS, ...customHeaders]));
+}
+
 function validateProductionOrigins(origins: string[]): void {
   for (const origin of origins) {
     const url = new URL(origin);
@@ -20,9 +32,7 @@ function buildOrigin(): string[] {
 
 export const corsOptions: CorsOptions = {
   origin: buildOrigin(),
-  ...(corsConfig.allowedHeaders.length > 0
-    ? { allowedHeaders: corsConfig.allowedHeaders }
-    : {}),
+  allowedHeaders: mergeAllowedHeaders(corsConfig.allowedHeaders),
   credentials: true,
   optionsSuccessStatus: 204,
 };

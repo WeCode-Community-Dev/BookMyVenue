@@ -1,6 +1,7 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { parseCommaSeparatedValues } from '../../src/utils/envUtils';
 import { corsConfig } from '../../src/constants/env';
+import { mergeAllowedHeaders } from '../../src/configs/cors.config';
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -50,5 +51,50 @@ describe('corsConfig', () => {
 
   it('returns empty array when ALLOWED_HEADERS is missing', () => {
     expect(corsConfig.allowedHeaders).toEqual([]);
+  });
+});
+
+describe('mergeAllowedHeaders', () => {
+  it('always includes the base standard headers', () => {
+    expect(mergeAllowedHeaders([])).toEqual([
+      'Content-Type',
+      'Authorization',
+      'Accept',
+      'Accept-Language',
+      'X-Requested-With',
+    ]);
+  });
+
+  it('merges custom headers after the base headers', () => {
+    const merged = mergeAllowedHeaders(['x-session-token', 'Idempotency-Key']);
+
+    expect(merged).toContain('Content-Type');
+    expect(merged).toContain('Authorization');
+    expect(merged).toContain('x-session-token');
+    expect(merged).toContain('Idempotency-Key');
+  });
+
+  it('dedupes headers that appear in both base and custom lists', () => {
+    const merged = mergeAllowedHeaders(['Content-Type']);
+    expect(merged.filter((h) => h === 'Content-Type')).toHaveLength(1);
+  });
+
+  it('keeps the merged list stable for the expected custom headers', () => {
+    const merged = mergeAllowedHeaders([
+      'x-session-token',
+      'skip_zrok_interstitial',
+      'Idempotency-Key',
+    ]);
+
+    expect(merged).toEqual([
+      'Content-Type',
+      'Authorization',
+      'Accept',
+      'Accept-Language',
+      'X-Requested-With',
+      'x-session-token',
+      'skip_zrok_interstitial',
+      'Idempotency-Key',
+    ]);
   });
 });

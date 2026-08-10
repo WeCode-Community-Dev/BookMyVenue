@@ -35,6 +35,11 @@ type BookingStepValues = {
   amenities: string[];
   pricing?: {
     basePrice?: string;
+    pricingRules?: {
+      fromTime: string;
+      toTime: string;
+      price: string;
+    }[];
   };
 };
 
@@ -69,7 +74,7 @@ const BookingStep = () => {
                     openTime={openTime}
                     closeTime={closeTime}
                     pricingType={values.pricingType}
-                    pricingRules={values.pricingRules}
+                    pricingRules={values.pricing?.pricingRules ?? []}
                     blockedTimes={values.blockedTimes}
                   />
                 )}
@@ -92,7 +97,7 @@ const BookingStep = () => {
                 slotDuration={values.slotDuration}
                 bufferTime={values.bufferTime}
                 pricingType={values.pricingType}
-                pricingRules={(values.pricingRules || []).map((rule) => ({
+                pricingRules={(values.pricing?.pricingRules ?? []).map((rule) => ({
                   ...rule,
                   price: parseFloat(rule.price) || 0,
                 }))}
