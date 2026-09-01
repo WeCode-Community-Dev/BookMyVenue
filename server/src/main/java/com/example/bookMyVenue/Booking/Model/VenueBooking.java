@@ -38,7 +38,7 @@ public class VenueBooking {
     private LocalTime endTime;
 
     @Enumerated(EnumType.STRING)
-    private DurationType durationType; // snapshot from the rule at booking time
+    private DurationType durationType;
 
     @Enumerated(EnumType.STRING)
     private BookingStatus status; // PENDING, CONFIRMED, CANCELLED, COMPLETED

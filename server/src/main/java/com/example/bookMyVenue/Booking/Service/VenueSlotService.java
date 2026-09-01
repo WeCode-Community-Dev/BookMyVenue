@@ -2,6 +2,7 @@ package com.example.bookMyVenue.Booking.Service;
 
 import com.example.bookMyVenue.Booking.DTO.SlotResponse;
 import com.example.bookMyVenue.Booking.DTO.VenueSlotsResponse;
+import com.example.bookMyVenue.Booking.Enums.BookingStatus;
 import com.example.bookMyVenue.Booking.Enums.SlotStatus;
 import com.example.bookMyVenue.Booking.Model.VenueBooking;
 import com.example.bookMyVenue.Booking.Repository.BookingRepository;
@@ -49,10 +50,12 @@ public class VenueSlotService {
         List<VenueAvailabilityException> exceptions =
                 exceptionRepository.findByVenue_IdAndExceptionDateAndStatus(venueId, date, VenueExceptionActiveStatus.ACTIVE);
 
-//        List<Booking> bookings =
-//                bookingRepository.findByVenue_IdAndBookingDateAndStatusIn(
-//                        venueId, date, List.of(BookingStatus.CONFIRMED, BookingStatus.PENDING));
-        List<VenueBooking> bookings = Collections.emptyList();
+        List<VenueBooking> bookings =
+                bookingRepository.findByVenue_IdAndBookingDateAndStatusIn(
+                        venueId,
+                        date,
+                        List.of(BookingStatus.CONFIRMED)
+                );
 
         List<SlotResponse> slots = switch (rule.getDurationType()) {
             case HOURLY -> generateHourlySlots(rule, date, exceptions, bookings);
@@ -82,7 +85,6 @@ public class VenueSlotService {
 
         long totalOperatingMinutes = Duration.between(open, close).toMinutes();
 
-        // if close <= open, it means closing time is actually on the next day (e.g. 18:00 -> 00:00, or 18:00 -> 02:00)
         if (totalOperatingMinutes <= 0) {
             totalOperatingMinutes += 24 * 60;
         }
@@ -104,32 +106,28 @@ public class VenueSlotService {
             LocalTime slotStart, LocalTime slotEnd, LocalDate date, VenueAvailabilityRules rule,
             List<VenueAvailabilityException> exceptions, List<VenueBooking> bookings) {
 
-        // 1. Check exceptions first
         for (VenueAvailabilityException ex : exceptions) {
             if (ex.getStartTime() == null && ex.getEndTime() == null) {
-                // FULL_DAY-style exception even though venue is HOURLY — blocks everything
                 return buildSlot(slotStart, slotEnd, SlotStatus.BLOCKED, ex.getReason(), rule, date);
             }
             if (!slotEnd.isAfter(ex.getStartTime()) || !ex.getEndTime().isAfter(slotStart)) {
-                continue; // no overlap
+                continue;
             }
             return buildSlot(slotStart, slotEnd, SlotStatus.BLOCKED, ex.getReason(), rule, date);
         }
 
-        // 2. Check bookings
-//        for (VenueBooking b : bookings) {
-//            LocalTime bStart = b.getStartTime();
-//            LocalTime bEnd = b.getEndTime();
-//            if (bStart.isBefore(slotEnd) && bEnd.isAfter(slotStart)) {
-//                return buildSlot(slotStart, slotEnd, SlotStatus.BOOKED, null, rule, date);
-//            }
-//        }
+        for (VenueBooking booking : bookings) {
+            if (!slotEnd.isAfter(booking.getStartTime()) || !booking.getEndTime().isAfter(slotStart)) {
+                continue;
+            }
+            return buildSlot(slotStart, slotEnd, SlotStatus.BOOKED, "Already booked", rule, date);
+        }
 
-        // 3. Available
+
+
         return buildSlot(slotStart, slotEnd, SlotStatus.AVAILABLE, null, rule, date);
     }
 
-    // ---------- HALF_DAY ----------
 
     private List<SlotResponse> generateHalfDaySlots(
             VenueAvailabilityRules rule, LocalDate date,
@@ -147,7 +145,6 @@ public class VenueSlotService {
         return List.of(firstHalf, secondHalf);
     }
 
-    // ---------- FULL_DAY ----------
 
     private List<SlotResponse> generateFullDaySlot(
             VenueAvailabilityRules rule, LocalDate date,
@@ -174,7 +171,6 @@ public class VenueSlotService {
         return List.of(slot);
     }
 
-    // ---------- Rate resolution ----------
 
     private SlotResponse buildSlot(
             LocalTime start, LocalTime end, SlotStatus status, String reason,
@@ -200,7 +196,6 @@ public class VenueSlotService {
         }
     }
 
-    // ---------- Validation ----------
 
     private void validateVenueIsBookable(Venue venue) {
         if (venue.getVenueActiveStatus() != VenueActiveStatus.ACTIVE

@@ -60,6 +60,7 @@ public class OwnerVenueService {
         if (ownerVenueRepo.existsByName(venueRequest.getName())) {
             throw new VenueExistException(venueRequest.getName());
         }
+//        venueService.validateAvailabilityRules(venueRequest.getVenueAvailabilityRulesRequest());
 
         List<VenueImages> venueImagesList = uploadVenueImages(images, venueRequest.getName());
         Venue venue = mapToVenue(venueRequest, venueImagesList);

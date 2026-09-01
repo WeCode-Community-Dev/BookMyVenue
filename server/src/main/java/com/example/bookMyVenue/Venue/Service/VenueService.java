@@ -7,8 +7,10 @@ import com.example.bookMyVenue.Enums.VenueVerificationStatus;
 import com.example.bookMyVenue.Exceptions.NoSuchVenueException;
 import com.example.bookMyVenue.Exceptions.UpdateVenueStatusException;
 import com.example.bookMyVenue.Venue.DTO.ActionRequest;
+import com.example.bookMyVenue.Venue.DTO.VenueAvailabilityRulesRequest;
 import com.example.bookMyVenue.Venue.DTO.VenueAvailabiltyRulesResponse;
 import com.example.bookMyVenue.Venue.DTO.VenueResponse;
+import com.example.bookMyVenue.Venue.Enums.DurationType;
 import com.example.bookMyVenue.Venue.Model.AdminVenueActionLog;
 import com.example.bookMyVenue.Venue.Model.Venue;
 import com.example.bookMyVenue.Venue.Model.VenueImages;
@@ -20,6 +22,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -109,4 +112,18 @@ public class VenueService {
 
         adminVenueActionRepository.save(log);
     }
+
+//    public void validateAvailabilityRules(VenueAvailabilityRulesRequest venueAvailabilityRulesRequest) {
+//        List<LocalTime>possibleSlotEndTime = new ArrayList<>();
+//        int durationHour = venueAvailabilityRulesRequest.getDurationHour();
+//        LocalTime venueStartingTime = venueAvailabilityRulesRequest.getOperatingStartTime();
+//        LocalTime venueOperatingEndingTime = venueAvailabilityRulesRequest.getOperatingEndTime();
+//        if(venueAvailabilityRulesRequest.getDurationType()== DurationType.HOURLY){
+//            if(venueOperatingEndingTime!=null && durationHour == null
+//                    && venueStartingTime!=null){
+//                venueStartingTime.
+//
+//             }
+//        }
+//    }
 }

@@ -83,8 +83,7 @@ public class BookingService {
                 .durationType(rule.getDurationType())
                 .appliedRate(rate)
                 .eventPurpose(request.getEventPurpose())
-                .status(BookingStatus.CONFIRMED) // no payment gate yet — Stripe phase will change this to PENDING
-                .build();
+                .status(BookingStatus.CONFIRMED)                 .build();
 
         VenueBooking saved = bookingRepository.save(booking);
         return mapToResponse(saved);
@@ -108,7 +107,6 @@ public class BookingService {
     private void validateSlotStillAvailable(
             Venue venue, LocalDate date, LocalTime startTime, LocalTime endTime, VenueAvailabilityRules rule) {
 
-        // Check exceptions
         List<VenueAvailabilityException> exceptions = exceptionRepository
                 .findByVenue_IdAndExceptionDateAndStatus(venue.getId(), date, VenueExceptionActiveStatus.ACTIVE);
 
@@ -225,5 +223,26 @@ public class BookingService {
                 .eventPurpose(b.getEventPurpose())
                 .createdAt(b.getCreatedAt())
                 .build();
+    }
+
+
+    public List<BookingResponse> getUpcomingBookings(String email) {
+        LocalDate today = LocalDate.now();
+        List<VenueBooking> bookings = bookingRepository
+                .findByCustomer_EmailAndBookingDateGreaterThanEqualOrderByBookingDateAsc(email, today);
+        return bookings.stream().map(this::mapToResponse).toList();
+    }
+
+    public List<BookingResponse> getPastBookings(String email) {
+        LocalDate today = LocalDate.now();
+        List<VenueBooking> bookings = bookingRepository
+                .findByCustomer_EmailAndBookingDateLessThanOrderByBookingDateDesc(email, today);
+        return bookings.stream().map(this::mapToResponse).toList();
+    }
+
+    public List<BookingResponse> getAllBookings(String email) {
+        List<VenueBooking> bookings = bookingRepository
+                .findByCustomer_EmailOrderByBookingDateDesc(email);
+        return bookings.stream().map(this::mapToResponse).toList();
     }
 }

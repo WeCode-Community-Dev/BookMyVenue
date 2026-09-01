@@ -27,4 +27,12 @@ public interface BookingRepository extends JpaRepository<VenueBooking, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT b FROM VenueBooking b WHERE b.venue.id = :venueId AND b.bookingDate = :date AND b.status IN :statuses")
     List<VenueBooking> findForUpdateByVenueAndDate(Long venueId, LocalDate date, List<BookingStatus> statuses);
+
+    List<VenueBooking> findByCustomer_EmailAndBookingDateGreaterThanEqualOrderByBookingDateAsc(
+            String email, LocalDate date);
+
+    List<VenueBooking> findByCustomer_EmailAndBookingDateLessThanOrderByBookingDateDesc(
+            String email, LocalDate date);
+
+    List<VenueBooking> findByCustomer_EmailOrderByBookingDateDesc(String email);
 }

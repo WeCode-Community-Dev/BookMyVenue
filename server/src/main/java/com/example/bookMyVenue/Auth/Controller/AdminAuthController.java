@@ -37,7 +37,7 @@ public class AdminAuthController {
             );
             User userDetails =  (User) userService.loadUserByUsername(request.getEmail());
             if(userDetails.getRole()!= Role.ADMIN){
-                throw new Exception("Authenticated user is not a venue owner");
+                throw new Exception("Authenticated user is not an Admin");
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
