@@ -290,9 +290,13 @@ export async function moderateReview(
   if (dto.action === 'remove' || dto.action === 'restore' || dto.action === 'approve_hide') {
     const { logModerationAction } = await import('../moderation/moderationActivity.service.js');
     const actionType = dto.action === 'restore' ? 'restore_review' : 'remove_review';
-    await logModerationAction(moderatorId, actionType, reviewId, 'review', dto.reason, {
-      venueId: updated.venueId.toString(),
-      userId: updated.userId.toString(),
+    await logModerationAction(actionType, reviewId, 'review', {
+      actorId: moderatorId,
+      reason: dto.reason,
+      metadata: {
+        venueId: updated.venueId.toString(),
+        userId: updated.userId.toString(),
+      },
     });
   }
 

@@ -8,11 +8,12 @@ import { Badge } from "@/components/ui/badge";
 
 interface Log {
   _id: string;
-  adminId: {
+  actorId?: {
     _id: string;
     username: string;
     email: string;
-  };
+  } | null;
+  actorRole: "superAdmin" | "admin" | "owner" | "system";
   action: string;
   targetId: string;
   targetType: string;
@@ -41,6 +42,17 @@ const ACTION_COLORS: Record<
   unsuspend_venue: "default",
   remove_review: "secondary",
   restore_review: "outline",
+  approve_venue: "default",
+  reject_venue: "destructive",
+  auto_suspend_venue: "destructive",
+  extend_venue_deadline: "outline",
+  request_inactivity: "secondary",
+  cancel_inactivity: "outline",
+  approve_inactivity: "secondary",
+  reject_inactivity: "destructive",
+  venue_closed: "destructive",
+  reopen_venue: "default",
+  request_venue_deletion: "destructive",
 };
 
 const ACTION_LABELS: Record<string, string> = {
@@ -50,6 +62,24 @@ const ACTION_LABELS: Record<string, string> = {
   unsuspend_venue: "Unsuspend Venue",
   remove_review: "Remove Review",
   restore_review: "Restore Review",
+  approve_venue: "Approve Venue",
+  reject_venue: "Reject Venue",
+  auto_suspend_venue: "Auto-suspend Venue",
+  extend_venue_deadline: "Extend Deadline",
+  request_inactivity: "Closure Requested",
+  cancel_inactivity: "Closure Cancelled",
+  approve_inactivity: "Closure Approved",
+  reject_inactivity: "Closure Rejected",
+  venue_closed: "Venue Closed",
+  reopen_venue: "Venue Reopened",
+  request_venue_deletion: "Deletion Requested",
+};
+
+const ROLE_LABELS: Record<string, string> = {
+  superAdmin: "Super Admin",
+  admin: "Admin",
+  owner: "Owner",
+  system: "System",
 };
 
 const ActivityLogsPage = () => {
@@ -74,17 +104,28 @@ const ActivityLogsPage = () => {
       ),
     },
     {
-      accessorKey: "adminId",
-      header: "Admin",
+      accessorKey: "actorId",
+      header: "Actor",
       cell: ({ row }: { row: { original: Log } }) => (
         <div>
           <p className="font-medium">
-            {row.original.adminId?.username || "System"}
+            {row.original.actorId?.username ?? "System"}
           </p>
           <p className="text-xs text-muted-foreground">
-            {row.original.adminId?.email || ""}
+            {row.original.actorId?.email ??
+              ROLE_LABELS[row.original.actorRole] ??
+              ""}
           </p>
         </div>
+      ),
+    },
+    {
+      accessorKey: "actorRole",
+      header: "Role",
+      cell: ({ row }: { row: { original: Log } }) => (
+        <Badge variant="outline">
+          {ROLE_LABELS[row.original.actorRole] ?? row.original.actorRole}
+        </Badge>
       ),
     },
     {

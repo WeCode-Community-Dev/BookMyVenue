@@ -31,6 +31,7 @@ import mongoose from 'mongoose';
 import { logError, logWarn } from '../../utils/logger';
 import { BookingModel } from '../booking/models/booking.model';
 import { BookingStatus } from '../../constants/booking.constants';
+import { toLocalDateString } from '../../utils/timeUtils';
 
 // Google Maps URL Resolution & Transformation
 
@@ -469,6 +470,10 @@ export async function approveVenue(venueId: string, adminId: string): Promise<IV
   const updated = await repo.updateVenueStatus(venueId, 'Approved', adminId);
   if (!updated) throw new NotFoundError('Venue not found');
 
+  // Approvals were previously unlogged while rejections were
+  const { logModerationAction } = await import('../moderation/moderationActivity.service.js');
+  await logModerationAction('approve_venue', venueId, 'venue', { actorId: adminId });
+
   const ownerEmail = await findUserEmailById(venue.ownerUserId.toString());
   if (ownerEmail) {
     try {
@@ -583,11 +588,14 @@ export async function rejectVenue(
 
   // Log activity
   const { logModerationAction } = await import('../moderation/moderationActivity.service.js');
-  await logModerationAction(adminId, 'reject_venue', venueId, 'venue', dto.rejectionReason, {
-    submissionNumber: rejectionEntry.submissionNumber,
-    editDeadline,
-    isExtended: !!dto.extendedDeadline,
-    actor: 'admin',
+  await logModerationAction('reject_venue', venueId, 'venue', {
+    actorId: adminId,
+    reason: dto.rejectionReason,
+    metadata: {
+      submissionNumber: rejectionEntry.submissionNumber,
+      editDeadline,
+      isExtended: !!dto.extendedDeadline,
+    },
   });
 
   return updated;
@@ -628,7 +636,10 @@ export async function suspendVenue(
 
   // Log activity
   const { logModerationAction } = await import('../moderation/moderationActivity.service.js');
-  await logModerationAction(adminId, 'suspend_venue', venueId, 'venue', dto.suspensionReason);
+  await logModerationAction('suspend_venue', venueId, 'venue', {
+    actorId: adminId,
+    reason: dto.suspensionReason,
+  });
 
   return updated;
 }
@@ -663,7 +674,7 @@ export async function unsuspendVenue(venueId: string, adminId: string): Promise<
 
   // Log activity
   const { logModerationAction } = await import('../moderation/moderationActivity.service.js');
-  await logModerationAction(adminId, 'unsuspend_venue', venueId, 'venue');
+  await logModerationAction('unsuspend_venue', venueId, 'venue', { actorId: adminId });
 
   return updated;
 }
@@ -724,14 +735,12 @@ export async function extendVenueEditDeadline(
   // Log activity
   const { logModerationAction } = await import('../moderation/moderationActivity.service.js');
   const previousDeadline = venue.currentEditDeadline.toISOString();
-  await logModerationAction(
-    superAdminId,
-    'extend_venue_deadline',
-    venueId,
-    'venue',
-    `Extended edit deadline from ${previousDeadline} to ${newDeadline.toISOString()}`,
-    { actor: 'system (superadmin)', previousDeadline: venue.currentEditDeadline, newDeadline }
-  );
+  await logModerationAction('extend_venue_deadline', venueId, 'venue', {
+    actorId: superAdminId,
+    actorRole: 'superAdmin',
+    reason: `Extended edit deadline from ${previousDeadline} to ${newDeadline.toISOString()}`,
+    metadata: { previousDeadline: venue.currentEditDeadline, newDeadline },
+  });
 
   // Email owner about extension
   const ownerEmail = await findUserEmailById(venue.ownerUserId.toString());
@@ -794,6 +803,27 @@ export async function getReviewsList(): Promise<IVenue[]> {
     .exec();
 }
 
+// Day the venue stops taking bookings: the day after its last confirmed booking, or today if none
+async function resolveInactivityBlockDate(venueId: string): Promise<Date> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const lastFutureBooking = await BookingModel.findOne({
+    venueId: new mongoose.Types.ObjectId(venueId),
+    status: BookingStatus.CONFIRMED,
+    date: { $gte: toLocalDateString(today) },
+  })
+    .sort({ date: -1 })
+    .lean()
+    .exec();
+
+  if (!lastFutureBooking) return today;
+
+  const blockedAfterDate = new Date(`${lastFutureBooking.date}T00:00:00`);
+  blockedAfterDate.setDate(blockedAfterDate.getDate() + 1);
+  return blockedAfterDate;
+}
+
 export async function approveReview(
   venueId: string,
   adminId: string,
@@ -821,31 +851,15 @@ export async function approveReview(
     }
 
     case ReviewIntent.INACTIVITY_REQUEST: {
-      const lastFutureBooking = await BookingModel.findOne({
-        venueId: new mongoose.Types.ObjectId(venueId),
-        status: BookingStatus.CONFIRMED,
-        date: { $gte: new Date().toISOString().split('T')[0] },
-      })
-        .sort({ date: -1 })
-        .lean()
-        .exec();
-
-      let blockedAfterDate: Date;
-      if (lastFutureBooking) {
-        blockedAfterDate = new Date(lastFutureBooking.date);
-        blockedAfterDate.setDate(blockedAfterDate.getDate() + 1);
-      } else {
-        blockedAfterDate = new Date();
-      }
+      // Schedules the closure; venueInactivity.worker closes the venue when the date arrives
+      const blockedAfterDate = await resolveInactivityBlockDate(venueId);
 
       const updated = await VenueModel.findByIdAndUpdate(
         venueId,
         {
           $set: {
-            status: 'Inactive',
             'inactivity.approvedAt': new Date(),
             'inactivity.blockedAfterDate': blockedAfterDate,
-            'inactivity.inactiveAt': new Date(),
             updatedBy: adminObjectId,
           },
           $unset: { pendingReview: '' },
@@ -853,25 +867,33 @@ export async function approveReview(
         { new: true }
       ).exec();
       if (!updated) throw new NotFoundError('Venue not found');
-      return updated;
-    }
 
-    case ReviewIntent.INACTIVITY_WITHDRAWAL: {
-      const updated = await VenueModel.findByIdAndUpdate(
-        venueId,
-        {
-          $unset: {
-            pendingReview: '',
-            'inactivity.requestedAt': '',
-            'inactivity.approvedAt': '',
-            'inactivity.blockedAfterDate': '',
-            'inactivity.withdrawalRequestedAt': '',
-          },
-          $set: { updatedBy: adminObjectId },
-        },
-        { new: true }
-      ).exec();
-      if (!updated) throw new NotFoundError('Venue not found');
+      const { logModerationAction } = await import('../moderation/moderationActivity.service.js');
+      await logModerationAction('approve_inactivity', venueId, 'venue', {
+        actorId: adminId,
+        reason: venue.pendingReview.details.reason,
+        metadata: { blockedAfterDate },
+      });
+
+      const ownerEmail = await findUserEmailById(venue.ownerUserId.toString());
+      if (ownerEmail) {
+        try {
+          await enqueueEmailTask(
+            ownerEmail,
+            EmailIntent.INACTIVITY_APPROVED,
+            `Closure approved for "${venue.name}"`,
+            EmailTaskStatus.PENDING,
+            { venueName: venue.name, closingDate: blockedAfterDate.toISOString() }
+          );
+        } catch (err) {
+          logWarn('Failed to queue inactivity approved email', {
+            module: 'venue.service.ts/approveReview',
+            venueId,
+            error: (err as Error).message,
+          });
+        }
+      }
+
       return updated;
     }
 
@@ -917,15 +939,45 @@ export async function rejectReview(
     }
   }
 
-  // For all other intents (and VENUE_EDIT without snapshot): just clear pendingReview
+  // Clear inactivity.requestedAt too, or the owner can neither re-request nor cancel
+  const rejectedIntent = venue.pendingReview.intent;
+
   const updated = await VenueModel.findByIdAndUpdate(
     venueId,
     {
-      $unset: { pendingReview: '' },
+      $unset: { pendingReview: '', 'inactivity.requestedAt': '' },
       $set: { updatedBy: adminObjectId },
     },
     { new: true }
   ).exec();
   if (!updated) throw new NotFoundError('Venue not found');
+
+  if (rejectedIntent === ReviewIntent.INACTIVITY_REQUEST) {
+    const { logModerationAction } = await import('../moderation/moderationActivity.service.js');
+    await logModerationAction('reject_inactivity', venueId, 'venue', {
+      actorId: adminId,
+      reason: _note,
+    });
+
+    const ownerEmail = await findUserEmailById(venue.ownerUserId.toString());
+    if (ownerEmail) {
+      try {
+        await enqueueEmailTask(
+          ownerEmail,
+          EmailIntent.INACTIVITY_REJECTED,
+          `Closure request declined for "${venue.name}"`,
+          EmailTaskStatus.PENDING,
+          { venueName: venue.name, reason: _note }
+        );
+      } catch (err) {
+        logWarn('Failed to queue inactivity rejected email', {
+          module: 'venue.service.ts/rejectReview',
+          venueId,
+          error: (err as Error).message,
+        });
+      }
+    }
+  }
+
   return updated;
 }

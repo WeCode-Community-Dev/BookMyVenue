@@ -14,6 +14,9 @@ import {
   getVenueSuspendedTemplate,
   getVenueUnsuspendedTemplate,
   getVenueDeadlineExtendedTemplate,
+  getInactivityRequestedTemplate,
+  getInactivityApprovedTemplate,
+  getInactivityRejectedTemplate,
   getAdminPasswordResetTemplate,
   getUserBannedTemplate,
   getUserUnbannedTemplate,
@@ -365,6 +368,56 @@ class EmailService {
       `Edit Deadline Extended for "${venueName}"`,
       html,
       EmailIntent.VENUE_DEADLINE_EXTENDED
+    );
+  }
+
+  // Venue inactivity emails
+  async sendInactivityRequestedEmail(
+    email: string,
+    venueName: string,
+    ownerName: string,
+    reason?: string
+  ): Promise<SendEmailResult> {
+    const validatedRecipientEmail = validateRecipient(email);
+    const html = getInactivityRequestedTemplate(venueName, ownerName, reason);
+
+    return sendEmail(
+      validatedRecipientEmail,
+      `Closure requested for "${venueName}"`,
+      html,
+      EmailIntent.INACTIVITY_REQUESTED
+    );
+  }
+
+  async sendInactivityApprovedEmail(
+    email: string,
+    venueName: string,
+    closingDate: Date
+  ): Promise<SendEmailResult> {
+    const validatedRecipientEmail = validateRecipient(email);
+    const html = getInactivityApprovedTemplate(venueName, closingDate);
+
+    return sendEmail(
+      validatedRecipientEmail,
+      `Closure approved for "${venueName}"`,
+      html,
+      EmailIntent.INACTIVITY_APPROVED
+    );
+  }
+
+  async sendInactivityRejectedEmail(
+    email: string,
+    venueName: string,
+    reason: string
+  ): Promise<SendEmailResult> {
+    const validatedRecipientEmail = validateRecipient(email);
+    const html = getInactivityRejectedTemplate(venueName, reason);
+
+    return sendEmail(
+      validatedRecipientEmail,
+      `Closure request declined for "${venueName}"`,
+      html,
+      EmailIntent.INACTIVITY_REJECTED
     );
   }
 

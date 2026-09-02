@@ -11,7 +11,6 @@ import type { Venue } from "@/types";
 const INTENT_LABELS: Record<string, string> = {
   venue_edit: "Changes Requiring Approval",
   inactivity_request: "Inactivity Requests",
-  inactivity_withdrawal: "Inactivity Withdrawal Requests",
   deletion_request: "Deletion Requests",
 };
 
@@ -21,7 +20,6 @@ const INTENT_BADGE_VARIANTS: Record<
 > = {
   venue_edit: "default",
   inactivity_request: "secondary",
-  inactivity_withdrawal: "outline",
   deletion_request: "destructive",
 };
 
@@ -117,11 +115,6 @@ export function ReviewsTabContent() {
                   {intent === "inactivity_request" && (
                     <p className="text-sm text-muted-foreground">
                       Requesting to close venue
-                    </p>
-                  )}
-                  {intent === "inactivity_withdrawal" && (
-                    <p className="text-sm text-muted-foreground">
-                      Withdrawing closing request
                     </p>
                   )}
                   {intent === "deletion_request" && (

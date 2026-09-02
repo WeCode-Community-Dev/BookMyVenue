@@ -698,4 +698,43 @@ router
     controller.cancelPendingOfflineBooking
   );
 
+/**
+ * @openapi
+ * /owner/venue/{venueId}/activity:
+ *   get:
+ *     tags: [Owner]
+ *     summary: Activity history for one of the owner's venues
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: venueId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Paginated activity entries for the venue
+ *       401:
+ *         description: Not authenticated
+ *       403:
+ *         description: Venue does not belong to this owner
+ */
+router.get(
+  '/venue/:venueId/activity',
+  verifyAccessToken,
+  requirePermission(P.venues.read),
+  validateParams(validator.analyticsParamsSchema),
+  ownerTenantMiddleware,
+  controller.getVenueActivity
+);
+
 export default router;

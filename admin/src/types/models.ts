@@ -84,7 +84,6 @@ export interface Venue {
     blockedAfterDate?: string;
     inactiveAt?: string;
     lastInactiveAt?: string;
-    withdrawalRequestedAt?: string;
   };
   temporaryBlockAfterDate?: string;
 }

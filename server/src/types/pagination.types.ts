@@ -1,7 +1,5 @@
-/**
- * Raw query-string shape accepted by the pagination middleware.
- * All fields are optional strings or numbers because Express gives everything as strings.
- */
+// Raw query-string shape accepted by the pagination middleware.
+// All fields are optional strings or numbers because Express gives everything as strings.
 export interface PaginationQuery {
   page?: string | number;
   limit?: string | number;

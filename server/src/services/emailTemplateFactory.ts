@@ -677,3 +677,88 @@ export function getReviewRestoredTemplate(venueName: string): string {
 
   return buildEmailWrapper(bodyContent);
 }
+
+export function getInactivityRequestedTemplate(
+  venueName: string,
+  ownerName: string,
+  reason?: string
+): string {
+  const safeVenueName = escapeHtml(venueName);
+  const safeOwnerName = escapeHtml(ownerName);
+  const reasonBlock = reason
+    ? `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+           style="background-color:#f9fafb;border-radius:8px;margin-bottom:24px;">
+      <tr>
+        <td style="padding:20px 24px;">
+          <p style="margin:0 0 4px;font-size:13px;font-weight:600;color:#6b7280;">Reason given</p>
+          <p style="margin:0;font-size:15px;color:#374151;line-height:1.6;">${escapeHtml(reason)}</p>
+        </td>
+      </tr>
+    </table>
+  `
+    : '';
+
+  const bodyContent = `
+    <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">Closure request awaiting review</h1>
+    <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#374151;">
+      <strong>${safeOwnerName}</strong> has asked to temporarily close <strong>${safeVenueName}</strong>.
+      The venue stays open and bookable until an admin approves the request.
+    </p>
+    ${reasonBlock}
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#374151;">
+      Review it under <strong>Venues &rsaquo; Reviews</strong> in the admin dashboard.
+    </p>
+  `;
+  return buildEmailWrapper(bodyContent);
+}
+
+export function getInactivityApprovedTemplate(venueName: string, closingDate: Date): string {
+  const safeVenueName = escapeHtml(venueName);
+  const safeDate = escapeHtml(closingDate.toDateString());
+  const bodyContent = `
+    <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">Closure approved</h1>
+    <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#374151;">
+      Your request to close <strong>${safeVenueName}</strong> has been approved.
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+           style="background-color:#fffbeb;border-radius:8px;margin-bottom:24px;">
+      <tr>
+        <td style="padding:20px 24px;">
+          <p style="margin:0;font-size:15px;color:#92400e;line-height:1.6;">
+            Your venue stays open until <strong>${safeDate}</strong> so bookings already taken
+            can go ahead. New bookings are no longer accepted beyond that date.
+          </p>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#374151;">
+      Changed your mind? You can cancel the closure from your venue settings any time before then.
+    </p>
+  `;
+  return buildEmailWrapper(bodyContent);
+}
+
+export function getInactivityRejectedTemplate(venueName: string, reason: string): string {
+  const safeVenueName = escapeHtml(venueName);
+  const bodyContent = `
+    <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">Closure request declined</h1>
+    <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#374151;">
+      Your request to close <strong>${safeVenueName}</strong> was not approved. Your venue stays
+      open and continues to accept bookings as normal.
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+           style="background-color:#f9fafb;border-radius:8px;margin-bottom:24px;">
+      <tr>
+        <td style="padding:20px 24px;">
+          <p style="margin:0 0 4px;font-size:13px;font-weight:600;color:#6b7280;">Reason</p>
+          <p style="margin:0;font-size:15px;color:#374151;line-height:1.6;">${escapeHtml(reason)}</p>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#374151;">
+      You are welcome to submit a new request from your venue settings.
+    </p>
+  `;
+  return buildEmailWrapper(bodyContent);
+}

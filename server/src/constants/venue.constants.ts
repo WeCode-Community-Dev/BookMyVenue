@@ -14,7 +14,6 @@ export const ReviewIntent = {
   RESUBMISSION: 'resubmission',
   VENUE_EDIT: 'venue_edit',
   INACTIVITY_REQUEST: 'inactivity_request',
-  INACTIVITY_WITHDRAWAL: 'inactivity_withdrawal',
   DELETION_REQUEST: 'deletion_request',
 } as const;
 

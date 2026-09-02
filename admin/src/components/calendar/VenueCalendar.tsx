@@ -44,6 +44,7 @@ export function VenueCalendar({
                 inactivityBlocked: (date) => isInactivityBlocked(date),
                 unavailable: (date) =>
                   isPast(date) || isTooFar(date) || isNonWorkingDay(date),
+                past: (date) => isPast(date),
               }}
               modifiersClassNames={{
                 booked: "rdp-day--booked",
@@ -51,6 +52,7 @@ export function VenueCalendar({
                 tempBlocked: "rdp-day--temp-blocked",
                 inactivityBlocked: "rdp-day--inactivity-blocked",
                 unavailable: "rdp-day--unavailable",
+                past: "rdp-day--past",
               }}
               styles={{
                 root: {
@@ -99,6 +101,37 @@ export function VenueCalendar({
         }
         .rdp-day--inactivity-blocked:hover {
           background-color: #e9d5ff !important;
+        }
+
+        /* Past days keep their colour, dimmed. Must stay below the rules above:
+           everything here is !important, so grey would otherwise win on source order. */
+        .rdp-day--booked.rdp-day--past,
+        .rdp-day--booked.rdp-day--past:hover {
+          background-color: #eff6ff !important;
+          color: #3b82f6 !important;
+          opacity: 1;
+          cursor: not-allowed !important;
+        }
+        .rdp-day--blocked.rdp-day--past,
+        .rdp-day--blocked.rdp-day--past:hover {
+          background-color: #fef2f2 !important;
+          color: #ef4444 !important;
+          opacity: 1;
+          cursor: not-allowed !important;
+        }
+        .rdp-day--temp-blocked.rdp-day--past,
+        .rdp-day--temp-blocked.rdp-day--past:hover {
+          background-color: #fffbeb !important;
+          color: #d97706 !important;
+          opacity: 1;
+          cursor: not-allowed !important;
+        }
+        .rdp-day--inactivity-blocked.rdp-day--past,
+        .rdp-day--inactivity-blocked.rdp-day--past:hover {
+          background-color: #faf5ff !important;
+          color: #a855f7 !important;
+          opacity: 1;
+          cursor: not-allowed !important;
         }
       `}</style>
     </>

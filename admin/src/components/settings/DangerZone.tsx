@@ -20,6 +20,8 @@ import {
   useActivateVenue,
   useRequestDeleteVenue,
 } from "@/services/api/useVenueSettings";
+import { useToast } from "@/hooks/useToast";
+import { extractErrorMessage } from "@/utils/toast";
 import type { Venue } from "@/types";
 
 interface DangerZoneProps {
@@ -33,7 +35,6 @@ interface ExtendedVenue extends Venue {
     blockedAfterDate?: string;
     inactiveAt?: string;
     lastInactiveAt?: string;
-    withdrawalRequestedAt?: string;
   };
   temporaryBlockAfterDate?: string;
   pendingReview?: {
@@ -59,6 +60,8 @@ export function DangerZone({ venue }: DangerZoneProps) {
   const { mutateAsync: requestDeleteVenue, isPending: isDeleting } =
     useRequestDeleteVenue();
 
+  const { success, error } = useToast();
+
   const [inactivityReason, setInactivityReason] = useState("");
   const [deleteReason, setDeleteReason] = useState("");
   const [dialog, setDialog] = useState<{
@@ -66,37 +69,50 @@ export function DangerZone({ venue }: DangerZoneProps) {
     description: string;
     action: () => Promise<void>;
     confirmText: string;
+    successMessage: string;
   } | null>(null);
 
-  const isPendingReview =
-    data.pendingReview?.intent &&
-    data.pendingReview.intent !== "DELETION_REQUEST";
-  const isDeletePending = data.pendingReview?.intent === "DELETION_REQUEST";
-  const isInactive = !!data.inactivity?.inactiveAt;
-  const isInactivityPending =
-    !!data.inactivity?.requestedAt &&
-    !data.inactivity?.approvedAt &&
-    !data.inactivity?.inactiveAt;
-  const isWithdrawalRequested = !!data.inactivity?.withdrawalRequestedAt;
+  // Intents are lowercase snake_case on the wire (see ReviewIntent on the server)
+  const pendingIntent = data.pendingReview?.intent;
+  const isInactivityPending = pendingIntent === "inactivity_request";
+  const isDeletePending = pendingIntent === "deletion_request";
+  // Only a pending edit blocks everything; this panel can't cancel one
+  const isOtherReviewPending =
+    !!pendingIntent && !isInactivityPending && !isDeletePending;
+
+  const isInactive = data.status === "Inactive";
   const isBlocked = !!data.temporaryBlockAfterDate;
   const isActive = data.status === "Approved";
+  // Approved but not yet closed: still open, and the owner can still call it off
+  const isWindingDown = isActive && !!data.inactivity?.approvedAt;
+  const closingOn = data.inactivity?.blockedAfterDate
+    ? new Date(data.inactivity.blockedAfterDate).toLocaleDateString()
+    : null;
+  const canCancelClosure = isInactivityPending || isWindingDown;
 
   const openDialog = (
     title: string,
     description: string,
     action: () => Promise<void>,
     confirmText = "Confirm",
+    successMessage = "Done",
   ) => {
-    setDialog({ title, description, action, confirmText });
+    setDialog({ title, description, action, confirmText, successMessage });
   };
 
   const handleConfirm = async () => {
     if (!dialog) return;
-    await dialog.action();
-    setDialog(null);
+    try {
+      await dialog.action();
+      success(dialog.successMessage);
+      setDialog(null);
+    } catch (e) {
+      // Without this a failure was silent and the dialog just sat there
+      error(extractErrorMessage(e, "Something went wrong. Please try again."));
+    }
   };
 
-  if (isPendingReview) {
+  if (isOtherReviewPending) {
     return (
       <Card className="p-5 shadow-sm border-amber-500/30 bg-amber-50/50">
         <div className="flex items-center gap-2">
@@ -147,6 +163,7 @@ export function DangerZone({ venue }: DangerZoneProps) {
                         await unblockBookings({ venueId: venue._id });
                       },
                       "Unblock",
+                      "Bookings unblocked",
                     );
                   } else {
                     openDialog(
@@ -156,6 +173,7 @@ export function DangerZone({ venue }: DangerZoneProps) {
                         await blockBookings({ venueId: venue._id });
                       },
                       "Block Bookings",
+                      "Bookings blocked",
                     );
                   }
                 }}
@@ -187,27 +205,33 @@ export function DangerZone({ venue }: DangerZoneProps) {
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  {isInactivityPending ? (
+                  {canCancelClosure ? (
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={
-                        isWithdrawingInactivity || isWithdrawalRequested
-                      }
+                      className="cursor-pointer"
+                      disabled={isWithdrawingInactivity}
                       onClick={() =>
                         openDialog(
-                          "Withdraw Inactivity Request",
-                          "Are you sure you want to withdraw the inactivity request? The venue will remain active.",
+                          isWindingDown
+                            ? "Cancel Scheduled Closure"
+                            : "Cancel Inactivity Request",
+                          isWindingDown
+                            ? "Your venue will stay open and go back to accepting bookings as normal."
+                            : "Your request will be removed from the admin queue and your venue stays open as normal.",
                           async () => {
                             await withdrawInactivity({ venueId: venue._id });
                           },
-                          "Withdraw Request",
+                          isWindingDown ? "Cancel Closure" : "Cancel Request",
+                          isWindingDown
+                            ? "Closure cancelled"
+                            : "Inactivity request cancelled",
                         )
                       }
                     >
-                      Withdraw Request
+                      {isWindingDown ? "Cancel Closure" : "Cancel Request"}
                     </Button>
-                  ) : !isWithdrawalRequested ? (
+                  ) : (
                     <Button
                       variant="destructive"
                       className="cursor-pointer"
@@ -225,22 +249,27 @@ export function DangerZone({ venue }: DangerZoneProps) {
                             setInactivityReason("");
                           },
                           "Request Inactivity",
+                          "Inactivity request submitted",
                         )
                       }
                     >
                       Request Inactivity
                     </Button>
-                  ) : null}
+                  )}
                 </div>
               </div>
               {isInactivityPending && (
                 <p className="text-xs text-amber-600">
-                  Inactivity request pending approval.
+                  Waiting for an admin to review this request. You can cancel it
+                  until then.
                 </p>
               )}
-              {isWithdrawalRequested && (
+              {isWindingDown && (
                 <p className="text-xs text-amber-600">
-                  Withdrawal of inactivity is pending admin approval.
+                  Approved &mdash; your venue closes
+                  {closingOn ? ` on ${closingOn}` : " shortly"}. Bookings
+                  already taken will still go ahead, and you can cancel the
+                  closure any time before then.
                 </p>
               )}
             </div>
@@ -255,14 +284,15 @@ export function DangerZone({ venue }: DangerZoneProps) {
                     Reactivation
                   </h4>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {data.inactivity?.lastInactiveAt
-                      ? `Inactive since ${new Date(data.inactivity.lastInactiveAt).toLocaleDateString()}`
+                    {data.inactivity?.inactiveAt
+                      ? `Inactive since ${new Date(data.inactivity.inactiveAt).toLocaleDateString()}`
                       : "Venue is currently inactive"}
                   </p>
                 </div>
                 <Button
                   variant="default"
                   size="sm"
+                  className="cursor-pointer"
                   disabled={isActivating}
                   onClick={() =>
                     openDialog(
@@ -272,6 +302,7 @@ export function DangerZone({ venue }: DangerZoneProps) {
                         await activateVenue({ venueId: venue._id });
                       },
                       "Reactivate",
+                      "Venue reactivated",
                     )
                   }
                 >
@@ -313,6 +344,7 @@ export function DangerZone({ venue }: DangerZoneProps) {
                         setDeleteReason("");
                       },
                       "Request Deletion",
+                      "Deletion request submitted",
                     )
                   }
                 >
@@ -345,6 +377,9 @@ export function DangerZone({ venue }: DangerZoneProps) {
                   onChange={(e) => setDeleteReason(e.target.value)}
                   placeholder="Explain why..."
                 />
+                <p className="text-xs text-muted-foreground">
+                  At least 10 characters.
+                </p>
               </div>
             )}
             {dialog.title === "Request Inactivity" && (
@@ -358,6 +393,9 @@ export function DangerZone({ venue }: DangerZoneProps) {
                   onChange={(e) => setInactivityReason(e.target.value)}
                   placeholder="Why are you requesting inactivity?"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Leave blank, or write at least 10 characters.
+                </p>
               </div>
             )}
             <DialogFooter>

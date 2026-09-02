@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router';
-import { Heart, Snowflake } from 'lucide-react';
+import { Heart, Snowflake, ChevronRight } from 'lucide-react';
 import { IoLocationOutline } from 'react-icons/io5';
 import { useState } from 'react';
 import { getLocalWishlist } from '@/hooks/useWishlist';
@@ -200,9 +200,10 @@ export function VenueCard({ venue, onToggleWishlist, isLoadingWishlist = false }
 
           <Link
             to={`/venue/${venue._id}`}
-            className="shrink-0 bg-[var(--bg-green)] hover:bg-[var(--bg-green)]/90 text-white px-6 py-2.5 rounded-xl font-semibold transition shadow-md hover:shadow-lg"
+            className="group/cta shrink-0 inline-flex items-center gap-1.5 bg-[var(--bg-green)] hover:bg-[var(--bg-green)]/90 text-white px-5 py-2.5 rounded-xl font-semibold transition shadow-md hover:shadow-lg"
           >
-            Book Now
+            View Details
+            <ChevronRight className="h-4 w-4 transition-transform duration-200 motion-safe:group-hover/cta:translate-x-1" />
           </Link>
         </div>
       </div>

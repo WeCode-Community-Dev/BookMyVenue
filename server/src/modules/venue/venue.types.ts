@@ -143,7 +143,6 @@ export interface IVenue extends Document {
     blockedAfterDate?: Date;
     inactiveAt?: Date;
     lastInactiveAt?: Date;
-    withdrawalRequestedAt?: Date;
   };
 
   temporaryBlockAfterDate?: Date;

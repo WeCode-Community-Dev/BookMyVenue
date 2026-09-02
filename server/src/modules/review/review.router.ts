@@ -3,6 +3,8 @@ import { verifyAccessToken } from '../../middlewares/auth.middleware';
 import { requireRole, requirePermission } from '../../middlewares/rbac.middleware';
 import { PERMISSIONS as P } from '../../constants/permissions';
 import { paginationMiddleware } from '../../middlewares/pagination.middleware';
+import { validateBody, validateParams } from '../../middlewares/validation.middleware';
+import { moderateReviewSchema, moderateReviewParamsSchema } from './review.validator';
 import * as controller from './review.controller';
 
 const router: Router = Router();
@@ -169,7 +171,7 @@ router
 /**
  * @openapi
  * /reviews/{id}/moderate:
- *   patch:
+ *   post:
  *     tags: [Reviews]
  *     summary: Moderate a review (admin only)
  *     security:
@@ -186,22 +188,40 @@ router
  *         application/json:
  *           schema:
  *             type: object
+ *             required: [action]
  *             properties:
  *               action:
  *                 type: string
- *                 enum: [flag, remove, restore]
+ *                 enum: [flag, remove, restore, approve_hide, reject_hide]
  *               reason:
  *                 type: string
+ *                 minLength: 10
+ *             examples:
+ *               remove:
+ *                 summary: Remove a review
+ *                 value:
+ *                   action: remove
+ *                   reason: Inappropriate content detected
  *     responses:
  *       200:
  *         description: Review moderated successfully
+ *       400:
+ *         description: Invalid action or missing/invalid reason
  *       401:
  *         description: Not authenticated
  *       403:
  *         description: Insufficient permissions
+ *       404:
+ *         description: Review not found
  */
 router
   .route('/:id/moderate')
-  .patch(verifyAccessToken, requireRole('admin'), controller.moderateReview);
+  .post(
+    verifyAccessToken,
+    requireRole('admin'),
+    validateParams(moderateReviewParamsSchema),
+    validateBody(moderateReviewSchema),
+    controller.moderateReview
+  );
 
 export { router as reviewRouter };

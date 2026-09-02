@@ -181,7 +181,6 @@ const VenueSchema = new Schema<IVenue>(
         blockedAfterDate: { type: Date },
         inactiveAt: { type: Date },
         lastInactiveAt: { type: Date },
-        withdrawalRequestedAt: { type: Date },
       },
       default: undefined,
     },

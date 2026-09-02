@@ -135,7 +135,13 @@ export const moderateReview = async (req: Request, res: Response): Promise<void>
     }
 
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-    const dto = req.body as ModerateReviewDTO;
+
+    const validated = req.validated;
+    if (!validated) {
+      ResponseUtil.badRequest(res, 'Validation failed');
+      return;
+    }
+    const dto = validated.body as ModerateReviewDTO;
     const review = await service.moderateReview(id, dto, adminId);
     ResponseUtil.success(res, 'Review moderated successfully', review);
   } catch (err) {

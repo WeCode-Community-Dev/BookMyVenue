@@ -16,6 +16,12 @@ import type { UseMutationResult } from "@tanstack/react-query";
 import { STATUS_VARIANT } from "@/constants/statusVariants";
 import { VenueDetailPanel } from "@/components/common/panels/VenueDetailPanel";
 
+const PENDING_REVIEW_LABELS: Record<string, string> = {
+  venue_edit: "Edit awaiting review",
+  inactivity_request: "Closure requested",
+  deletion_request: "Deletion requested",
+};
+
 export function useVenueColumns({
   openModal,
   closeModal,
@@ -187,10 +193,22 @@ export function useVenueColumns({
       header: "Status",
       cell: ({ row }: { row: { original: Venue } }) => {
         const v = row.original as Venue;
+        // These requests leave the venue Approved, so the row needs its own marker
+        const pending = v.pendingReview?.intent;
         return (
-          <Badge variant={STATUS_VARIANT[v.status] ?? "outline"}>
-            {v.status}
-          </Badge>
+          <div className="flex flex-col items-start gap-1">
+            <Badge variant={STATUS_VARIANT[v.status] ?? "outline"}>
+              {v.status}
+            </Badge>
+            {pending && (
+              <Badge
+                variant="outline"
+                className="border-amber-500/40 bg-amber-50 text-amber-700"
+              >
+                {PENDING_REVIEW_LABELS[pending] ?? "Awaiting review"}
+              </Badge>
+            )}
+          </div>
         );
       },
     },

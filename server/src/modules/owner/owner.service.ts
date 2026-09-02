@@ -15,6 +15,46 @@ import { BookingModel } from '../booking/models/booking.model';
 import { BookingStatus } from '../../constants/booking.constants';
 import mongoose from 'mongoose';
 import type { IVenue } from '../venue/venue.types';
+import { RoleModel } from '../../models/role.model';
+import { UserRoleModel } from '../../models/user-role.model';
+import { UserModel } from '../user/user.models';
+import { enqueueEmailTask } from '../../services/email.repository';
+import { EmailIntent, EmailTaskStatus } from '../../constants/email.constants';
+import { logWarn } from '../../utils/logger';
+
+// Everyone who can act on a review queue item
+async function findAdminRecipients(): Promise<string[]> {
+  const roles = await RoleModel.find({
+    name: { $in: ['admin', 'superAdmin'] },
+    active: true,
+    deleted: false,
+  })
+    .select('_id')
+    .lean()
+    .exec();
+  if (roles.length === 0) return [];
+
+  const userRoles = await UserRoleModel.find({
+    roleId: { $in: roles.map((r) => r._id) },
+    active: true,
+    deleted: false,
+  })
+    .select('userId')
+    .lean()
+    .exec();
+  if (userRoles.length === 0) return [];
+
+  const users = await UserModel.find({
+    _id: { $in: userRoles.map((ur) => ur.userId) },
+    active: true,
+    deleted: false,
+  })
+    .select('email')
+    .lean()
+    .exec();
+
+  return users.map((u) => u.email).filter((email): email is string => Boolean(email));
+}
 
 export function getDateThreshold(daysAgo: number): string {
   const date = new Date();
@@ -119,22 +159,80 @@ export async function requestInactivityService(
 
   const updated = await VenueModel.findByIdAndUpdate(venueId, { $set }, { new: true }).exec();
   if (!updated) throw new NotFoundError('Venue not found');
+
+  const { logModerationAction } = await import('../moderation/moderationActivity.service.js');
+  await logModerationAction('request_inactivity', venueId, 'venue', {
+    actorId: userId,
+    actorRole: 'owner',
+    reason,
+  });
+
+  try {
+    const [recipients, owner] = await Promise.all([
+      findAdminRecipients(),
+      UserModel.findById(userId).select('username').lean().exec(),
+    ]);
+    const ownerName = owner?.username ?? 'A venue owner';
+
+    await Promise.all(
+      recipients.map((email) =>
+        enqueueEmailTask(
+          email,
+          EmailIntent.INACTIVITY_REQUESTED,
+          `Closure requested for "${updated.name}"`,
+          EmailTaskStatus.PENDING,
+          // metadata is Record<string, string>, so omit reason rather than pass undefined
+          reason
+            ? { venueName: updated.name, ownerName, reason }
+            : { venueName: updated.name, ownerName }
+        )
+      )
+    );
+  } catch (err) {
+    // Never let a notification failure undo the request
+    logWarn('Failed to queue inactivity request emails', {
+      module: 'owner.service.ts/requestInactivityService',
+      venueId,
+      error: (err as Error).message,
+    });
+  }
+
   return updated;
 }
 
+// Cancels a closure before review or mid wind-down; reopening a closed venue is activateVenueService
 export async function withdrawInactivityService(venueId: string, userId: string): Promise<IVenue> {
   const venue = await requireOwnVenue(venueId, userId);
 
-  if (venue.pendingReview?.intent !== ReviewIntent.INACTIVITY_REQUEST) {
-    throw new ConflictError('No pending inactivity request to withdraw');
+  const isAwaitingReview = venue.pendingReview?.intent === ReviewIntent.INACTIVITY_REQUEST;
+  // Mid wind-down pendingReview is gone, so approvedAt on an Approved venue is the only trace
+  const isWindingDown = venue.status === 'Approved' && !!venue.inactivity?.approvedAt;
+
+  if (!isAwaitingReview && !isWindingDown) {
+    throw new ConflictError('No inactivity request to cancel');
   }
 
   const updated = await VenueModel.findByIdAndUpdate(
     venueId,
-    { $unset: { pendingReview: '', 'inactivity.requestedAt': '' } },
+    {
+      $unset: {
+        pendingReview: '',
+        'inactivity.requestedAt': '',
+        'inactivity.approvedAt': '',
+        'inactivity.blockedAfterDate': '',
+      },
+    },
     { new: true }
   ).exec();
   if (!updated) throw new NotFoundError('Venue not found');
+
+  const { logModerationAction } = await import('../moderation/moderationActivity.service.js');
+  await logModerationAction('cancel_inactivity', venueId, 'venue', {
+    actorId: userId,
+    actorRole: 'owner',
+    metadata: { cancelledDuring: isWindingDown ? 'wind_down' : 'awaiting_review' },
+  });
+
   return updated;
 }
 
@@ -187,19 +285,27 @@ export async function activateVenueService(venueId: string, userId: string): Pro
   const updated = await VenueModel.findByIdAndUpdate(
     venueId,
     {
-      $set: { status: 'Approved', 'inactivity.lastInactiveAt': new Date() },
+      // lastInactiveAt is stamped on close, not here, so the cooldown runs from the closure
+      $set: { status: 'Approved' },
+      // temporaryBlockAfterDate is a separate feature and should survive reopening
       $unset: {
         pendingReview: '',
         'inactivity.requestedAt': '',
         'inactivity.approvedAt': '',
         'inactivity.inactiveAt': '',
         'inactivity.blockedAfterDate': '',
-        temporaryBlockAfterDate: '',
       },
     },
     { new: true }
   ).exec();
   if (!updated) throw new NotFoundError('Venue not found');
+
+  const { logModerationAction } = await import('../moderation/moderationActivity.service.js');
+  await logModerationAction('reopen_venue', venueId, 'venue', {
+    actorId: userId,
+    actorRole: 'owner',
+  });
+
   return updated;
 }
 
@@ -250,5 +356,13 @@ export async function requestDeleteVenueService(
 
   const updated = await VenueModel.findByIdAndUpdate(venueId, updateObj, { new: true }).exec();
   if (!updated) throw new NotFoundError('Venue not found');
+
+  const { logModerationAction } = await import('../moderation/moderationActivity.service.js');
+  await logModerationAction('request_venue_deletion', venueId, 'venue', {
+    actorId: userId,
+    actorRole: 'owner',
+    reason,
+  });
+
   return updated;
 }

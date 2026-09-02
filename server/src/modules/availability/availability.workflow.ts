@@ -122,19 +122,20 @@ export const getBookableDates = (venue: IVenue): BookableDatesResponse => {
   const maxDateObj = new Date(today);
   maxDateObj.setDate(maxDateObj.getDate() + 90);
 
-  // Apply blockedAfterDate (tightest date wins)
-  if (venue.temporaryBlockAfterDate) {
-    const blockDate = new Date(venue.temporaryBlockAfterDate);
-    if (blockDate < maxDateObj) {
-      maxDateObj.setTime(blockDate.getTime());
+  // Tightest date wins; last bookable day is the one before the block, as the
+  // booking validator rejects anything on or after blockDate
+  const narrowTo = (rawBlockDate: Date | undefined): void => {
+    if (!rawBlockDate) return;
+    const lastBookable = new Date(rawBlockDate);
+    lastBookable.setHours(0, 0, 0, 0);
+    lastBookable.setDate(lastBookable.getDate() - 1);
+    if (lastBookable < maxDateObj) {
+      maxDateObj.setTime(lastBookable.getTime());
     }
-  }
-  if (venue.inactivity?.blockedAfterDate) {
-    const blockDate = new Date(venue.inactivity.blockedAfterDate);
-    if (blockDate < maxDateObj) {
-      maxDateObj.setTime(blockDate.getTime());
-    }
-  }
+  };
+
+  narrowTo(venue.temporaryBlockAfterDate);
+  narrowTo(venue.inactivity?.blockedAfterDate);
 
   const bookableDates: string[] = [];
   const disabledDates: string[] = [];

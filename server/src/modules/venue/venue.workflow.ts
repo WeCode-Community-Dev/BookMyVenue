@@ -3,7 +3,7 @@ import {
   INACTIVITY_COOLDOWN_DAYS,
   SUBMISSION_REQUIRED_FIELDS,
 } from '../../constants/venue.constants';
-import { WorkflowError, ValidationError } from '../../utils/errors';
+import { WorkflowError, ValidationError, ConflictError } from '../../utils/errors';
 import { timeStringToMinutes } from '../../utils/timeUtils';
 
 /**
@@ -198,6 +198,13 @@ export function canReactivate(venue: IVenue): void {
 export function canRequestInactivity(venue: IVenue): void {
   if (venue.status !== 'Approved') {
     throw new WorkflowError(venue.status, 'inactivity request -- only Approved venues');
+  }
+
+  // Would otherwise overwrite a pending venue_edit and orphan its rollback snapshot
+  if (venue.pendingReview?.intent) {
+    throw new ConflictError(
+      'This venue already has a request awaiting admin review. Resolve or cancel it first.'
+    );
   }
 
   if (venue.inactivity?.lastInactiveAt) {

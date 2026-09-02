@@ -81,7 +81,11 @@ export async function banUser(
 
   // Log activity
   const { logModerationAction } = await import('./moderationActivity.service.js');
-  await logModerationAction(adminId, 'ban_user', userId, 'user', reason, { scope, ...options });
+  await logModerationAction('ban_user', userId, 'user', {
+    actorId: adminId,
+    reason,
+    metadata: { scope, ...options },
+  });
 
   return ban;
 }
@@ -114,8 +118,9 @@ export async function liftBan(adminId: string, banRecordId: string): Promise<IBa
 
   // Log activity
   const { logModerationAction } = await import('./moderationActivity.service.js');
-  await logModerationAction(adminId, 'unban_user', updated.userId.toString(), 'user', undefined, {
-    banRecordId,
+  await logModerationAction('unban_user', updated.userId.toString(), 'user', {
+    actorId: adminId,
+    metadata: { banRecordId },
   });
 
   return updated;
@@ -149,7 +154,10 @@ export async function liftAllBansForUser(adminId: string, userId: string): Promi
 
     // Log activity
     const { logModerationAction } = await import('./moderationActivity.service.js');
-    await logModerationAction(adminId, 'unban_user', userId, 'user', undefined, { count });
+    await logModerationAction('unban_user', userId, 'user', {
+      actorId: adminId,
+      metadata: { count },
+    });
   }
 
   return count;

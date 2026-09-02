@@ -66,14 +66,10 @@ export async function checkAndSuspendExpiredVenues(): Promise<number> {
 
       // Log activity with system actor
       const deadlineStr = venue.currentEditDeadline?.toISOString() ?? 'unknown';
-      await logModerationAction(
-        systemId,
-        'auto_suspend_venue',
-        venue._id.toString(),
-        'venue',
-        `Auto-suspended after edit window expired on ${deadlineStr}`,
-        { actor: 'system (superadmin)' }
-      );
+      await logModerationAction('auto_suspend_venue', venue._id.toString(), 'venue', {
+        actorRole: 'system',
+        reason: `Auto-suspended after edit window expired on ${deadlineStr}`,
+      });
 
       await session.commitTransaction();
       suspendedCount++;

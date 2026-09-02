@@ -30,10 +30,15 @@ import { FeatureVenueDialog } from "@/components/venues/FeatureVenueDialog";
 import { ExtendDeadlineDialog } from "@/components/venues/ExtendDeadlineDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ReviewsTabContent } from "@/components/reviews/ReviewsTabContent";
+import { useAdminReviews } from "@/services/api/useAdminReviews";
 
 export default function VenuesPage() {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("All");
+
+  // Drives the count on the Reviews tab, so a waiting request isn't invisible
+  const { data: reviewsData } = useAdminReviews();
+  const pendingReviewCount = reviewsData?.count ?? 0;
 
   const [rejectDialog, setRejectDialog] = useState<VenueDialogState>({
     open: false,
@@ -210,6 +215,7 @@ export default function VenuesPage() {
               <SelectItem value="Approved">Approved</SelectItem>
               <SelectItem value="Rejected">Rejected</SelectItem>
               <SelectItem value="Suspended">Suspended</SelectItem>
+              <SelectItem value="Inactive">Inactive</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -218,7 +224,17 @@ export default function VenuesPage() {
       <Tabs defaultValue="all">
         <TabsList>
           <TabsTrigger value="all">All Venues</TabsTrigger>
-          <TabsTrigger value="reviews">Reviews</TabsTrigger>
+          <TabsTrigger value="reviews" className="gap-1.5">
+            Reviews
+            {pendingReviewCount > 0 && (
+              <span
+                className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-xs font-semibold text-white"
+                aria-label={`${String(pendingReviewCount)} awaiting review`}
+              >
+                {pendingReviewCount}
+              </span>
+            )}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="all">

@@ -19,7 +19,7 @@ export function idempotencyMiddleware() {
       }
 
       const originalJson = res.json.bind(res);
-      res.json = (async function (body: unknown): Promise<Response> {
+      res.json = async function (body: unknown): Promise<Response> {
         if (res.statusCode < 500) {
           try {
             await IdempotencyKeyModel.create({
@@ -32,7 +32,7 @@ export function idempotencyMiddleware() {
           }
         }
         return originalJson(body);
-      } as unknown) as typeof res.json;
+      } as unknown as typeof res.json;
 
       next();
     } catch (err) {

@@ -91,7 +91,7 @@ Venue review and rating system:
 - Get user's own rating for a venue
 - Review ownership verification
 - Flagged review management (admin)
-- Review moderation (admin: flag, remove, restore)
+- Review moderation (admin: flag, remove, restore, approve/reject hide requests) via POST /reviews/:id/moderate
 
 ---
 

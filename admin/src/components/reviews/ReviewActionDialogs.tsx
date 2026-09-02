@@ -20,7 +20,6 @@ const INTENT_DESCRIPTIONS: Record<string, string> = {
   venue_edit:
     "This will apply the venue edits and mark the review as approved.",
   inactivity_request: "This will mark the venue as inactive.",
-  inactivity_withdrawal: "This will cancel the inactivity request.",
   deletion_request: "This will permanently delete the venue.",
 };
 

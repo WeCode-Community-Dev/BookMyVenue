@@ -179,6 +179,54 @@ async function dispatch(task: IEmailTask): Promise<void> {
       }
       break;
     }
+    case EmailIntent.INACTIVITY_REQUESTED: {
+      const { venueName, ownerName, reason } = metadata;
+      if (!venueName || !ownerName) {
+        throw new Error(
+          `Missing required metadata fields for ${EmailIntent.INACTIVITY_REQUESTED} intent`
+        );
+      }
+      const result = await emailService.sendInactivityRequestedEmail(
+        recipient,
+        venueName,
+        ownerName,
+        reason
+      );
+      if (!result.success) {
+        throw new Error('Failed to send inactivity requested email via Resend');
+      }
+      break;
+    }
+    case EmailIntent.INACTIVITY_APPROVED: {
+      const { venueName, closingDate } = metadata;
+      if (!venueName || !closingDate) {
+        throw new Error(
+          `Missing required metadata fields for ${EmailIntent.INACTIVITY_APPROVED} intent`
+        );
+      }
+      const result = await emailService.sendInactivityApprovedEmail(
+        recipient,
+        venueName,
+        new Date(closingDate)
+      );
+      if (!result.success) {
+        throw new Error('Failed to send inactivity approved email via Resend');
+      }
+      break;
+    }
+    case EmailIntent.INACTIVITY_REJECTED: {
+      const { venueName, reason } = metadata;
+      if (!venueName || !reason) {
+        throw new Error(
+          `Missing required metadata fields for ${EmailIntent.INACTIVITY_REJECTED} intent`
+        );
+      }
+      const result = await emailService.sendInactivityRejectedEmail(recipient, venueName, reason);
+      if (!result.success) {
+        throw new Error('Failed to send inactivity rejected email via Resend');
+      }
+      break;
+    }
     case EmailIntent.USER_BANNED: {
       const { scope, reason, expiresAt, venueName } = metadata;
       if (!scope || !reason) {

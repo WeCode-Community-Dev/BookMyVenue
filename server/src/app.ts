@@ -9,6 +9,7 @@ import rateLimit from 'express-rate-limit';
 import { corsOptions } from './configs/cors.config';
 import router from './router';
 import { ResponseUtil } from './utils/responseUtils';
+import { AppError, handleError } from './utils/errors';
 import { requestLogger, logError } from './utils/logger';
 import { webhookRouter } from './modules/webhook/webhook.router';
 
@@ -64,7 +65,13 @@ app.use((_req: Request, res: Response) => {
 });
 
 // Global error handler
-app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
+  // Errors forwarded via next() carry their own status; don't flatten them to 500
+  if (err instanceof AppError) {
+    handleError(res, err, req.path);
+    return;
+  }
+
   logError('Unhandled Express error', { error: err.message, stack: err.stack });
   ResponseUtil.internalServerError(res, 'Internal server error');
 });

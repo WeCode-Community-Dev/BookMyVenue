@@ -46,7 +46,7 @@ router
  * /moderation/logs:
  *   get:
  *     tags: [Moderation]
- *     summary: Get moderation logs (superAdmin only)
+ *     summary: Get moderation logs (admin and superAdmin)
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -66,13 +66,13 @@ router
  *       401:
  *         description: Not authenticated
  *       403:
- *         description: Not authorized (requires superAdmin)
+ *         description: Not authorized (requires admin)
  */
 router
   .route('/logs')
   .get(
     verifyAccessToken,
-    requireRole('superAdmin'),
+    requireRole('admin'),
     async (req: Request, res: Response): Promise<void> => {
       try {
         const page = parseInt(req.query.page as string) || 1;

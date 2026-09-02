@@ -5,6 +5,7 @@ import { useVenueSettings } from "@/services/api/useVenueSettings";
 import { VenueSettingsView } from "@/components/settings/VenueSettingsView";
 import { VenueSettingsEdit } from "@/components/settings/VenueSettingsEdit";
 import { DangerZone } from "@/components/settings/DangerZone";
+import { VenueActivityPanel } from "@/components/settings/VenueActivityPanel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -67,6 +68,8 @@ export default function VenueSettingsPage() {
       ) : (
         <VenueSettingsView venue={venue} />
       )}
+
+      <VenueActivityPanel venueId={venue._id} />
 
       <DangerZone venue={venue} />
     </div>

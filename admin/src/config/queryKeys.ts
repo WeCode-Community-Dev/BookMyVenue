@@ -15,4 +15,5 @@ export const QUERY_KEYS = {
   MODERATION_LOGS: ["moderation-logs"] as const,
   ADMIN_REVIEWS: ["admin", "reviews"] as const,
   OWNER_VENUE_SETTINGS: ["owner", "venue-settings"] as const,
+  OWNER_VENUE_ACTIVITY: ["owner", "venue-activity"] as const,
 } as const;

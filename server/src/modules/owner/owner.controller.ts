@@ -14,6 +14,7 @@ import type {
 import * as service from './owner.service';
 import * as workflow from './owner.workflow';
 import * as reviewService from '../review/review.service';
+import { getVenueActivityLogs } from '../moderation/moderationActivity.service';
 
 // GET /api/v1/owner/analytics/:venueId
 export const getVenueAnalytics = async (req: Request, res: Response): Promise<void> => {
@@ -287,5 +288,21 @@ export const requestDeleteVenue = async (req: Request, res: Response): Promise<v
     ResponseUtil.success(res, 'Deletion request submitted', result);
   } catch (e) {
     handleError(res, e, 'requestDeleteVenue');
+  }
+};
+
+// GET /api/v1/owner/venue/:venueId/activity
+export const getVenueActivity = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const venueId = req.params.venueId as string;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const { logs, total } = await getVenueActivityLogs(venueId, page, limit);
+    ResponseUtil.success(res, 'Venue activity retrieved', {
+      logs,
+      pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    });
+  } catch (e) {
+    handleError(res, e, 'getVenueActivity');
   }
 };

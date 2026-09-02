@@ -435,7 +435,9 @@ export type FeatureVenueDTO = z.infer<typeof featureVenueSchema>;
 // Admin list filters
 
 export const adminVenueFiltersSchema = z.object({
-  status: z.enum(['Draft', 'PendingReview', 'Approved', 'Rejected', 'Suspended']).optional(),
+  status: z
+    .enum(['Draft', 'PendingReview', 'Approved', 'Rejected', 'Suspended', 'Inactive'])
+    .optional(),
   city: z.string().trim().max(100).optional(),
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),
