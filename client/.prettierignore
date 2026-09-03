@@ -1,0 +1,12 @@
+.env
+.env.local
+.git
+.idea
+.vscode
+*.log
+coverage
+dist
+logs
+node_modules
+package-lock.json
+yarn.lock

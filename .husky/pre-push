@@ -1,0 +1,96 @@
+#!/bin/sh
+
+# Pre-push hook — runs full typecheck + lint + build + test only on the sub-projects that changed.
+# Reads from stdin in the format: <local-ref> <local-sha1> <remote-ref> <remote-sha1>
+
+changed_files=""
+while read local_ref local_sha remote_ref remote_sha; do
+	# Skip branch deletion
+	if [ "$local_sha" = "0000000000000000000000000000000000000000" ]; then
+		continue
+	fi
+
+	# Determine what to compare against
+	if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
+		# New branch — compare against merge-base with main or dev
+		against=$(git merge-base HEAD main 2>/dev/null || git merge-base HEAD dev 2>/dev/null || echo "$local_sha~1")
+	else
+		against="$remote_sha"
+	fi
+
+	new_changed=$(git diff --name-only "$against".."$local_sha" 2>/dev/null)
+	if [ -n "$new_changed" ]; then
+		changed_files="$changed_files
+$new_changed"
+	fi
+done
+
+if [ -z "$changed_files" ] || [ "$changed_files" = "" ]; then
+	echo "✅ No file changes detected, skipping pre-push checks."
+	exit 0
+fi
+
+# Categorize changed files by sub-project
+CLIENT_FILES=""
+ADMIN_FILES=""
+SERVER_FILES=""
+
+while IFS= read -r file; do
+	[ -z "$file" ] && continue
+
+	[ ! -f "$file" ] && continue
+	case "$file" in
+	client/*) CLIENT_FILES="$CLIENT_FILES $file" ;;
+	admin/*) ADMIN_FILES="$ADMIN_FILES $file" ;;
+	server/*) SERVER_FILES="$SERVER_FILES $file" ;;
+	esac
+done <<EOF
+$(echo "$changed_files" | sed '/^$/d')
+EOF
+
+failed=0
+ROOT_DIR="$(pwd)"
+
+echo ""
+echo "═══════════════════════════════════════"
+echo "   Pre-push checks"
+echo "═══════════════════════════════════════"
+
+if [ -n "$CLIENT_FILES" ]; then
+	echo ""
+	echo "📦 Checking client …"
+	CLIENT_FILES_RELATIVE=$(printf "%s" "$CLIENT_FILES" | sed 's|^[[:space:]]*||; s| client/| |g; s|^client/||')
+	(cd "$ROOT_DIR/client" && pnpm exec eslint --no-warn-ignored $CLIENT_FILES_RELATIVE 2>&1) || failed=1
+	(cd "$ROOT_DIR/client" && pnpm test 2>&1) || failed=1
+	(cd "$ROOT_DIR/client" && pnpm build 2>&1) || failed=1
+	echo "   Client checks complete"
+fi
+
+if [ -n "$ADMIN_FILES" ]; then
+	echo ""
+	echo "📦 Checking admin …"
+	ADMIN_FILES_RELATIVE=$(printf "%s" "$ADMIN_FILES" | sed 's|^[[:space:]]*||; s| admin/| |g; s|^admin/||')
+	(cd "$ROOT_DIR/admin" && pnpm exec eslint --no-warn-ignored $ADMIN_FILES_RELATIVE 2>&1) || failed=1
+	(cd "$ROOT_DIR/admin" && pnpm test 2>&1) || failed=1
+	(cd "$ROOT_DIR/admin" && pnpm build 2>&1) || failed=1
+	echo "   Admin checks complete"
+fi
+
+if [ -n "$SERVER_FILES" ]; then
+	echo ""
+	echo "📦 Checking server …"
+	SERVER_FILES_RELATIVE=$(printf "%s" "$SERVER_FILES" | sed 's|^[[:space:]]*||; s| server/| |g; s|^server/||')
+	(cd "$ROOT_DIR/server" && pnpm exec eslint --no-warn-ignored $SERVER_FILES_RELATIVE 2>&1) || failed=1
+	(cd "$ROOT_DIR/server" && pnpm test 2>&1) || failed=1
+	(cd "$ROOT_DIR/server" && pnpm build 2>&1) || failed=1
+	echo "   Server checks complete"
+fi
+
+echo ""
+echo "───────────────────────────────────────"
+if [ "$failed" = 1 ]; then
+	echo "❌ Pre-push checks FAILED — push blocked."
+	exit 1
+fi
+echo "✅ All checks passed — push allowed."
+exit 0

@@ -1,0 +1,57 @@
+name: Monorepo CI
+
+on:
+  push:
+    branches: [dev, qa, main]
+  pull_request:
+    branches: [dev, qa, main]
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      admin: ${{ steps.filter.outputs.admin }}
+      client: ${{ steps.filter.outputs.client }}
+      server: ${{ steps.filter.outputs.server }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            admin: 'admin/**'
+            client: 'client/**'
+            server: 'server/**'
+
+  build:
+    needs: changes
+    strategy:
+      matrix:
+        component: [admin, client, server]
+    runs-on: ubuntu-latest
+    if: |
+      (matrix.component == 'admin' && needs.changes.outputs.admin == 'true') ||
+      (matrix.component == 'client' && needs.changes.outputs.client == 'true') ||
+      (matrix.component == 'server' && needs.changes.outputs.server == 'true')
+    defaults:
+      run:
+        working-directory: ${{ matrix.component }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          cache: "pnpm"
+          cache-dependency-path: ${{ matrix.component }}/pnpm-lock.yaml
+
+      - run: pnpm install --no-frozen-lockfile --recursive
+
+      - name: Type check (server only)
+        if: matrix.component == 'server'
+        run: pnpm exec tsc --noEmit
+
+      - run: pnpm run lint
+      - run: pnpm run test
+      - run: pnpm run build

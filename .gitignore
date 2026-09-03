@@ -1,0 +1,52 @@
+# Logs
+*.log
+lerna-debug.log*
+logs
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build / Distribution
+dist
+dist-ssr
+
+# Editor / IDE
+.agents
+.agent
+.idea
+.vscode
+!.vscode/extensions.json
+*.njsproj
+*.ntvs*
+*.sln
+*.suo
+*.sw?
+
+# Root
+node_modules/
+
+# System / OS
+.DS_Store
+
+# -------------------------------------
+
+# Admin
+/admin/.env
+/admin/.vite/
+/admin/dist/
+/admin/node_modules
+
+# Client
+/client/.env
+/client/.vite/
+/client/dist/
+/client/node_modules
+
+# Server
+/server/.env
+/server/dist/
+/server/node_modules
+
+# Test coverage
+coverage/

@@ -1,0 +1,78 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [dev, qa, main]
+    paths:
+      - "admin/**"
+      - "client/**"
+      - ".github/workflows/frontend.yml"
+  pull_request:
+    branches: [dev, qa, main]
+    paths:
+      - "admin/**"
+      - "client/**"
+      - ".github/workflows/frontend.yml"
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      admin: ${{ steps.filter.outputs.admin }}
+      client: ${{ steps.filter.outputs.client }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            admin:
+              - 'admin/**'
+            client:
+              - 'client/**'
+
+  build-admin:
+    needs: changes
+    if: needs.changes.outputs.admin == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: admin
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          cache: "pnpm"
+          cache-dependency-path: admin/pnpm-lock.yaml
+
+      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm exec tsc --noEmit
+      - run: pnpm run lint
+      - run: pnpm run test
+      - run: pnpm run build
+
+  build-client:
+    needs: changes
+    if: needs.changes.outputs.client == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          cache: "pnpm"
+          cache-dependency-path: client/pnpm-lock.yaml
+
+      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm exec tsc --noEmit
+      - run: pnpm run lint
+      - run: pnpm run test
+      - run: pnpm run build
