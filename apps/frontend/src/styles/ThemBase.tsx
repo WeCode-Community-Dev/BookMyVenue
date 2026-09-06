@@ -16,6 +16,17 @@ const ThemeBase = () => {
     }, [
         appTheme
     ]);
+
+    useEffect(() => {
+        if (typeof window !== "undefined" && "serviceWorker" in navigator && process.env.NODE_ENV === "development") {
+            navigator.serviceWorker.getRegistrations().then((registrations) => {
+                for (const registration of registrations) {
+                    registration.unregister();
+                }
+            });
+        }
+    }, []);
+
     return <></>;
 };
 
