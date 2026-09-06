@@ -75,6 +75,7 @@ export const sideBarStyle = {
         "text-sm",
         "font-semibold",
         "leading-tight",
+        "whitespace-pre-line",
         "text-sidebar-foreground"
     ),
     ctaDescription: clsx(

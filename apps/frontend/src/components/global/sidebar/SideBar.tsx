@@ -139,9 +139,7 @@ export default function Sidebar() {
 
                     <div className={sideBarStyle.ctaContent}>
                         <h3 className={sideBarStyle.ctaTitle}>
-                            List your venue
-                            <br />
-                            with us
+                            <AppText textName="LIST_YOUR_VENUE_WITH_US" textModule="LABEL" />
                         </h3>
 
                         <p className={sideBarStyle.ctaDescription}>
@@ -150,7 +148,12 @@ export default function Sidebar() {
                     </div>
 
                     <div className={sideBarStyle.ctaButtonWrapper}>
-                        <Button className={sideBarStyle.ctaButton}>
+                        <Button
+                            onClick={() => {
+                                naviagateToScreen(SCREENS.ADD_VENUE);
+                            }}
+                            className={sideBarStyle.ctaButton}
+                        >
                             <AppText textName="GET_STARTED" textModule="BUTTON" />
                         </Button>
                     </div>
