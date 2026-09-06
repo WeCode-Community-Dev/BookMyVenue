@@ -2,6 +2,8 @@
 
 import { AppText, getText, setLanguage } from "@/lib/language/LanguageHelper";
 import {
+    Check,
+    ChevronDown,
     Headphones,
     Languages,
     LogOut,
@@ -10,9 +12,10 @@ import {
     Sun,
     User,
 } from "lucide-react";
-import { LANGUAGE, SCREENS, THEME } from "@/lib/Constants";
+import { LANGUAGE, SCREENS, SUPPORTED_LANGUAGES, THEME } from "@/lib/Constants";
 import { storeTheme, useConfigTheme, useLanguage } from "@/store/AppConfigReducer";
 import { useDispatch, useSelector } from "react-redux";
+import { useState } from "react";
 
 import NxtImage from "next/image";
 import { profileDropdownStyle } from "./ProfileDropdownStyle";
@@ -27,8 +30,9 @@ export default function ProfileDropdown({ isOpen }: ProfileDropdownProps) {
     const router = useRouter();
     const dispatch = useDispatch();
     const theme = useSelector(useConfigTheme);
-    const currentLanguage = useSelector(useLanguage);
+    const currentLanguage = useSelector(useLanguage) || LANGUAGE.ENGLISH;
     const { logout, user } = useAuthService();
+    const [isLanguageOpen, setIsLanguageOpen] = useState(false);
 
     if (!isOpen) return null;
 
@@ -40,37 +44,13 @@ export default function ProfileDropdown({ isOpen }: ProfileDropdownProps) {
         router.push(SCREENS.PROFILE);
     };
 
-    const changeLanguage = () => {
-        const nextLanguage = currentLanguage === LANGUAGE.HINDI ? LANGUAGE.ENGLISH : LANGUAGE.HINDI;
-        setLanguage(nextLanguage);
+    const handleLanguageSelect = (langCode: string) => {
+        setLanguage(langCode);
     };
 
-    const menuItems = [
-        ...(user?.role !== "ADMIN"
-            ? [
-                {
-                    icon: User,
-                    label: getText("PROFILE", "MENUS"),
-                    onClick: handleProfile
-                },
-                {
-                    icon: Settings,
-                    label: getText("SETTINGS", "MENUS"),
-                }
-            ]
-            : [
-            ]),
-        {
-            icon: Languages,
-            label: getText("LANGUAGE", "MENUS"),
-            onClick: changeLanguage
-        },
-        {
-            icon: theme === THEME.DARK ? Sun : Moon,
-            label: getText("THEME", "MENUS"),
-            onClick: toggleTheme,
-        },
-    ];
+    const currentLangObj = SUPPORTED_LANGUAGES.find(
+        (lang) => lang.code.toLowerCase() === currentLanguage.toLowerCase()
+    ) || SUPPORTED_LANGUAGES[0];
 
     return (
         <div className={profileDropdownStyle.wrapper}>
@@ -99,21 +79,100 @@ export default function ProfileDropdown({ isOpen }: ProfileDropdownProps) {
 
             {/* Main Menu */}
             <div className={profileDropdownStyle.menuContainer}>
-                {menuItems.map((item) => {
-                    const Icon = item.icon;
-
-                    return (
+                {user?.role !== "ADMIN" && (
+                    <>
                         <button
-                            key={item.label}
-                            onClick={item.onClick}
+                            onClick={handleProfile}
                             className={profileDropdownStyle.menuItem}
                         >
-                            <Icon className={profileDropdownStyle.menuItemIcon} />
-
-                            {item.label}
+                            <div className={profileDropdownStyle.menuItemLeft}>
+                                <User className={profileDropdownStyle.menuItemIcon} />
+                                <span>{getText("PROFILE", "MENUS")}</span>
+                            </div>
                         </button>
-                    );
-                })}
+
+                        <button
+                            className={profileDropdownStyle.menuItem}
+                        >
+                            <div className={profileDropdownStyle.menuItemLeft}>
+                                <Settings className={profileDropdownStyle.menuItemIcon} />
+                                <span>{getText("SETTINGS", "MENUS")}</span>
+                            </div>
+                        </button>
+                    </>
+                )}
+
+                {/* Language Dropdown Row */}
+                <div>
+                    <button
+                        onClick={() => setIsLanguageOpen((prev) => !prev)}
+                        className={profileDropdownStyle.menuItem}
+                        aria-expanded={isLanguageOpen}
+                    >
+                        <div className={profileDropdownStyle.menuItemLeft}>
+                            <Languages className={profileDropdownStyle.menuItemIcon} />
+                            <span>{getText("LANGUAGE", "MENUS")}</span>
+                        </div>
+                        <div className={profileDropdownStyle.menuItemRight}>
+                            <span>{currentLangObj.label}</span>
+                            <ChevronDown
+                                className={`${profileDropdownStyle.languageChevron} ${
+                                    isLanguageOpen ? "rotate-180" : ""
+                                }`}
+                            />
+                        </div>
+                    </button>
+
+                    {/* Language Options Submenu */}
+                    {isLanguageOpen && (
+                        <div className={profileDropdownStyle.languageSubmenu}>
+                            {SUPPORTED_LANGUAGES.map((lang) => {
+                                const isSelected =
+                                    lang.code.toLowerCase() === currentLanguage.toLowerCase();
+                                return (
+                                    <button
+                                        key={lang.code}
+                                        onClick={() => handleLanguageSelect(lang.code)}
+                                        className={`${profileDropdownStyle.languageSubItem} ${
+                                            isSelected
+                                                ? profileDropdownStyle.languageSubItemActive
+                                                : profileDropdownStyle.languageSubItemInactive
+                                        }`}
+                                    >
+                                        <span className="flex items-center gap-2">
+                                            <span>{lang.label}</span>
+                                            {lang.nativeLabel !== lang.label && (
+                                                <span className="text-xs text-dropdown-icon">
+                                                    ({lang.nativeLabel})
+                                                </span>
+                                            )}
+                                        </span>
+                                        {isSelected && (
+                                            <Check
+                                                className={profileDropdownStyle.languageCheckIcon}
+                                            />
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+
+                {/* Theme Toggle */}
+                <button
+                    onClick={toggleTheme}
+                    className={profileDropdownStyle.menuItem}
+                >
+                    <div className={profileDropdownStyle.menuItemLeft}>
+                        {theme === THEME.DARK ? (
+                            <Sun className={profileDropdownStyle.menuItemIcon} />
+                        ) : (
+                            <Moon className={profileDropdownStyle.menuItemIcon} />
+                        )}
+                        <span>{getText("THEME", "MENUS")}</span>
+                    </div>
+                </button>
             </div>
 
             {user?.role !== "ADMIN" && (
@@ -123,8 +182,10 @@ export default function ProfileDropdown({ isOpen }: ProfileDropdownProps) {
                     {/* Support */}
                     <div className={profileDropdownStyle.supportContainer}>
                         <button className={profileDropdownStyle.menuItem}>
-                            <Headphones className={profileDropdownStyle.menuItemIcon} />
-                            <AppText textName="SUPPORT" textModule="MENUS" />
+                            <div className={profileDropdownStyle.menuItemLeft}>
+                                <Headphones className={profileDropdownStyle.menuItemIcon} />
+                                <AppText textName="SUPPORT" textModule="MENUS" />
+                            </div>
                         </button>
                     </div>
                 </>
@@ -135,8 +196,10 @@ export default function ProfileDropdown({ isOpen }: ProfileDropdownProps) {
             {/* Logout */}
             <div className={profileDropdownStyle.logoutContainer}>
                 <button className={profileDropdownStyle.logoutItem} onClick={logout}>
-                    <LogOut className={profileDropdownStyle.logoutIcon} />
-                    <AppText textName="LOGOUT" textModule="MENUS" />
+                    <div className={profileDropdownStyle.menuItemLeft}>
+                        <LogOut className={profileDropdownStyle.logoutIcon} />
+                        <AppText textName="LOGOUT" textModule="MENUS" />
+                    </div>
                 </button>
             </div>
         </div>

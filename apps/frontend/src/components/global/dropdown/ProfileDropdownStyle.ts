@@ -56,7 +56,7 @@ export const profileDropdownStyle = {
         "flex",
         "w-full",
         "items-center",
-        "gap-3",
+        "justify-between",
         "px-4",
         "py-3",
         "text-sm",
@@ -66,10 +66,74 @@ export const profileDropdownStyle = {
         "cursor-pointer",
     ),
 
+    menuItemLeft: clsx(
+        "flex",
+        "items-center",
+        "gap-3",
+    ),
+
+    menuItemRight: clsx(
+        "flex",
+        "items-center",
+        "gap-1.5",
+        "text-xs",
+        "text-dropdown-icon",
+    ),
+
     menuItemIcon: clsx(
         "h-5",
         "w-5",
         "text-dropdown-icon",
+    ),
+
+    languageChevron: clsx(
+        "h-4",
+        "w-4",
+        "text-dropdown-icon",
+        "transition-transform",
+        "duration-200",
+    ),
+
+    languageSubmenu: clsx(
+        "bg-slate-50/60",
+        "dark:bg-slate-900/40",
+        "py-1",
+        "border-y",
+        "border-dropdown-divider/60",
+    ),
+
+    languageSubItem: clsx(
+        "flex",
+        "w-full",
+        "items-center",
+        "justify-between",
+        "pl-12",
+        "pr-4",
+        "py-2.5",
+        "text-sm",
+        "transition",
+        "hover:bg-dropdown-item-hover-bg",
+        "cursor-pointer",
+    ),
+
+    languageSubItemActive: clsx(
+        "text-teal-600",
+        "dark:text-teal-400",
+        "font-medium",
+        "bg-teal-50/50",
+        "dark:bg-teal-950/20",
+    ),
+
+    languageSubItemInactive: clsx(
+        "text-dropdown-item-text",
+    ),
+
+    languageCheckIcon: clsx(
+        "h-4",
+        "w-4",
+        "text-teal-600",
+        "dark:text-teal-400",
+        "shrink-0",
     ),
 
     divider: clsx(

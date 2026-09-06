@@ -13,13 +13,15 @@ import {
     Users,
 } from "lucide-react";
 
+import { AppText } from "@/lib/language/LanguageHelper";
+
 const eventTypes = [
-    { id: 1, title: "Birthday", icon: Cake },
-    { id: 2, title: "Wedding", icon: Heart },
-    { id: 3, title: "Corporate", icon: BriefcaseBusiness },
-    { id: 4, title: "Meetup", icon: Mic },
-    { id: 5, title: "Celebration", icon: PartyPopper },
-    { id: 6, title: "Other Events", icon: MoreHorizontal },
+    { id: 1, textName: "CAT_BIRTHDAY", textModule: "BASIC_INFO", icon: Cake },
+    { id: 2, textName: "CAT_WEDDING", textModule: "BASIC_INFO", icon: Heart },
+    { id: 3, textName: "CAT_CORPORATE", textModule: "BASIC_INFO", icon: BriefcaseBusiness },
+    { id: 4, textName: "CAT_MEETUP", textModule: "BASIC_INFO", icon: Mic },
+    { id: 5, textName: "CAT_CELEBRATION", textModule: "BASIC_INFO", icon: PartyPopper },
+    { id: 6, textName: "OTHER_EVENTS", textModule: "LABEL", icon: MoreHorizontal },
 ];
 
 export default function EventTypeFilter() {
@@ -31,11 +33,11 @@ export default function EventTypeFilter() {
 
                 <div>
                     <h1 className="text-xl font-bold text-foreground lg:text-3xl">
-            Every occasion deserves the perfect venue
+                        <AppText textName="HERO_TITLE" textModule="LABEL" />
                     </h1>
 
                     <p className="mt-2 text-sm text-muted-foreground">
-            Discover and book amazing venues for every kind of event.
+                        <AppText textName="HERO_SUBTITLE" textModule="LABEL" />
                     </p>
                 </div>
 
@@ -44,25 +46,28 @@ export default function EventTypeFilter() {
                     <div className="flex -space-x-2">
                         <img
                             src="https://i.pravatar.cc/50?img=12"
+                            alt="Avatar 1"
                             className="h-8 w-8 rounded-full border-2 border-card"
                         />
                         <img
                             src="https://i.pravatar.cc/50?img=13"
+                            alt="Avatar 2"
                             className="h-8 w-8 rounded-full border-2 border-card"
                         />
                         <img
                             src="https://i.pravatar.cc/50?img=14"
+                            alt="Avatar 3"
                             className="h-8 w-8 rounded-full border-2 border-card"
                         />
                     </div>
 
                     <div>
                         <p className="text-xs font-semibold text-foreground">
-              Trusted by 50K+
+                            <AppText textName="TRUSTED_BY_50K" textModule="LABEL" />
                         </p>
 
                         <p className="text-[11px] text-muted-foreground">
-              Event planners & hosts
+                            <AppText textName="EVENT_PLANNERS_HOSTS" textModule="LABEL" />
                         </p>
                     </div>
 
@@ -75,11 +80,11 @@ export default function EventTypeFilter() {
 
                 <div className="mb-3 flex items-center gap-2">
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-teal-700 text-[11px] font-semibold text-white">
-            1
+                        1
                     </span>
 
                     <p className="text-sm font-semibold text-foreground">
-            What are you planning?
+                        <AppText textName="WHAT_ARE_YOU_PLANNING" textModule="LABEL" />
                     </p>
                 </div>
 
@@ -96,7 +101,7 @@ export default function EventTypeFilter() {
                                 <Icon className="h-5 w-5 text-foreground" />
 
                                 <span className="text-xs font-medium text-foreground">
-                                    {event.title}
+                                    <AppText textName={event.textName} textModule={event.textModule} />
                                 </span>
                             </button>
                         );
@@ -111,21 +116,21 @@ export default function EventTypeFilter() {
 
                 <button className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground hover:bg-muted">
                     <MapPin className="h-4 w-4 text-muted-foreground" />
-          Kochi, Kerala
+                    <AppText textName="DEFAULT_LOCATION" textModule="LABEL" />
                 </button>
 
                 <button className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground hover:bg-muted">
                     <Users className="h-4 w-4 text-muted-foreground" />
-          50 Guests
+                    <AppText textName="GUEST_COUNT" textModule="LABEL" append={{ count: 50 }} />
                 </button>
 
                 <button className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground hover:bg-muted">
                     <CalendarDays className="h-4 w-4 text-muted-foreground" />
-          This Weekend
+                    <AppText textName="THIS_WEEKEND" textModule="LABEL" />
                 </button>
 
                 <button className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-coral-500 to-red-500 px-6 py-3 text-sm font-semibold text-white">
-          Find Venues
+                    <AppText textName="FIND_VENUES" textModule="BUTTON" />
                     <ArrowRight className="h-4 w-4" />
                 </button>
 

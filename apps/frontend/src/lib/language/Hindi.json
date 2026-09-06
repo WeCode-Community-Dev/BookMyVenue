@@ -48,7 +48,10 @@
         "SELECTED": "चयनित",
         "SELECT_PACKAGE": "पैकेज चुनें",
         "UNAVAILABLE": "अनुपलब्ध",
-        "BOOKED": "बुक किया हुआ"
+        "BOOKED": "बुक किया हुआ",
+        "VIEW_ALL": "सभी देखें",
+        "EXPLORE": "एक्सप्लोर करें",
+        "FIND_VENUES": "स्थान खोजें"
     },
     "LABEL": {
         "WELCOME_BACK": "वापसी पर स्वागत है",
@@ -170,11 +173,59 @@
         "TOTAL_VENUES": "कुल स्थल",
         "LISTED_VENUES": "सूचीबद्ध स्थल",
         "TOTAL_BOOKINGS": "कुल बुकिंग",
-        "ALL_BOOKINGS": "सभी बुकिंग"
+        "ALL_BOOKINGS": "सभी बुकिंग",
+        "EXCLUSIVE_OFFERS": "विशेष ऑफ़र",
+        "EXCLUSIVE_OFFERS_SUBTITLE": "आपके अगले उत्सव के लिए चुनिंदा सौदे",
+        "LIMITED_TIME": "सीमित समय",
+        "POPULAR": "लोकप्रिय",
+        "CORPORATE": "कॉर्पोरेट",
+        "WEEKEND": "सप्ताहांत",
+        "OFFER_WEDDING_TITLE": "शादी का सीज़न स्पेशल",
+        "OFFER_WEDDING_DESC": "प्रीमियम बैंक्वेट हॉल, रिसॉर्ट और डेस्टिनेशन वेडिंग स्थलों पर 25% तक की बचत करें।",
+        "OFFER_BIRTHDAY_TITLE": "जन्मदिन उत्सव सौदे",
+        "OFFER_BIRTHDAY_DESC": "चयनित जन्मदिन स्थलों और पार्टी पैकेजों पर सीधे ₹5,000 की छूट।",
+        "OFFER_CORPORATE_TITLE": "कॉर्पोरेट इवेंट पैकेज",
+        "OFFER_CORPORATE_DESC": "टीम आउटिंग, सम्मेलनों और वार्षिक बैठकों के लिए विशेष मूल्य।",
+        "OFFER_WEEKEND_TITLE": "वीकेंड स्पेशल",
+        "OFFER_WEEKEND_DESC": "हर शुक्रवार से रविवार प्रीमियम स्थलों पर विशेष छूट।",
+        "OFF": "छूट",
+        "ENDS_SOON": "जल्द समाप्त होगा",
+        "HERO_TITLE": "हर अवसर के लिए एक आदर्श स्थान",
+        "HERO_SUBTITLE": "हर तरह के आयोजन के लिए शानदार स्थान खोजें और बुक करें।",
+        "TRUSTED_BY_50K": "50K+ द्वारा विश्वसनीय",
+        "EVENT_PLANNERS_HOSTS": "इवेंट प्लानर और आयोजक",
+        "WHAT_ARE_YOU_PLANNING": "आप क्या योजना बना रहे हैं?",
+        "OTHER_EVENTS": "अन्य आयोजन",
+        "DEFAULT_LOCATION": "कोच्चि, केरल",
+        "THIS_WEEKEND": "इस सप्ताहांत",
+        "EXPLORE_BY_VENUE_TYPE": "स्थान के प्रकार के अनुसार खोजें",
+        "DISCOVER_VENUES_SUBTITLE": "हर अवसर के अनुकूल स्थान खोजें",
+        "RESORTS": "रिसॉर्ट्स",
+        "SUBTITLE_RESORTS": "आराम करें और आनंद लें",
+        "BANQUET_HALLS": "बैंक्वेट हॉल",
+        "SUBTITLE_BANQUETS": "शादियाँ और पार्टियाँ",
+        "AUDITORIUMS": "ऑडिटोरियम",
+        "SUBTITLE_AUDITORIUMS": "आयोजन और सेमिनार",
+        "CAFES_RESTAURANTS": "कैफे और रेस्तरां",
+        "SUBTITLE_CAFES": "छोटे समारोह",
+        "OPEN_LAWNS": "खुले लॉन",
+        "SUBTITLE_LAWNS": "आउटडोर आयोजन",
+        "DISTANCE": "दूरी",
+        "RATING_4_PLUS": "रेटिंग 4.0+",
+        "SORT_BY": "क्रमबद्ध करें:",
+        "RECOMMENDED": "अनुशंसित"
     },
     "FILTERS": {
         "FILTER": "फ़िल्टर्स",
-        "CLEAR": "साफ़ करें"
+        "CLEAR": "साफ़ करें",
+        "PRICE": "कीमत",
+        "CAPACITY": "क्षमता",
+        "AMENITIES": "सुविधाएं",
+        "AVAILABILITY": "उपलब्धता",
+        "DISTANCE": "दूरी",
+        "RATING_4_PLUS": "रेटिंग 4.0+",
+        "SORT_BY": "क्रमबद्ध करें:",
+        "RECOMMENDED": "अनुशंसित"
     },
     "MENUS": {
         "PROFILE": "प्रोफ़ाइल",
@@ -328,6 +379,7 @@
         "ENTER_REJECTION_REASON": "अस्वीकृति का कारण दर्ज करें (वैकल्पिक):",
         "REJECTION_REASON_PLACEHOLDER": "अस्वीकृति का नोट/कारण...",
         "FAILED_APPROVE_VENUE": "स्थल को स्वीकृत करने में विफल",
-        "FAILED_REJECT_VENUE": "स्थल को अस्वीकार करने में विफल"
+        "FAILED_REJECT_VENUE": "स्थल को अस्वीकार करने में विफल",
+        "LOADING_MORE_VENUES": "और स्थान लोड हो रहे हैं..."
     }
 }
