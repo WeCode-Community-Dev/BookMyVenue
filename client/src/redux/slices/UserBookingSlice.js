@@ -235,6 +235,35 @@ export const fetchUserBookings = createAsyncThunk(
   }
 );
 
+//pay remaining amount
+
+export const payRemainingBooking = createAsyncThunk(
+  "userBooking/payRemainingBooking",
+
+  async (
+    { bookingId, paymentMethod },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await api.post(
+        API_ROUTES.USER.BOOKINGS.PAY_REMAINING(
+          bookingId
+        ),
+        {
+          paymentMethod,
+        }
+      );
+
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message ||
+          "Failed to pay remaining amount"
+      );
+    }
+  }
+);
+
 // ======================================
 // FETCH BOOKING BY ID
 // ======================================
@@ -459,6 +488,42 @@ const userBookingSlice = createSlice({
           state.success = false;
         }
       )
+
+      // ==================================
+// PAY REMAINING BOOKING
+// ==================================
+
+.addCase(
+  payRemainingBooking.pending,
+  (state) => {
+    state.loading = true;
+    state.error = null;
+    state.success = false;
+  }
+)
+
+.addCase(
+  payRemainingBooking.fulfilled,
+  (state, action) => {
+    state.loading = false;
+
+    state.currentBooking =
+      action.payload;
+
+    state.success = true;
+  }
+)
+
+.addCase(
+  payRemainingBooking.rejected,
+  (state, action) => {
+    state.loading = false;
+
+    state.error = action.payload;
+
+    state.success = false;
+  }
+)
 
       // =========================
       // Cancel Booking

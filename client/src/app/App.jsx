@@ -7,6 +7,7 @@ import PublicRoute from "@/components/auth/PublicRoute";
 import RoleRoute from "@/components/auth/RoleRoute";
 import { ROLES } from "@/constants/Roles";
 import HomeRoute from "@/components/auth/HomeRoute";
+import ScrollToTop from "@/presentation/components/common/ScrollToTop";
 
 // Auth Pages
 const Register = lazy(() => import("@/presentation/pages/auth/Register"));
@@ -62,6 +63,7 @@ function App() {
 
   return (
     <BrowserRouter>
+    <ScrollToTop/>
       <Suspense fallback={
         <div className='flex h-screen items-center justify-content'>
           <div className='h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-amber-600'></div>

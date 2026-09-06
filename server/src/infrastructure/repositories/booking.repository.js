@@ -463,7 +463,8 @@ async hasOverlappingBooking(
             let docs = await BookingModel.find(filter)
                 .populate("venueId")
                 .sort({
-                    bookingDate: sortBy === "asc" ? 1 : -1
+                    // bookingDate: sortBy === "asc" ? 1 : -1
+                    createdAt:-1
                 });
 
             if (search) {

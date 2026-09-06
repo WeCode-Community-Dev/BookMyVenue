@@ -97,7 +97,7 @@ import { UserChangePasswordUsecase } from '../../application/user/usecases/profi
 import { UserGetSimilarVenuesUsecase } from '../../application/user/usecases/venue/user.getSimilarVenues.usecase.js'
 import { UserCancelBookingUsecase } from "../../application/user/usecases/booking/user.cancelBooking.usecase.js";
 import { UserAvailabilityUsecase } from "../../application/user/usecases/booking/user.availability.usecase.js";
-
+import { UserPayRemainingBookingUsecase } from "../../application/user/usecases/booking/user.pay.remaining.booking.usecase.js";
 //
 import { ReservationService } from "../../infrastructure/services/reservationService.js";
 import { UserReserveBookingUsecase } from "../../application/user/usecases/booking/user.reserveBooking.usecase.js";
@@ -378,7 +378,8 @@ const iUserConfirmBookingUsecase =
 
 const iUserAvailabilityUsecase =
     new UserAvailabilityUsecase(
-        bookingRepository
+        bookingRepository,
+        iVenueRepository
     );
 
 const iUserGetBookingsUsecase =
@@ -398,6 +399,10 @@ const iUserCancelBookingUsecase =
     new UserCancelBookingUsecase(
         bookingRepository,
         iMailService
+    );
+const iUserPayRemainingBookingUsecase =
+    new UserPayRemainingBookingUsecase(
+        bookingRepository
     );
 
 // --- controllers ---
@@ -516,7 +521,8 @@ export const iUserBookingController =
         iUserGetBookingsUsecase,
         iUserGetBookingByIdUsecase,
         iUserCancelBookingUsecase,
-        iUserAvailabilityUsecase
+        iUserAvailabilityUsecase,
+        iUserPayRemainingBookingUsecase
     );
 
 export { iUserPaymentReminderUsecase };

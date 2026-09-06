@@ -10,7 +10,8 @@ export class UserBookingController {
         userGetBookingsUsecase,
         userGetBookingByIdUsecase,
         userCancelBookingUsecase,
-        userAvailabilityUsecase
+        userAvailabilityUsecase,
+        userPayRemainingBookingUsecase
     ) {
         this._userReserveBookingUsecase = userReserveBookingUsecase;
         this._userConfirmBookingUsecase = userConfirmBookingUsecase;
@@ -18,6 +19,9 @@ export class UserBookingController {
         this._userGetBookingByIdUsecase = userGetBookingByIdUsecase;
          this._userCancelBookingUsecase = userCancelBookingUsecase;
         this._userAvailabilityUsecase = userAvailabilityUsecase;
+        this._userPayRemainingBookingUsecase =
+        userPayRemainingBookingUsecase;
+
     }
 
     reserveBooking = asyncHandler(async (req, res) => {
@@ -150,6 +154,30 @@ getAvailability = asyncHandler(async (req, res) => {
         "Availability fetched successfully.",
         result
     );
+});
+
+payRemainingBooking = asyncHandler(async (req, res) => {
+
+    const userId = req.user.id;
+
+    const { bookingId } = req.params;
+
+    const { paymentMethod } = req.body;
+
+    const result =
+        await this._userPayRemainingBookingUsecase.execute(
+            userId,
+            bookingId,
+            paymentMethod
+        );
+
+    return sendSuccess(
+        res,
+        statusCode.OK,
+        "Remaining payment completed successfully.",
+        result
+    );
+
 });
 
 }

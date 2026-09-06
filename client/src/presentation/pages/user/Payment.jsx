@@ -7,9 +7,98 @@ import Header from "@/presentation/components/common/Header";
 import Footer from "@/presentation/components/common/Footer";
 import { formatDateToDDMMYYYY } from "@/lib/utils";
 
-import { confirmBooking } from "@/redux/slices/UserBookingSlice";
+import {
+  confirmBooking,
+  payRemainingBooking,
+} from "@/redux/slices/UserBookingSlice";
 
 import toast from "react-hot-toast";
+
+// ======================================
+// FORMAT TIME - 12 HOUR
+// ======================================
+
+const formatTime12Hour = (time) => {
+  if (!time) return "--";
+
+  const [hours, minutes] = time.split(":");
+  const hour = Number(hours);
+
+  const period = hour >= 12 ? "PM" : "AM";
+  const displayHour = hour % 12 || 12;
+
+  return `${displayHour}:${minutes} ${period}`;
+};
+
+// ======================================
+// FORMAT TIME RANGE
+// ======================================
+
+const formatTimeRange = (startTime, endTime) => {
+  if (!startTime || !endTime) {
+    return "--";
+  }
+
+  return `${formatTime12Hour(startTime)} - ${formatTime12Hour(
+    endTime
+  )}`;
+};
+
+// ======================================
+// NORMALIZE DATE
+// ======================================
+
+const normalizeDate = (date) => {
+  if (!date) return "";
+
+  if (typeof date === "string") {
+    return date.split("T")[0];
+  }
+
+  return new Date(date).toISOString().split("T")[0];
+};
+
+// ======================================
+// CHECK DATE WITHIN 3 DAYS
+// ======================================
+
+const isWithinThreeDays = (bookingDate) => {
+  if (!bookingDate) return false;
+
+  const today = new Date();
+
+  const todayDate = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
+
+  const [year, month, day] = bookingDate
+    .split("-")
+    .map(Number);
+
+  const eventDate = new Date(
+    year,
+    month - 1,
+    day
+  );
+
+  const difference =
+    eventDate.getTime() -
+    todayDate.getTime();
+
+  const daysDifference =
+    difference / (1000 * 60 * 60 * 24);
+
+  return (
+    daysDifference >= 0 &&
+    daysDifference <= 3
+  );
+};
+
+// ======================================
+// PAYMENT PAGE
+// ======================================
 
 export default function Payment() {
   const { state } = useLocation();
@@ -23,26 +112,39 @@ export default function Payment() {
   const [paymentMethod, setPaymentMethod] =
     useState("online");
 
-  // User can choose advance or full payment
   const [paymentOption, setPaymentOption] =
     useState("advance");
 
   const [isProcessing, setIsProcessing] =
     useState(false);
 
-  // ==============================
-  // HANDLE MISSING STATE
-  // ==============================
+  // ======================================
+  // NO STATE
+  // ======================================
 
   if (!state) {
     return (
       <>
         <Header />
 
-        <main className="min-h-screen flex items-center justify-center">
-          <p className="text-gray-600">
-            Booking details not found.
-          </p>
+        <main className="flex min-h-screen items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <p className="text-gray-600">
+              Booking details not found.
+            </p>
+
+            <button
+              type="button"
+              onClick={() =>
+                navigate(
+                  ROUTES.USER.BROWSE_VENUES
+                )
+              }
+              className="mt-4 rounded-xl bg-black px-5 py-3 font-semibold text-white"
+            >
+              Back to Venues
+            </button>
+          </div>
         </main>
 
         <Footer />
@@ -50,13 +152,16 @@ export default function Payment() {
     );
   }
 
-  // ==============================
-  // GET DATA FROM BOOKING SUMMARY
-  // ==============================
+  // ======================================
+  // GET STATE DATA
+  // ======================================
 
   const {
     venue,
     selectedPackage,
+
+    bookingId,
+    reservationId,
 
     bookingType,
     bookingDate,
@@ -64,53 +169,252 @@ export default function Payment() {
     endTime,
     guestCount,
 
-    // Important values from reservation
-    reservationId,
     totalAmount,
     advanceAmount,
     remainingAmount,
+
     expiresAt,
+
+    paymentType,
+    isRemainingPayment,
   } = state;
 
-  // ==============================
+  // ======================================
+  // DETERMINE PAYMENT FLOW
+  // ======================================
+
+  const isPayingRemainingBalance =
+    isRemainingPayment === true ||
+    paymentType === "remaining";
+
+  // ======================================
   // VENUE ID
-  // ==============================
+  // ======================================
 
   const venueId =
-    venue?._id || venue?.id;
+    venue?._id?.toString?.() ||
+    venue?.id?.toString?.();
 
-  // ==============================
-  // NORMALIZE DATE
-  // ==============================
+  // ======================================
+  // NORMALIZED DATE
+  // ======================================
 
   const normalizedDate =
-    new Date(bookingDate)
-      .toISOString()
-      .split("T")[0];
+    normalizeDate(bookingDate);
 
-  // ==============================
+  // ======================================
+  // DISPLAY DATE
+  // ======================================
+
+  const displayDate =
+    normalizedDate
+      ? formatDateToDDMMYYYY(normalizedDate)
+      : "--";
+
+  // ======================================
+  // CHECK 3-DAY RULE
+  // ======================================
+
+  const withinThreeDays =
+    isWithinThreeDays(normalizedDate);
+
+  // ======================================
+  // EFFECTIVE PAYMENT OPTION
+  //
+  // Remaining booking:
+  //     remaining
+  //
+  // Fresh booking within 3 days:
+  //     full
+  //
+  // Fresh booking:
+  //     selected option
+  // ======================================
+
+  const effectivePaymentOption =
+    isPayingRemainingBalance
+      ? "remaining"
+      : withinThreeDays
+        ? "full"
+        : paymentOption;
+
+  // ======================================
   // SELECTED PAYMENT AMOUNT
-  // ==============================
+  // ======================================
 
   const selectedPaymentAmount =
-    paymentOption === "full"
-      ? totalAmount
-      : advanceAmount;
+    effectivePaymentOption === "remaining"
+      ? Number(remainingAmount || 0)
+      : effectivePaymentOption === "full"
+        ? Number(totalAmount || 0)
+        : Number(advanceAmount || 0);
 
-  // ==============================
+  // ======================================
+  // PAYMENT LABEL
+  // ======================================
+
+  const paymentLabel =
+    effectivePaymentOption === "remaining"
+      ? "Pay Remaining Balance"
+      : effectivePaymentOption === "full"
+        ? "Pay Full Amount"
+        : "Pay Advance Amount";
+
+  // ======================================
+  // BACK TO BOOKING SUMMARY
+  // ======================================
+
+  const handleBackToSummary = () => {
+    navigate(
+      ROUTES.USER.BOOKING_SUMMARY,
+      {
+        state,
+      }
+    );
+  };
+
+  // ======================================
   // HANDLE PAYMENT SUCCESS
-  // ==============================
+  // ======================================
 
   const handlePaymentSuccess = async () => {
+    // ====================================
+    // REMAINING BALANCE PAYMENT
+    // ====================================
+
+    if (isPayingRemainingBalance) {
+      if (!bookingId) {
+        toast.error(
+          "Booking ID is missing. Please go back and try again."
+        );
+
+        return;
+      }
+
+      if (selectedPaymentAmount <= 0) {
+        toast.error(
+          "Remaining payment amount is not available."
+        );
+
+        return;
+      }
+
+      try {
+        setIsProcessing(true);
+
+        const updatedBooking =
+          await dispatch(
+            payRemainingBooking({
+              bookingId,
+              paymentMethod,
+            })
+          ).unwrap();
+
+        console.log(
+          "Remaining payment completed:",
+          updatedBooking
+        );
+
+        toast.success(
+          "Remaining balance paid successfully!"
+        );
+
+        // ==================================
+        // SUCCESS PAGE
+        // ==================================
+
+        navigate(
+          ROUTES.USER.PAYMENT_SUCCESS,
+          {
+            state: {
+              venue,
+              selectedPackage,
+
+              bookingId,
+
+              bookingType,
+
+              bookingDate:
+                normalizedDate,
+
+              startTime,
+              endTime,
+              guestCount,
+
+              totalAmount,
+
+              // Existing paid amount + remaining
+              // would be the final paid amount.
+              paidAmount:
+                Number(totalAmount || 0),
+
+              remainingAmount: 0,
+
+              paymentOption:
+                "remaining",
+
+              paymentMethod,
+
+              paymentStatus: "success",
+
+              isRemainingPayment: true,
+
+              expiresAt,
+
+              booking:
+                updatedBooking,
+            },
+          }
+        );
+
+        return;
+      } catch (error) {
+        console.error(
+          "Remaining payment failed:",
+          error
+        );
+
+        toast.error(
+          error?.message ||
+            error ||
+            "Failed to pay remaining amount."
+        );
+
+        return;
+      } finally {
+        setIsProcessing(false);
+      }
+    }
+
+    // ====================================
+    // FRESH BOOKING
+    // ====================================
+
     if (!reservationId) {
       toast.error(
-        "Reservation not found. Please go back and try again."
+        "Reservation not found or expired. Please go back and select the slot again."
       );
+
       return;
     }
 
     if (!venueId) {
-      toast.error("Venue ID missing.");
+      toast.error("Venue ID is missing.");
+
+      return;
+    }
+
+    if (!normalizedDate) {
+      toast.error("Booking date is missing.");
+
+      return;
+    }
+
+    if (selectedPaymentAmount <= 0) {
+      toast.error(
+        "Payment amount is not available."
+      );
+
       return;
     }
 
@@ -118,19 +422,21 @@ export default function Payment() {
       setIsProcessing(true);
 
       // ==================================
-      // CONFIRM EXISTING RESERVATION
+      // CONFIRM NEW BOOKING
       // ==================================
 
       const confirmedBooking =
         await dispatch(
           confirmBooking({
             reservationId,
-            venueId,
-            bookingDate: normalizedDate,
 
-            // Send payment choice if your backend
-            // supports it
-            paymentOption,
+            venueId,
+
+            bookingDate:
+              normalizedDate,
+
+            paymentOption:
+              effectivePaymentOption,
 
             paymentMethod,
           })
@@ -146,7 +452,7 @@ export default function Payment() {
       );
 
       // ==================================
-      // NAVIGATE TO SUCCESS PAGE
+      // SUCCESS PAGE
       // ==================================
 
       navigate(
@@ -157,10 +463,13 @@ export default function Payment() {
             selectedPackage,
 
             bookingType,
-            bookingDate: normalizedDate,
+
+            bookingDate:
+              normalizedDate,
 
             startTime,
             endTime,
+
             guestCount,
 
             reservationId,
@@ -169,18 +478,24 @@ export default function Payment() {
             advanceAmount,
             remainingAmount,
 
-            // Which amount user selected
-            paymentOption,
+            paymentOption:
+              effectivePaymentOption,
 
-            // Actual amount paid
             paidAmount:
               selectedPaymentAmount,
 
             paymentMethod,
 
+            bookingId:
+              confirmedBooking.id,
+
             expiresAt,
 
-            paymentStatus: "success",
+            paymentStatus:
+              "success",
+
+            isRemainingPayment:
+              false,
           },
         }
       );
@@ -192,16 +507,17 @@ export default function Payment() {
 
       toast.error(
         error?.message ||
-          "Booking confirmation failed."
+          error ||
+          "Booking confirmation failed. Please try again."
       );
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // ==============================
+  // ======================================
   // HANDLE PAYMENT FAILURE
-  // ==============================
+  // ======================================
 
   const handlePaymentFailure = () => {
     navigate(
@@ -211,9 +527,12 @@ export default function Payment() {
           venue,
           selectedPackage,
 
+          bookingId,
+
           bookingType,
 
-          bookingDate: normalizedDate,
+          bookingDate:
+            normalizedDate,
 
           startTime,
           endTime,
@@ -222,7 +541,8 @@ export default function Payment() {
 
           paymentMethod,
 
-          paymentOption,
+          paymentOption:
+            effectivePaymentOption,
 
           totalAmount,
           advanceAmount,
@@ -230,227 +550,342 @@ export default function Payment() {
 
           reservationId,
 
-          paymentStatus: "failure",
+          paymentStatus:
+            "failure",
+
+          isRemainingPayment:
+            isPayingRemainingBalance,
         },
       }
     );
   };
+
+  // ======================================
+  // RENDER
+  // ======================================
 
   return (
     <>
       <Header />
 
       <main className="min-h-screen bg-gray-50 py-10">
+        <div className="mx-auto max-w-5xl px-6">
 
-        <div className="max-w-5xl mx-auto px-6">
+          {/* ==================================
+              BACK BUTTON
+          ================================== */}
 
-          {/* PAGE TITLE */}
+          <button
+            type="button"
+            onClick={handleBackToSummary}
+            className="mb-6 flex items-center gap-2 text-sm font-medium text-gray-600 transition hover:text-black"
+          >
+            <span className="text-lg">
+              ←
+            </span>
 
-          <h1 className="text-3xl font-bold">
-            Payment
-          </h1>
+            Back to Booking Summary
+          </button>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+          {/* ==================================
+              PAGE TITLE
+          ================================== */}
 
-            {/* ============================== */}
-            {/* PAYMENT SECTION */}
-            {/* ============================== */}
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Payment
+            </h1>
 
-            <div className="lg:col-span-2 bg-white rounded-2xl p-6">
+            <p className="mt-2 text-sm text-gray-500">
+              Review your booking and complete your payment.
+            </p>
+          </div>
 
-              <h2 className="text-xl font-bold">
-                Choose Payment Method
-              </h2>
+          {/* ==================================
+              MAIN GRID
+          ================================== */}
 
-              {/* ============================== */}
-              {/* PAYMENT METHOD */}
-              {/* ============================== */}
+          <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
 
-              {/* ONLINE PAYMENT */}
+            {/* ==================================
+                PAYMENT SECTION
+            ================================== */}
 
-              <div
-                className={`border rounded-xl p-4 mt-6 ${
-                  paymentMethod === "online"
-                    ? "border-black"
-                    : "border-gray-200"
-                }`}
-              >
-                <label className="flex items-center gap-3 cursor-pointer">
+            <div className="rounded-2xl bg-white p-6 shadow-sm lg:col-span-2">
 
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="online"
-                    checked={
+              {/* ==================================
+                  REMAINING BALANCE
+              ================================== */}
+
+              {isPayingRemainingBalance ? (
+                <>
+                  <h2 className="text-xl font-bold text-gray-900">
+                    Remaining Balance Payment
+                  </h2>
+
+                  <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 p-5">
+                    <p className="text-sm leading-6 text-blue-800">
+                      Your booking has already been confirmed.
+                      You only need to pay the remaining balance
+                      for this booking.
+                    </p>
+                  </div>
+
+                  {/* REMAINING AMOUNT */}
+
+                  <div className="mt-6 rounded-xl border border-gray-200 p-5">
+                    <div className="flex items-center justify-between gap-4">
+
+                      <div>
+                        <p className="text-sm text-gray-500">
+                          Remaining Balance
+                        </p>
+
+                        <p className="mt-1 text-2xl font-bold text-gray-900">
+                          ₹
+                          {Number(
+                            remainingAmount || 0
+                          ).toLocaleString()}
+                        </p>
+                      </div>
+
+                      <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                        Balance Due
+                      </span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* ==================================
+                      PAYMENT METHOD
+                  ================================== */}
+
+                  <h2 className="text-xl font-bold text-gray-900">
+                    Choose Payment Method
+                  </h2>
+
+                  {/* ONLINE PAYMENT */}
+
+                  <div
+                    className={`mt-6 rounded-xl border p-4 ${
                       paymentMethod === "online"
-                    }
-                    onChange={(event) =>
-                      setPaymentMethod(
-                        event.target.value
-                      )
-                    }
-                  />
+                        ? "border-black"
+                        : "border-gray-200"
+                    }`}
+                  >
+                    <label className="flex cursor-pointer items-center gap-3">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="online"
+                        checked={
+                          paymentMethod ===
+                          "online"
+                        }
+                        onChange={(event) =>
+                          setPaymentMethod(
+                            event.target.value
+                          )
+                        }
+                      />
 
-                  <span className="font-medium">
-                    UPI / Online Payment
-                  </span>
+                      <span className="font-medium text-gray-900">
+                        UPI / Online Payment
+                      </span>
+                    </label>
+                  </div>
 
-                </label>
-              </div>
+                  {/* CARD */}
 
-              {/* CARD PAYMENT */}
-
-              <div
-                className={`border rounded-xl p-4 mt-4 ${
-                  paymentMethod === "card"
-                    ? "border-black"
-                    : "border-gray-200"
-                }`}
-              >
-                <label className="flex items-center gap-3 cursor-pointer">
-
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="card"
-                    checked={
+                  <div
+                    className={`mt-4 rounded-xl border p-4 ${
                       paymentMethod === "card"
-                    }
-                    onChange={(event) =>
-                      setPaymentMethod(
-                        event.target.value
-                      )
-                    }
-                  />
+                        ? "border-black"
+                        : "border-gray-200"
+                    }`}
+                  >
+                    <label className="flex cursor-pointer items-center gap-3">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="card"
+                        checked={
+                          paymentMethod ===
+                          "card"
+                        }
+                        onChange={(event) =>
+                          setPaymentMethod(
+                            event.target.value
+                          )
+                        }
+                      />
 
-                  <span className="font-medium">
-                    Credit / Debit Card
-                  </span>
+                      <span className="font-medium text-gray-900">
+                        Credit / Debit Card
+                      </span>
+                    </label>
+                  </div>
 
-                </label>
-              </div>
+                  {/* ==================================
+                      PAYMENT AMOUNT
+                  ================================== */}
 
-              {/* ============================== */}
-              {/* PAYMENT AMOUNT */}
-              {/* ============================== */}
+                  <h2 className="mt-8 text-xl font-bold text-gray-900">
+                    Choose Amount to Pay
+                  </h2>
 
-              <h2 className="text-xl font-bold mt-8">
-                Choose Amount to Pay
-              </h2>
+                  {/* ==================================
+                      WITHIN 3 DAYS MESSAGE
+                  ================================== */}
 
-              {/* ADVANCE PAYMENT */}
+                  {withinThreeDays && (
+                    <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-5">
+                      <p className="text-sm font-semibold text-amber-900">
+                        Full payment required
+                      </p>
 
-              <div
-                className={`border rounded-xl p-4 mt-5 cursor-pointer ${
-                  paymentOption === "advance"
-                    ? "border-black"
-                    : "border-gray-200"
-                }`}
-                onClick={() =>
-                  setPaymentOption("advance")
-                }
-              >
-                <label className="flex items-center justify-between cursor-pointer">
+                      <p className="mt-1 text-sm leading-6 text-amber-800">
+                        Since your event date is within
+                        the next 3 days, advance payment
+                        is not available. Please complete
+                        the full payment to confirm your
+                        booking.
+                      </p>
+                    </div>
+                  )}
 
-                  <div className="flex items-center gap-3">
+                  {/* ==================================
+                      ADVANCE PAYMENT
+                  ================================== */}
 
-                    <input
-                      type="radio"
-                      name="paymentOption"
-                      value="advance"
-                      checked={
+                  {!withinThreeDays && (
+                    <div
+                      className={`mt-5 cursor-pointer rounded-xl border p-4 ${
                         paymentOption ===
                         "advance"
-                      }
-                      onChange={() =>
+                          ? "border-black"
+                          : "border-gray-200"
+                      }`}
+                      onClick={() =>
                         setPaymentOption(
                           "advance"
                         )
                       }
-                    />
+                    >
+                      <label className="flex cursor-pointer items-center justify-between">
+                        <div className="flex items-center gap-3">
 
-                    <span className="font-medium">
-                      Pay Advance Amount
-                    </span>
+                          <input
+                            type="radio"
+                            name="paymentOption"
+                            value="advance"
+                            checked={
+                              paymentOption ===
+                              "advance"
+                            }
+                            onChange={() =>
+                              setPaymentOption(
+                                "advance"
+                              )
+                            }
+                          />
 
+                          <span className="font-medium text-gray-900">
+                            Pay Advance Amount
+                          </span>
+                        </div>
+
+                        <span className="font-bold text-gray-900">
+                          ₹
+                          {Number(
+                            advanceAmount || 0
+                          ).toLocaleString()}
+                        </span>
+                      </label>
+
+                      <p className="ml-6 mt-2 text-sm text-gray-500">
+                        Remaining balance: ₹
+                        {Number(
+                          remainingAmount || 0
+                        ).toLocaleString()}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* ==================================
+                      FULL PAYMENT
+                  ================================== */}
+
+                  <div
+                    className={`mt-4 cursor-pointer rounded-xl border p-4 ${
+                      effectivePaymentOption ===
+                      "full"
+                        ? "border-black"
+                        : "border-gray-200"
+                    }`}
+                    onClick={() =>
+                      setPaymentOption("full")
+                    }
+                  >
+                    <label className="flex cursor-pointer items-center justify-between">
+
+                      <div className="flex items-center gap-3">
+
+                        <input
+                          type="radio"
+                          name="paymentOption"
+                          value="full"
+                          checked={
+                            effectivePaymentOption ===
+                            "full"
+                          }
+                          onChange={() =>
+                            setPaymentOption(
+                              "full"
+                            )
+                          }
+                        />
+
+                        <span className="font-medium text-gray-900">
+                          Pay Full Amount
+                        </span>
+                      </div>
+
+                      <span className="font-bold text-gray-900">
+                        ₹
+                        {Number(
+                          totalAmount || 0
+                        ).toLocaleString()}
+                      </span>
+                    </label>
+
+                    <p className="ml-6 mt-2 text-sm text-gray-500">
+                      No remaining balance
+                    </p>
                   </div>
-
-                  <span className="font-bold">
-                    ₹{advanceAmount}
-                  </span>
-
-                </label>
-
-                <p className="text-sm text-gray-500 mt-2 ml-6">
-                  Remaining balance: ₹
-                  {remainingAmount}
-                </p>
-
-              </div>
-
-              {/* FULL PAYMENT */}
-
-              <div
-                className={`border rounded-xl p-4 mt-4 cursor-pointer ${
-                  paymentOption === "full"
-                    ? "border-black"
-                    : "border-gray-200"
-                }`}
-                onClick={() =>
-                  setPaymentOption("full")
-                }
-              >
-                <label className="flex items-center justify-between cursor-pointer">
-
-                  <div className="flex items-center gap-3">
-
-                    <input
-                      type="radio"
-                      name="paymentOption"
-                      value="full"
-                      checked={
-                        paymentOption === "full"
-                      }
-                      onChange={() =>
-                        setPaymentOption("full")
-                      }
-                    />
-
-                    <span className="font-medium">
-                      Pay Full Amount
-                    </span>
-
-                  </div>
-
-                  <span className="font-bold">
-                    ₹{totalAmount}
-                  </span>
-
-                </label>
-
-                <p className="text-sm text-gray-500 mt-2 ml-6">
-                  No remaining balance
-                </p>
-
-              </div>
-
-              {/* ============================== */}
-              {/* ERROR */}
-              {/* ============================== */}
-
-              {error && (
-                <p className="text-red-500 text-sm mt-5">
-                  {error}
-                </p>
+                </>
               )}
 
-              {/* ============================== */}
-              {/* ACTION BUTTONS */}
-              {/* ============================== */}
+              {/* ==================================
+                  ERROR
+              ================================== */}
 
-              <div className="flex gap-4 mt-8">
+              {error && (
+                <div className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4">
+                  <p className="text-sm leading-6 text-red-600">
+                    {error}
+                  </p>
+                </div>
+              )}
 
-                {/* PAYMENT SUCCESS */}
+              {/* ==================================
+                  PAYMENT ACTION
+              ================================== */}
+
+              <div className="mt-8 flex gap-4">
+
+                {/* PAY BUTTON */}
 
                 <button
                   type="button"
@@ -459,17 +894,18 @@ export default function Payment() {
                   }
                   disabled={
                     loading ||
-                    isProcessing
+                    isProcessing ||
+                    selectedPaymentAmount <= 0
                   }
-                  className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full rounded-xl bg-green-600 py-3 font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {loading ||
                   isProcessing
                     ? "Processing..."
-                    : `Pay ₹${selectedPaymentAmount}`}
+                    : `${paymentLabel} ₹${selectedPaymentAmount.toLocaleString()}`}
                 </button>
 
-                {/* PAYMENT FAILURE */}
+                {/* FAILURE */}
 
                 <button
                   type="button"
@@ -480,145 +916,205 @@ export default function Payment() {
                     loading ||
                     isProcessing
                   }
-                  className="w-full bg-red-600 text-white py-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full rounded-xl bg-red-600 py-3 font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Payment Failure
                 </button>
 
               </div>
-
             </div>
 
-            {/* ============================== */}
-            {/* BOOKING SUMMARY */}
-            {/* ============================== */}
+            {/* ==================================
+                BOOKING SUMMARY
+            ================================== */}
 
-            <div className="bg-white rounded-2xl p-6 h-fit">
+            <div className="h-fit rounded-2xl bg-white p-6 shadow-sm">
 
-              <h2 className="text-xl font-bold">
+              <h2 className="text-xl font-bold text-gray-900">
                 Booking Summary
               </h2>
 
               {/* VENUE */}
 
-              <p className="font-semibold mt-5">
-                {venue?.name}
-              </p>
+              <div className="mt-5">
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                  Venue
+                </p>
+
+                <p className="mt-1 font-semibold text-gray-900">
+                  {venue?.name || "--"}
+                </p>
+              </div>
 
               {/* DATE */}
 
-              <p className="text-gray-500 text-sm mt-2">
-                {formatDateToDDMMYYYY(
-                  normalizedDate
-                )}
-              </p>
+              <div className="mt-5">
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                  Event Date
+                </p>
+
+                <p className="mt-1 font-semibold text-gray-900">
+                  {displayDate}
+                </p>
+              </div>
 
               {/* BOOKING TYPE */}
 
-              <p className="text-gray-500 text-sm mt-2">
+              <div className="mt-5">
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                  Booking Type
+                </p>
 
-                Booking Type:{" "}
-
-                <span className="font-medium text-gray-700">
-
-                  {bookingType === "daily"
+                <p className="mt-1 font-semibold text-gray-900">
+                  {bookingType ===
+                  "daily"
                     ? "Full Day"
-                    : "Hour Wise"}
-
-                </span>
-
-              </p>
+                    : "Hourly"}
+                </p>
+              </div>
 
               {/* TIME */}
 
-              {bookingType === "daily" ? (
-
-                <p className="text-gray-500 text-sm mt-1">
-                  Full day venue booking
+              <div className="mt-5">
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                  Time
                 </p>
 
-              ) : (
-
-                <p className="text-gray-500 text-sm mt-1">
-                  {startTime} - {endTime}
+                <p className="mt-1 font-semibold text-gray-900">
+                  {bookingType ===
+                  "daily"
+                    ? "Full Day"
+                    : formatTimeRange(
+                        startTime,
+                        endTime
+                      )}
                 </p>
-
-              )}
+              </div>
 
               {/* GUEST COUNT */}
 
-              <p className="text-gray-500 text-sm mt-2">
-                {guestCount} guests
-              </p>
+              <div className="mt-5">
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                  Guests
+                </p>
 
-              {/* ============================== */}
-              {/* PRICE SUMMARY */}
-              {/* ============================== */}
+                <p className="mt-1 font-semibold text-gray-900">
+                  {guestCount || "--"}{" "}
+                  Guests
+                </p>
+              </div>
 
-              <div className="border-t mt-5 pt-5 space-y-3">
+              {/* ==================================
+                  PRICE SUMMARY
+              ================================== */}
 
-                <div className="flex justify-between">
+              <div className="mt-6 space-y-3 border-t border-gray-200 pt-5">
 
-                  <span className="text-gray-500">
+                {/* TOTAL */}
+
+                <div className="flex justify-between gap-4">
+                  <span className="text-sm text-gray-500">
                     Total Amount
                   </span>
 
-                  <span className="font-semibold">
-                    ₹{totalAmount}
+                  <span className="font-semibold text-gray-900">
+                    ₹
+                    {Number(
+                      totalAmount || 0
+                    ).toLocaleString()}
                   </span>
-
                 </div>
 
-                <div className="flex justify-between">
+                {/* PAID AMOUNT FOR EXISTING BOOKING */}
 
-                  <span className="text-gray-500">
-                    Advance Amount
-                  </span>
+                {isPayingRemainingBalance && (
+                  <div className="flex justify-between gap-4">
+                    <span className="text-sm text-gray-500">
+                      Paid Amount
+                    </span>
 
-                  <span className="font-semibold">
-                    ₹{advanceAmount}
-                  </span>
+                    <span className="font-semibold text-gray-900">
+                      ₹
+                      {Number(
+                        state.paidAmount ||
+                          totalAmount -
+                            remainingAmount ||
+                          0
+                      ).toLocaleString()}
+                    </span>
+                  </div>
+                )}
 
-                </div>
+                {/* ADVANCE */}
 
-                <div className="flex justify-between">
+                {!isPayingRemainingBalance && (
+                  <div className="flex justify-between gap-4">
+                    <span className="text-sm text-gray-500">
+                      Advance Amount
+                    </span>
 
-                  <span className="text-gray-500">
+                    <span className="font-semibold text-gray-900">
+                      ₹
+                      {Number(
+                        advanceAmount || 0
+                      ).toLocaleString()}
+                    </span>
+                  </div>
+                )}
+
+                {/* REMAINING */}
+
+                <div className="flex justify-between gap-4">
+                  <span className="text-sm text-gray-500">
                     Remaining Balance
                   </span>
 
-                  <span className="font-semibold">
-                    ₹{remainingAmount}
+                  <span className="font-semibold text-gray-900">
+                    ₹
+                    {Number(
+                      remainingAmount || 0
+                    ).toLocaleString()}
                   </span>
-
                 </div>
-
               </div>
 
-              {/* SELECTED PAYMENT */}
+              {/* ==================================
+                  PAY NOW
+              ================================== */}
 
-              <div className="border-t mt-5 pt-5">
+              <div className="mt-5 rounded-xl bg-gray-50 p-4">
+                <div className="flex items-center justify-between gap-4">
 
-                <div className="flex justify-between">
-
-                  <span className="font-semibold">
-                    Pay Now
+                  <span className="font-semibold text-gray-900">
+                    {isPayingRemainingBalance
+                      ? "Balance to Pay"
+                      : "Pay Now"}
                   </span>
 
-                  <span className="font-bold">
-                    ₹{selectedPaymentAmount}
+                  <span className="text-xl font-bold text-gray-900">
+                    ₹
+                    {selectedPaymentAmount.toLocaleString()}
                   </span>
-
                 </div>
-
               </div>
+
+              {/* ==================================
+                  REMAINING PAYMENT MESSAGE
+              ================================== */}
+
+              {isPayingRemainingBalance && (
+                <div className="mt-5 rounded-xl border border-blue-200 bg-blue-50 p-4">
+                  <p className="text-sm leading-5 text-blue-800">
+                    This payment is for the remaining
+                    balance of your existing booking.
+                    No new reservation is required.
+                  </p>
+                </div>
+              )}
 
             </div>
-
           </div>
-
         </div>
-
       </main>
 
       <Footer />

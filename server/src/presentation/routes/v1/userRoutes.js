@@ -138,5 +138,10 @@ router.patch(
     validate(CancelBookingSchema, "body"),
     iUserBookingController.cancelBooking
 );
+router.post(
+    ROUTES.USER.BOOKING.PAY_REMAINING,
+    authHandler(iTokenService),
+    iUserBookingController.payRemainingBooking
+);
 
 export default router

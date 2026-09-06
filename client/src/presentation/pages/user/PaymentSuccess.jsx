@@ -30,6 +30,7 @@ export default function PaymentSuccess() {
     endTime,
     guestCount,
     totalAmount,
+    bookingId,
   } = state;
 
   return (
@@ -128,7 +129,8 @@ export default function PaymentSuccess() {
 
             <button
               onClick={() =>
-                navigate(ROUTES.USER.BOOKINGS)
+                navigate( ROUTES.USER.BOOKINGS)
+
               }
               className="w-full mt-8 bg-black text-white py-3 rounded-xl font-semibold"
             >

@@ -36,6 +36,10 @@ export default function VenueHeader({ venue }) {
         <span>
           🧍 {venue.standingCapacity} Standing
         </span>
+                <span>
+           {venue.minimumBookingHours} hours of Minimum Booking Hour
+        </span>
+
       </div>
     </div>
   );

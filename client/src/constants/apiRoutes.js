@@ -43,7 +43,9 @@ AUTH:{
           GET_BY_ID: (bookingId) => `/user/booking/${bookingId}`,
           GET_ALL: "/user/booking",
           CANCEL: (bookingId) => `/user/bookings/${bookingId}/cancel`,
-          AVAILABILITY: (venueId) => `/user/booking/${venueId}/availability`
+          AVAILABILITY: (venueId) => `/user/booking/${venueId}/availability`,
+          PAY_REMAINING: (bookingId) =>
+              `/user/booking/${bookingId}/pay-remaining`,
         }
     },
    ADMIN: {

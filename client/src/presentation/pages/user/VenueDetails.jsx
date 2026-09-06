@@ -1,23 +1,29 @@
-import { useEffect,useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams,useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import VenueReviews from "@/presentation/components/user/venueDetails/VenueReviews";
+
 import Header from "@/presentation/components/common/Header";
 import Footer from "@/presentation/components/common/Footer";
-import VenueAmenities from "@/presentation/components/user/venueDetails/VenueAmenities";
-import VenueGallery from "@/presentation/components/user/venueDetails/VenueGallery";
+
 import VenueHeader from "@/presentation/components/user/venueDetails/VenueHeader";
+import VenueGallery from "@/presentation/components/user/venueDetails/VenueGallery";
 import VenueAbout from "@/presentation/components/user/venueDetails/VenueAbout";
-import { getVenueById } from "@/redux/slices/UserVenueSlice";
-import { fetchAvailability } from "@/redux/slices/UserBookingSlice";
-import BookingCard from "@/presentation/components/user/venueDetails/BookingCard";
-import SimilarVenues from "@/presentation/components/user/venueDetails/SimilarVenues";
+import VenueAmenities from "@/presentation/components/user/venueDetails/VenueAmenities";
 import VenueAvailability from "@/presentation/components/user/venueDetails/VenueAvailability";
+import VenueReviews from "@/presentation/components/user/venueDetails/VenueReviews";
+import BookingCard from "@/presentation/components/user/venueDetails/BookingCard";
 import HostedBy from "@/presentation/components/user/venueDetails/HostedBy";
-import { similarVenues } from "@/constants/mockVenues";
 import CancellationPolicy from "@/presentation/components/user/venueDetails/CancellationPolicy";
+import SimilarVenues from "@/presentation/components/user/venueDetails/SimilarVenues";
+
+import { getVenueById } from "@/redux/slices/UserVenueSlice";
+
+import { similarVenues } from "@/constants/mockVenues";
 
 export default function VenueDetails() {
+  const { id } = useParams();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [selectedPackage, setSelectedPackage] = useState(null);
 
   const [availability, setAvailability] = useState({
@@ -26,100 +32,164 @@ export default function VenueDetails() {
     endTime: "",
     guestCount: "",
   });
-  const { id } = useParams();
-  const dispatch = useDispatch();
 
-  const {
-    selectedVenue,
-    loading,
-    error,
-  } = useSelector((state) => state.userVenue);
+  const { selectedVenue, loading, error } = useSelector(
+    (state) => state.userVenue
+  );
 
+  // ======================================
+  // FETCH VENUE DETAILS
+  // ======================================
   useEffect(() => {
     if (id) {
       dispatch(getVenueById(id));
     }
   }, [dispatch, id]);
 
-  useEffect(() => {
-  if (id) {
-    dispatch(
-      fetchAvailability({
-        venueId: id,
-        month: new Date().getMonth() + 1,
-        year: new Date().getFullYear(),
-      })
-    );
-  }
-}, [dispatch, id]);
-
-const {
-  availabilityData,
-} = useSelector(
-  (state) => state.userBooking
-);
-
   return (
     <>
+      {/* ======================================
+          HEADER
+      ====================================== */}
       <Header />
 
       <main className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="mx-auto max-w-7xl px-6">
 
+          {/* ======================================
+              LOADING STATE
+          ====================================== */}
           {loading && (
             <div className="p-10 text-center">
               Loading venue...
             </div>
           )}
 
+          {/* ======================================
+              ERROR STATE
+          ====================================== */}
           {error && (
             <div className="p-10 text-center text-red-500">
               {error}
             </div>
           )}
 
+          {/* ======================================
+              VENUE NOT FOUND
+          ====================================== */}
           {!loading && !error && !selectedVenue && (
             <div className="p-10 text-center">
               Venue not found
             </div>
           )}
 
+          {/* ======================================
+              VENUE DETAILS
+          ====================================== */}
           {!loading && !error && selectedVenue && (
-          <>
-            <VenueHeader venue={selectedVenue} />
+            <>
+            <div className="mb-6">
+              <button
+              onClick={() => navigate("/user/venues")}
+              className="flex items-center gap-2 text-sm font-large text-gray-600 hover:text-gray-900"
+              >
+                   ← Back to Venues
+              </button>
+            </div>
+              {/* ======================================
+                  VENUE HEADER
+              ====================================== */}
+              <VenueHeader venue={selectedVenue} />
 
-            <VenueGallery venue={selectedVenue} />
+              {/* ======================================
+                  VENUE GALLERY
+              ====================================== */}
+              <VenueGallery venue={selectedVenue} />
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+              {/* ======================================
+                  VENUE INFORMATION
+              ====================================== */}
+              <div className="mt-10 space-y-10">
 
-                <div className="lg:col-span-2">
-                  <VenueAbout description={selectedVenue.description} />
-                  <VenueAmenities amenities={selectedVenue.amenities} />
-                  <VenueAvailability venue={selectedVenue}
-                  availability={availabilityData} 
-                  onAvailabilityChange={setAvailability} />
-                  <VenueReviews rating={selectedVenue.rating} 
-                    reviews={selectedVenue.reviews} />
-                  <HostedBy
-                    vendor={selectedVenue.vendorId}
-                  />
-                  <CancellationPolicy />
+                {/* ======================================
+                    ABOUT
+                ====================================== */}
+                <VenueAbout
+                  description={selectedVenue.description}
+                />
 
- 
+                {/* ======================================
+                    AMENITIES
+                ====================================== */}
+                <VenueAmenities
+                  amenities={selectedVenue.amenities}
+                />
+
+                {/* ======================================
+                    AVAILABILITY + BOOKING SECTION
+                ====================================== */}
+                <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-3">
+
+                  {/* ======================================
+                      LEFT COLUMN
+                  ====================================== */}
+                  <div className="space-y-10 lg:col-span-2">
+
+                    {/* Availability */}
+                    <VenueAvailability
+                      venue={selectedVenue}
+                      onAvailabilityChange={setAvailability}
+                    />
+
+                    {/* Reviews */}
+                    <VenueReviews
+                      venue={selectedVenue}
+                    />
+
+                  </div>
+
+                  {/* ======================================
+                      RIGHT COLUMN
+                  ====================================== */}
+                  <div className="space-y-6 lg:col-span-1">
+
+                    {/* Booking Card */}
+                    <BookingCard
+                      venue={selectedVenue}
+                      selectedPackage={selectedPackage}
+                      setSelectedPackage={setSelectedPackage}
+                      availability={availability}
+                    />
+
+                    {/* Hosted By */}
+                    <HostedBy
+                      vendor={selectedVenue.vendorId}
+                    />
+
+                    {/* Cancellation Policy */}
+                    <CancellationPolicy />
+
+                  </div>
                 </div>
 
-                <BookingCard venue={selectedVenue} selectedPackage={selectedPackage}
-                availability={availability} />
+                {/* ======================================
+                    SIMILAR VENUES
+                ====================================== */}
+                <SimilarVenues
+                  venues={similarVenues}
+                  currentVenueId={selectedVenue._id}
+                />
 
               </div>
-              <SimilarVenues venues={similarVenues} />
-          </>
-        )}       
+            </>
+          )}
+        </div>
+      </main>
 
-      </div>
-    </main>
-
-    <Footer />
-  </>
+      {/* ======================================
+          FOOTER
+      ====================================== */}
+      <Footer />
+    </>
   );
 }

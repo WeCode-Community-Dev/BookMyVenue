@@ -9,6 +9,7 @@ import Swal from "sweetalert2";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { XCircle } from "lucide-react";
+import { ROUTES } from "@/constants/routes";
 
 const BookingDetails = () => {
   const navigate = useNavigate();
@@ -115,7 +116,7 @@ const BookingDetails = () => {
 
         <main className="flex-1 bg-gray-50 p-10">
           <button
-            onClick={() => window.history.back()}
+            onClick={() => navigate(ROUTES.USER.BOOKINGS)}
             className="flex items-center gap-2 text-gray-500 mb-5"
           >
             <ArrowLeft size={18} />
@@ -291,13 +292,40 @@ const BookingDetails = () => {
                   </button>
 
                   <div className="flex gap-4">
-                    {booking.paymentStatus?.toLowerCase() === "partial" && (
-                      <button className="bg-amber-500 hover:bg-amber-600 text-white rounded-xl px-8 py-3 font-semibold">
-                        Pay Remaining ₹
-                        {booking.remainingAmount.toLocaleString()}
-                      </button>
-                    )}
+{booking.paymentStatus?.toLowerCase() === "partial" &&
+  booking.remainingAmount > 0 && (
+    <button
+      type="button"
+      onClick={() =>
+        navigate(ROUTES.USER.PAYMENT, {
+          state: {
+            venue: booking.venueId,
+            bookingId: booking.id,
 
+            bookingType: booking.bookingType,
+            bookingDate: booking.bookingDate,
+            startTime: booking.startTime,
+            endTime: booking.endTime,
+            guestCount: booking.guestCount,
+
+
+            totalAmount: booking.totalAmount,
+            advanceAmount: booking.advanceAmount,
+            paidAmount: booking.paidAmount,
+
+            remainingAmount: booking.remainingAmount,
+
+            paymentType: "remaining",
+            isRemainingPayment: true,
+          },
+        })
+      }
+      className="bg-amber-500 hover:bg-amber-600 text-white rounded-xl px-8 py-3 font-semibold"
+    >
+      Pay Remaining ₹
+      {booking.remainingAmount.toLocaleString()}
+    </button>
+  )}
                     <button
                       onClick={handleCancelBooking}
                       className="border border-red-500 text-red-500 rounded-xl px-10 py-3 font-semibold hover:bg-red-50"
