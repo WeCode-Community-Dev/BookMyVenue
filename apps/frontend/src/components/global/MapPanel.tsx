@@ -1,5 +1,6 @@
 "use client";
 
+import { AppText } from "@/lib/language/LanguageHelper";
 import MapComponent from "./Map";
 
 export default function MapPanel() {
@@ -21,20 +22,20 @@ export default function MapPanel() {
                     />
 
                     <h3 className="mt-3 text-sm font-semibold">
-            Lagoona Beach Resort
+                        Lagoona Beach Resort
                     </h3>
 
                     <p className="mt-1 text-xs text-slate-500">
-            Cherai, Kochi
+                        Cherai, Kochi
                     </p>
 
                     <div className="mt-3 flex items-center justify-between">
                         <span className="font-semibold text-teal-700">
-              ₹18,000/day
+                            <AppText textName="PRICE_PER_DAY" textModule="LABEL" append={{ price: "18,000" }} />
                         </span>
 
                         <button className="rounded-lg border border-coral-300 px-3 py-1 text-xs font-medium text-coral-500">
-              View Details
+                            <AppText textName="VIEW_DETAILS" textModule="BUTTON" />
                         </button>
                     </div>
                 </div>

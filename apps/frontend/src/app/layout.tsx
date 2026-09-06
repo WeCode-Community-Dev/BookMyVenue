@@ -5,6 +5,7 @@ import { LANGUAGE, LOCAL_STORAGE, THEME } from "@/lib/Constants";
 import AppShell from "./AppShell";
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import Script from "next/script";
 import StoreProvider from "@/components/global/StoreProvider";
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -32,8 +33,8 @@ export default function RootLayout({ children, }: { children: React.ReactNode; }
         document.documentElement.setAttribute('data-bookMyVenu-theme', theme);
         var storedLang = localStorage.getItem('${LOCAL_STORAGE.APP_LANG}');
         var lang = storedLang || '${LANGUAGE.ENGLISH}';
-        if(lang){
-        setLanguage(lang)
+        if (lang) {
+          document.documentElement.setAttribute('lang', lang);
         }
         if (theme === '${THEME.DARK}') {
           document.documentElement.classList.add('${THEME.DARK}');
@@ -46,7 +47,11 @@ export default function RootLayout({ children, }: { children: React.ReactNode; }
     return (
         <html lang="en" className="h-full antialiased" suppressHydrationWarning>
             <head>
-                <script dangerouslySetInnerHTML={{ __html: themeThemeInitializerScript }} />
+                <Script
+                    id="theme-initializer"
+                    strategy="beforeInteractive"
+                    dangerouslySetInnerHTML={{ __html: themeThemeInitializerScript }}
+                />
             </head>
             <body className={`${plusJakarta.className} min-h-screen`}>
                 <StoreProvider>

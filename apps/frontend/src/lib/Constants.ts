@@ -24,9 +24,14 @@ export const SCREENS = {
     OWNER: "/owner"
 };
 
-export const LANGUAGE={
-    HINDI : "hindi",
-    ENGLISH:"english"
+export const LANGUAGE = {
+    HINDI: "hindi",
+    ENGLISH: "english"
 };
+
+export const SUPPORTED_LANGUAGES = [
+    { code: LANGUAGE.ENGLISH, label: "English", nativeLabel: "English" },
+    { code: LANGUAGE.HINDI, label: "Hindi", nativeLabel: "हिंदी" },
+];
 
 export const DEFAULT_LANGUAGE = "english";

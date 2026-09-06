@@ -213,7 +213,9 @@ export default function Venues() {
                                     )}
                         <div ref={loaderRef}>
                             {loadingMore && (
-                                <div className={venueStyle.loadingText}>Loading more venues...</div>
+                                <div className={venueStyle.loadingText}>
+                                    <AppText textName="LOADING_MORE_VENUES" textModule="MESSAGES" />
+                                </div>
                             )}
                         </div>
                     </div>
