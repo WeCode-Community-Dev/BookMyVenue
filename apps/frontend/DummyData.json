@@ -1,0 +1,132 @@
+{
+    "venues": [
+        {
+            "id": 1,
+            "image": "https://images.unsplash.com/photo-1566073771259-6a8506099945",
+            "name": "Lagoona Beach Resort",
+            "location": "Cherai, Kochi",
+            "guests": 200,
+            "price": 18000,
+            "status": "Active"
+        },
+        {
+            "id": 2,
+            "image": "https://images.unsplash.com/photo-1519167758481-83f550bb49b3",
+            "name": "The Garden Courtyard",
+            "location": "Kakkanad, Kochi",
+            "guests": 100,
+            "price": 8000,
+            "status": "Active"
+        },
+        {
+            "id": 3,
+            "image": "https://images.unsplash.com/photo-1511578314322-379afb476865",
+            "name": "Silverline Banquets",
+            "location": "Edappally, Kochi",
+            "guests": 150,
+            "price": 15000,
+            "status": "Active"
+        },
+        {
+            "id": 4,
+            "image": "https://images.unsplash.com/photo-1566073771259-6a8506099945",
+            "name": "Lagoona Beach Resort",
+            "location": "Cherai, Kochi",
+            "guests": 200,
+            "price": 18000,
+            "status": "Active"
+        },
+        {
+            "id": 5,
+            "image": "https://images.unsplash.com/photo-1519167758481-83f550bb49b3",
+            "name": "The Garden Courtyard",
+            "location": "Kakkanad, Kochi",
+            "guests": 100,
+            "price": 8000,
+            "status": "Active"
+        }
+    ],
+    "stats": [
+        {
+            "title": "Total Venues",
+            "value": "12",
+            "subText": "↑ 2 this month",
+            "icon": "Building2",
+            "color": "text-green-600"
+        },
+        {
+            "title": "Active Bookings",
+            "value": "48",
+            "subText": "6 upcoming today",
+            "icon": "CalendarDays",
+            "color": "text-blue-600"
+        },
+        {
+            "title": "Pending Requests",
+            "value": "7",
+            "subText": "Need your approval",
+            "icon": "Clock3",
+            "color": "text-orange-600"
+        },
+        {
+            "title": "Revenue (This Month)",
+            "value": "₹1,24,500",
+            "subText": "↑ 18% from last month",
+            "icon": "IndianRupee",
+            "color": "text-green-600"
+        }
+    ],
+    "myVenues": [
+        {
+            "id": 1,
+            "image": "https://images.unsplash.com/photo-1566073771259-6a8506099945",
+            "name": "Lagoona Beach Resort",
+            "location": "Cherai, Kochi",
+            "status": "Active"
+        },
+        {
+            "id": 2,
+            "image": "https://images.unsplash.com/photo-1511578314322-379afb476865",
+            "name": "Silverline Banquets",
+            "location": "Edappally, Kochi",
+            "status": "Active"
+        },
+        {
+            "id": 3,
+            "image": "https://images.unsplash.com/photo-1511578314322-379afb476865",
+            "name": "The Garden Courtyard",
+            "location": "Kakkanad, Kochi",
+            "status": "Pending"
+        }
+    ],
+    "savedVenues": [
+        {
+            "id": 1,
+            "image": "https://images.unsplash.com/photo-1566073771259-6a8506099945",
+            "name": "Lagoona Beach Resort",
+            "location": "Cherai, Kochi",
+            "price": 18000
+        },
+        {
+            "id": 2,
+            "image": "https://images.unsplash.com/photo-1519167758481-83f550bb49b3",
+            "name": "Silverline Banquets",
+            "location": "Edappally, Kochi",
+            "price": 15000
+        },
+        {
+            "id": 3,
+            "image": "https://images.unsplash.com/photo-1511578314322-379afb476865",
+            "name": "The Garden Courtyard",
+            "location": "Kakkanad, Kochi",
+            "price": 8000
+        },
+        {
+            "id": 4,
+            "image": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267",
+            "name": "Palm Grove Residency",
+            "location": "Kalamasery, Kochi",
+            "price": 22000
+        }
+    ]
+}
