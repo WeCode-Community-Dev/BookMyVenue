@@ -1,0 +1,136 @@
+owner login
+
+{
+"email": "owner@bookmyvenue.com",
+"password":"owner123"
+}
+
+---userr logIn
+
+{
+"email": "user@bookmyvenue.com",
+"password":"user123"
+}
+
+
+
+
+------ venue creation
+
+{
+  "name": "O By Tamara",
+  "description": "Luxury venue for weddings, corporate events, and receptions.",
+  "address": "NH Bypass, Venpalavattom",
+  "city": "Thiruvananthapuram",
+  "venueAvailabilityRulesRequest": {
+    "durationType": "HOURLY",
+    "durationHour": 2,
+    "weekStartDay": "MONDAY",
+    "weekEndDay": "SUNDAY",
+    "operatingStartTime": "09:00:00",
+    "operatingEndTime": "22:00:00",
+    "weekdayDayRate": 3500.00,
+    "weekdayNightRate": 4500.00,
+    "weekendDayRate": 5000.00,
+    "weekendNightRate": 6500.00
+  },
+  "venueType": "WEDDING",
+  "parking": true,
+  "seatingCapacity": 600,
+  "amenities": [
+    "WIFI",
+    "PROJECTOR"
+  ],
+  "maxAdvanceBookingDays": 120
+}
+
+{
+  "name": "Uday Samudra Convention Hall",
+  "description": "Beachside convention hall suitable for weddings and conferences.",
+  "address": "Kovalam",
+  "city": "Thiruvananthapuram",
+  "venueAvailabilityRulesRequest": {
+    "durationType": "HOURLY",
+    "durationHour": 2,
+    "weekStartDay": "MONDAY",
+    "weekEndDay": "SUNDAY",
+    "operatingStartTime": "08:00:00",
+    "operatingEndTime": "23:00:00",
+    "weekdayDayRate": 3000.00,
+    "weekdayNightRate": 4200.00,
+    "weekendDayRate": 4800.00,
+    "weekendNightRate": 6000.00
+  },
+  "venueType": "WEDDING",
+  "parking": true,
+  "seatingCapacity": 450,
+  "amenities": [
+    "WIFI",
+    "PROJECTOR"
+  ],
+  "maxAdvanceBookingDays": 90
+}
+
+{
+  "name": "Hycinth Convention Hall",
+  "description": "Modern banquet hall for business meetings and family functions.",
+  "address": "Manorama Road",
+  "city": "Thiruvananthapuram",
+  "venueAvailabilityRulesRequest": {
+    "durationType": "HOURLY",
+    "durationHour": 3,
+    "weekStartDay": "MONDAY",
+    "weekEndDay": "SUNDAY",
+    "operatingStartTime": "09:00:00",
+    "operatingEndTime": "21:00:00",
+    "weekdayDayRate": 2800.00,
+    "weekdayNightRate": 3800.00,
+    "weekendDayRate": 4500.00,
+    "weekendNightRate": 5500.00
+  },
+  "venueType": "WEDDING",
+  "parking": true,
+  "seatingCapacity": 350,
+  "amenities": [
+    "WIFI",
+    "PROJECTOR"
+  ],
+  "maxAdvanceBookingDays": 60
+}
+
+{
+  "name": "KTDC Samudra Hall",
+  "description": "Event hall near Kovalam beach ideal for weddings and celebrations.",
+  "address": "Kovalam",
+  "city": "Thiruvananthapuram",
+  "venueAvailabilityRulesRequest": {
+    "durationType": "FULL_DAY",
+    "weekStartDay": "MONDAY",
+    "weekEndDay": "SUNDAY",
+    "operatingStartTime": "10:00:00",
+    "operatingEndTime": "22:30:00",
+    "weekdayDayRate": 2600.00,
+    "weekdayNightRate": 3600.00,
+    "weekendDayRate": 4500.00,
+    "weekendNightRate": 5700.00
+  },
+  "venueType": "WEDDING",
+  "parking": true,
+  "seatingCapacity": 500,
+  "amenities": [
+    "WIFI",
+    "PROJECTOR"
+  ],
+  "maxAdvanceBookingDays": 120
+}
+
+
+-----EXCEPTION
+
+{
+  "exceptionDate": "2026-07-15",
+  "startTime": "09:00:00",
+  "endTime": "12:00:00",
+  "exceptionType": "MAINTENANCE",
+  "reason": "Electrical maintenance and AC servicing."
+}
